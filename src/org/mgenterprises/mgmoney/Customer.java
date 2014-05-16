@@ -24,7 +24,7 @@
 
 package org.mgenterprises.mgmoney;
 
-import util.State;
+import org.mgenterprises.mgmoney.util.State;
 
 /**
  *
