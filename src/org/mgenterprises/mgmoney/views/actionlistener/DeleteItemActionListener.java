@@ -22,58 +22,35 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.invoice;
+package org.mgenterprises.mgmoney.views.actionlistener;
 
-import org.mgenterprises.mgmoney.item.Item;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JOptionPane;
+import org.mgenterprises.mgmoney.customer.CustomerManager;
+import org.mgenterprises.mgmoney.invoice.InvoiceManager;
+import org.mgenterprises.mgmoney.item.ItemManager;
+import org.mgenterprises.mgmoney.util.CustomerUtils;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class InvoiceItem extends Item{
-    private int quantity;
-    private double price;
-    
-    public InvoiceItem() {
-    }
-    
-    public InvoiceItem(Item item){
-        super(item.getName(), item.getDescription(), item.getBasePrice());
-        price=item.getBasePrice();
-    }
+public class DeleteItemActionListener  implements ActionListener {
+    private ItemManager itemManager;
+    private String itemName;
 
-    public InvoiceItem(int quantity, String name, String description, double basePrice) {
-        super(name, description, basePrice);
-        this.quantity = quantity;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-    
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
+    public DeleteItemActionListener(ItemManager itemManager, String itemName) {
+        this.itemManager = itemManager;
+        this.itemName = itemName;
     }
     
     @Override
-    public String toString(){
-        return getName();
+    public void actionPerformed(ActionEvent ae) {
+        int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete "+itemName+"?", "Warning!", JOptionPane.YES_NO_OPTION);
+        if(dialogResult == JOptionPane.YES_OPTION){
+            itemManager.deleteItem(itemName);
+        }
     }
     
-    public Object[] formatForTable() {
-        Object[] data = new Object[4];
-        data[0] = getName();
-        data[1] = getDescription();
-        data[2] = getPrice();
-        data[3] = getQuantity();
-        return data;
-    }
 }

@@ -65,5 +65,9 @@ public class Item {
     public void setBasePrice(double basePrice) {
         this.basePrice = basePrice;
     }
-    
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

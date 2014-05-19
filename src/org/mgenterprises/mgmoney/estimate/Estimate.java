@@ -24,7 +24,7 @@
 
 package org.mgenterprises.mgmoney.estimate;
 
-import org.mgenterprises.mgmoney.Customer;
+import org.mgenterprises.mgmoney.customer.Customer;
 import org.mgenterprises.mgmoney.invoice.Invoice;
 
 /**

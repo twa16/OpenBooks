@@ -22,15 +22,17 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney;
+package org.mgenterprises.mgmoney.customer;
 
 import org.mgenterprises.mgmoney.util.State;
+import org.mgenterprises.mgmoney.views.RowView;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class Customer {
+public class Customer{
+    private int customerNumber;
     private String companyName;
     private String contactFirst;
     private String contactLast;
@@ -42,7 +44,8 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(String companyName, String contactFirst, String contactLast, String phoneNumber, String streetAddress, String cityName, State state) {
+    public Customer(int customerNumber, String companyName, String contactFirst, String contactLast, String phoneNumber, String streetAddress, String cityName, State state) {
+        this.customerNumber = customerNumber;
         this.companyName = companyName;
         this.contactFirst = contactFirst;
         this.contactLast = contactLast;
@@ -50,6 +53,14 @@ public class Customer {
         this.streetAddress = streetAddress;
         this.cityName = cityName;
         this.state = state;
+    }
+
+    public int getCustomerNumber() {
+        return customerNumber;
+    }
+
+    public void setCustomerNumber(int customerNumber) {
+        this.customerNumber = customerNumber;
     }
 
     public String getCompanyName() {
@@ -107,7 +118,9 @@ public class Customer {
     public void setState(State state) {
         this.state = state;
     }
-    
-    
-    
+
+    @Override
+    public String toString() {
+        return companyName;
+    }
 }

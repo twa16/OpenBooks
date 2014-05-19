@@ -22,58 +22,12 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.invoice;
-
-import org.mgenterprises.mgmoney.item.Item;
+package org.mgenterprises.mgmoney.views;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class InvoiceItem extends Item{
-    private int quantity;
-    private double price;
-    
-    public InvoiceItem() {
-    }
-    
-    public InvoiceItem(Item item){
-        super(item.getName(), item.getDescription(), item.getBasePrice());
-        price=item.getBasePrice();
-    }
-
-    public InvoiceItem(int quantity, String name, String description, double basePrice) {
-        super(name, description, basePrice);
-        this.quantity = quantity;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-    
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-    
-    @Override
-    public String toString(){
-        return getName();
-    }
-    
-    public Object[] formatForTable() {
-        Object[] data = new Object[4];
-        data[0] = getName();
-        data[1] = getDescription();
-        data[2] = getPrice();
-        data[3] = getQuantity();
-        return data;
-    }
+public interface RowView {
+    public Object[] getRowFormat();
 }

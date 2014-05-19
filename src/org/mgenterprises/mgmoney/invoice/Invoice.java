@@ -24,7 +24,9 @@
 
 package org.mgenterprises.mgmoney.invoice;
 
-import org.mgenterprises.mgmoney.Customer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import org.mgenterprises.mgmoney.customer.Customer;
 
 /**
  *
@@ -32,12 +34,16 @@ import org.mgenterprises.mgmoney.Customer;
  */
 public class Invoice {
     private int invoiceNumber;
-    private Customer customer;
-    private InvoiceItem[] invoiceItem;
+    private Date dateCreated;
+    private double amountPaid;
+    private Date datePaid = new Date(0);
+    private int purchaseOrderNumber;
+    private int customerID;
+    private InvoiceItem[] invoiceItems;
 
     public Invoice(int invoiceNumber, Customer customer) {
         this.invoiceNumber = invoiceNumber;
-        this.customer = customer;
+        this.customerID = customer.getCustomerNumber();
     }
 
     public int getInvoiceNumber() {
@@ -48,21 +54,59 @@ public class Invoice {
         this.invoiceNumber = invoiceNumber;
     }
 
-    public Customer getCustomer() {
-        return customer;
+    public Date getDateCreated() {
+        return dateCreated;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
+    public void setDateCreated(Date dateCreated) {
+        this.dateCreated = dateCreated;
     }
 
-    public InvoiceItem[] getInvoiceItem() {
-        return invoiceItem;
+    public double getAmountPaid() {
+        return amountPaid;
     }
 
-    public void setInvoiceItem(InvoiceItem[] invoiceItem) {
-        this.invoiceItem = invoiceItem;
+    public void setAmountPaid(double amountPaid) {
+        this.amountPaid = amountPaid;
     }
-    
-    
+
+    public Date getDatePaid() {
+        return datePaid;
+    }
+
+    public void setDatePaid(Date datePaid) {
+        this.datePaid = datePaid;
+    }
+
+    public int getPurchaseOrderNumber() {
+        return purchaseOrderNumber;
+    }
+
+    public void setPurchaseOrderNumber(int purchaseOrderNumber) {
+        this.purchaseOrderNumber = purchaseOrderNumber;
+    }
+
+    public int getCustomerID() {
+        return customerID;
+    }
+
+    public void setCustomerID(int customerID) {
+        this.customerID = customerID;
+    }
+
+    public InvoiceItem[] getInvoiceItems() {
+        return invoiceItems;
+    }
+
+    public void setInvoiceItems(InvoiceItem[] invoiceItems) {
+        this.invoiceItems = invoiceItems;
+    }
+
+    public double getTotal(){
+        double total = 0;
+        for(InvoiceItem invoiceItems : getInvoiceItems()) {
+            total+=invoiceItems.getPrice();
+        }
+        return total;
+    }
 }
