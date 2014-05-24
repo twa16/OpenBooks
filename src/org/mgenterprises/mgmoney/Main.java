@@ -33,9 +33,15 @@ import org.mgenterprises.mgmoney.views.MainGUI;
  * @author Manuel
  */
 public class Main {
+    private static MainGUI mainGUI;
+    
     public static void main(String[] args) {
         SaveFile saveFile = new SaveFile(new File("save.mgm"));
-        MainGUI mainGUI = new MainGUI(saveFile);
+        mainGUI = new MainGUI(saveFile);
         mainGUI.setVisible(true);
+    }
+    
+    public static MainGUI getInstance(){
+        return mainGUI;
     }
 }

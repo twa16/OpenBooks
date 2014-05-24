@@ -33,11 +33,13 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.mgenterprises.mgmoney.configuration.ConfigurationManager;
 import org.mgenterprises.mgmoney.customer.CustomerManager;
 import org.mgenterprises.mgmoney.invoice.InvoiceManager;
 import org.mgenterprises.mgmoney.item.ItemManager;
 import org.mgenterprises.mgmoney.saving.SaveFile;
 import org.mgenterprises.mgmoney.views.panel.CustomerUpdatePanel;
+import org.mgenterprises.mgmoney.views.panel.InvoiceCenterPanel;
 import org.mgenterprises.mgmoney.views.panel.InvoiceUpdatePanel;
 import org.mgenterprises.mgmoney.views.panel.ItemManagementPanel;
 
@@ -46,6 +48,7 @@ import org.mgenterprises.mgmoney.views.panel.ItemManagementPanel;
  * @author Manuel Gauto
  */
 public class MainGUI extends javax.swing.JFrame implements WindowListener{
+    private ConfigurationManager configurationManager = new ConfigurationManager();
     private CustomerManager customerManager = new CustomerManager();
     private ItemManager itemManager = new ItemManager();
     private InvoiceManager invoiceManager = new InvoiceManager();
@@ -69,6 +72,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
         }
         this.saveFile = saveFile;
         loadSave();
+        saveFile.registerSaveable(configurationManager);
         saveFile.registerSaveable(itemManager);
         saveFile.registerSaveable(invoiceManager);
         saveFile.registerSaveable(customerManager);
@@ -107,6 +111,11 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        if(saveFile.exists(configurationManager.getSaveableModuleName())) {
+            configurationManager = (ConfigurationManager) saveFile.getSaveableModule(configurationManager.getSaveableModuleName());
+            System.out.println("ConfigurationManager loaded from save!");
+        }
         if(saveFile.exists(customerManager.getSaveableModuleName())) {
             customerManager = (CustomerManager) saveFile.getSaveableModule(customerManager.getSaveableModuleName());
             System.out.println("CustomerManager loaded from save!");
@@ -119,6 +128,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
             invoiceManager = (InvoiceManager) saveFile.getSaveableModule(invoiceManager.getSaveableModuleName());
             System.out.println("InvoiceManager loaded from save!");
         }
+        configurationManager.loadDefaultConfiguration();
     }
 
     /**
@@ -215,11 +225,11 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
     }//GEN-LAST:event_customerCenterMenuItemActionPerformed
 
     private void invoiceCenterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_invoiceCenterButtonActionPerformed
-        
+        changePanel(new InvoiceCenterPanel(configurationManager, invoiceManager, customerManager));
     }//GEN-LAST:event_invoiceCenterButtonActionPerformed
 
     private void createInvoiceMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createInvoiceMenuItemActionPerformed
-        changePanel(new InvoiceUpdatePanel(customerManager, invoiceManager, itemManager.getItems()));
+        changePanel(new InvoiceUpdatePanel(configurationManager, customerManager, invoiceManager, itemManager.getItems()));
     }//GEN-LAST:event_createInvoiceMenuItemActionPerformed
 
     private void itemManagerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemManagerMenuItemActionPerformed

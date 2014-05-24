@@ -22,59 +22,42 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.invoice;
+package org.mgenterprises.mgmoney.configuration;
 
-import org.mgenterprises.mgmoney.item.Item;
+import com.sun.org.apache.bcel.internal.generic.Type;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import org.mgenterprises.mgmoney.saving.Saveable;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class InvoiceItem extends Item{
-    private int quantity;
-    private double price;
-    
-    public InvoiceItem() {
-    }
-    
-    public InvoiceItem(Item item){
-        super(item.getName(), item.getDescription(), item.getBasePrice());
-        price=item.getBasePrice();
-    }
+public class ConfigurationManager extends Saveable{
+    HashMap<String, String> configuration = new HashMap<String, String>();
 
-    public InvoiceItem(int quantity, String name, String description, double basePrice) {
-        super(name, description, basePrice);
-        this.quantity = quantity;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
+    public void loadDefaultConfiguration(){
+        insertIfNotSet("dateFormatString", "MM/dd/yyyy");
+        
+        insertIfNotSet("defaultDueDateDelay", "30");
     }
     
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
+    public boolean insertIfNotSet(String key, String configurationValue) {
+        if(configuration.containsKey(key)) return false;
+        //This isn't needed but I like elses
+        else {
+            configuration.put(key, configurationValue);
+            return true;
+        }
     }
     
     @Override
-    public String toString(){
-        return getName();
+    public String getSaveableModuleName() {
+        return "ConfigurationManager";
     }
     
-    public Object[] formatForTable() {
-        Object[] data = new Object[5];
-        data[0] = getName();
-        data[1] = getDescription();
-        data[2] = getPrice();
-        data[3] = getQuantity();
-        data[4] = getPrice()*getQuantity();
-        return data;
+    public String getValue(String key) {
+        return configuration.get(key);
     }
+    
 }

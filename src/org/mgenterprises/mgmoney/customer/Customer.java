@@ -121,6 +121,11 @@ public class Customer{
 
     @Override
     public String toString() {
-        return companyName;
+        if(companyName.length()>0){
+            return companyName;
+        }
+        else {
+            return contactFirst+" "+contactLast;
+        }
     }
 }

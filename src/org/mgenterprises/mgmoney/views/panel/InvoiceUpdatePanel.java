@@ -25,10 +25,14 @@
 package org.mgenterprises.mgmoney.views.panel;
 
 import com.google.gson.Gson;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -41,6 +45,7 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import org.mgenterprises.mgmoney.configuration.ConfigurationManager;
 import org.mgenterprises.mgmoney.customer.Customer;
 import org.mgenterprises.mgmoney.customer.CustomerManager;
 import org.mgenterprises.mgmoney.invoice.Invoice;
@@ -54,67 +59,65 @@ import org.mgenterprises.mgmoney.views.actionlistener.TableCellListener;
  * @author Manuel Gauto
  */
 public class InvoiceUpdatePanel extends javax.swing.JPanel {
+    private ConfigurationManager configurationManager;
     private InvoiceManager invoiceManager;
     private CustomerManager customerManager;
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+    private SimpleDateFormat dateFormat;
     private Item[] allPossibleItems;
     /**
      * Creates new form InvoiceUpdatePanel
      */
-    public InvoiceUpdatePanel(CustomerManager customerManager, InvoiceManager invoiceManager, Item[] allPossibleInvoiceItems, Invoice invoice) {
+    public InvoiceUpdatePanel(ConfigurationManager configurationManager, CustomerManager customerManager, InvoiceManager invoiceManager, Item[] allPossibleInvoiceItems, Invoice invoice) {
+        this.configurationManager = configurationManager;
         this.customerManager = customerManager;
         this.invoiceManager = invoiceManager;
         initComponents();
         this.allPossibleItems = allPossibleInvoiceItems;
+        this.dateFormat = new SimpleDateFormat(configurationManager.getValue("dateFormatString"));
         setupTableView();
         loadInvoiceData(invoice);
     }
     
-    public InvoiceUpdatePanel(CustomerManager customerManager, InvoiceManager invoiceManager, Item[] allPossibleInvoiceItems) {
+    public InvoiceUpdatePanel(ConfigurationManager configurationManager, CustomerManager customerManager, InvoiceManager invoiceManager, Item[] allPossibleInvoiceItems) {
+        this.configurationManager = configurationManager;
         this.customerManager = customerManager;
         initComponents();
         this.invoiceManager = invoiceManager;
         this.allPossibleItems = allPossibleInvoiceItems;
+        this.dateFormat = new SimpleDateFormat(configurationManager.getValue("dateFormatString"));
         setupTableView();
-    }
-    
-    public InvoiceUpdatePanel(CustomerManager customerManager, InvoiceManager invoiceManager, InvoiceItem[] allPossibleInvoiceItems, Invoice invoice, SimpleDateFormat simpleDateFormat){
-        this.customerManager = customerManager;
-        initComponents();
-        this.invoiceManager = invoiceManager;
-        this.dateFormat = simpleDateFormat;
-        this.allPossibleItems = allPossibleInvoiceItems;
-        loadInvoiceData(invoice);
     }
     
     private void setupTableView(){
-        this.customerCombobox.setSelectedIndex(-1);
-        this.dateCreatedField.setText(dateFormat.format(new Date(System.currentTimeMillis())));
-        
         JComboBox itemComboBox = new JComboBox(allPossibleItems);
         this.invoiceItemTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(itemComboBox));
-        int last = invoiceManager.getHighestID();
-        this.invoiceNumberField.setText(String.valueOf(last));
-        if(invoiceManager.exists(last))
-        loadInvoiceData(invoiceManager.getInvoice(last));
+        clearFields();
+        if(invoiceManager.exists(invoiceManager.getHighestID()-1)) loadInvoiceData(invoiceManager.getInvoice(invoiceManager.getHighestID()-1));
+        else {
+           newButtonActionPerformed(null);
+        }
     }
     
     private void loadInvoiceData(Invoice invoice){
+        
         DefaultTableModel defaultTableModel = (DefaultTableModel) this.invoiceItemTable.getModel();
         //Top
         this.customerCombobox.setSelectedItem(customerManager.getCustomer(invoice.getCustomerID()));
         this.invoiceNumberField.setText(String.valueOf(invoice.getInvoiceNumber()));
         this.poNumberField.setText(String.valueOf(invoice.getPurchaseOrderNumber()));
         this.dateCreatedField.setText(dateFormat.format(invoice.getDateCreated()));
-        
+        this.dateDueField.setText(dateFormat.format(invoice.getDateDue()));
         defaultTableModel.setRowCount(0);
         for(InvoiceItem invoiceItem : invoice.getInvoiceItems()){
             defaultTableModel.addRow(invoiceItem.formatForTable());
         }
+        //add an empty row so they can actually edit
+        ((DefaultTableModel)this.invoiceItemTable.getModel()).addRow(new String[]{});
+        
         
         //Bottom Row
         this.totalPaid.setText(String.valueOf(invoice.getAmountPaid()));
-        this.datePaid.setText(dateFormat.format(invoice.getDatePaid()));
+        if(invoice.getDatePaid().getTime()!=0) this.datePaid.setText(dateFormat.format(invoice.getDatePaid()));
         
         this.invoiceItemTable.setModel(defaultTableModel);
     }
@@ -149,6 +152,8 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
         nextButton = new javax.swing.JButton();
         previousButton = new javax.swing.JButton();
         newButton = new javax.swing.JButton();
+        dateDueField = new javax.swing.JTextField();
+        dateDueLabel = new javax.swing.JLabel();
 
         setMinimumSize(new java.awt.Dimension(650, 650));
         setPreferredSize(new java.awt.Dimension(650, 650));
@@ -170,6 +175,18 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
         invoiceNumberLabel.setText("Invoice Number");
 
         poNumberLabel.setText("P.O. Number");
+
+        poNumberField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                poNumberFieldActionPerformed(evt);
+            }
+        });
+
+        dateCreatedField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dateCreatedFieldActionPerformed(evt);
+            }
+        });
 
         jLabel1.setText("Date Created");
 
@@ -268,6 +285,14 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
             }
         });
 
+        dateDueField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dateDueFieldActionPerformed(evt);
+            }
+        });
+
+        dateDueLabel.setText("Date Due");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -303,14 +328,15 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(invoiceNumberLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(poNumberLabel)
                             .addComponent(jLabel1)
-                            .addComponent(poNumberLabel))
+                            .addComponent(dateDueLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(dateCreatedField, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(invoiceNumberField)
-                                .addComponent(poNumberField, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(dateCreatedField, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                            .addComponent(invoiceNumberField)
+                            .addComponent(poNumberField, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                            .addComponent(dateDueField))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -350,6 +376,10 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(dateCreatedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(dateDueField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dateDueLabel))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -363,29 +393,29 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
 
     private void previousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previousButtonActionPerformed
         int last = Integer.parseInt(this.invoiceNumberField.getText())-1;
-        if(invoiceManager.exists(last)){
-            Invoice invoice = invoiceManager.getInvoice(last);
-            loadInvoiceData(invoice);
-        } else {
-            JOptionPane.showMessageDialog(null, "The specified invoice does not exist!", "Invoice Not Found",
-                                    JOptionPane.ERROR_MESSAGE);
+        if(last>=0){
+            this.invoiceNumberField.setText(String.valueOf(last));
+            clearFields();
+            if(invoiceManager.exists(last)){
+                Invoice invoice = invoiceManager.getInvoice(last);
+                loadInvoiceData(invoice);
+            }
         }
     }//GEN-LAST:event_previousButtonActionPerformed
 
     private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
         int last = Integer.parseInt(this.invoiceNumberField.getText())+1;
+        if(last<=invoiceManager.getHighestID()) this.invoiceNumberField.setText(String.valueOf(last));
+        clearFields();
         if(invoiceManager.exists(last)){
             Invoice invoice = invoiceManager.getInvoice(last);
             loadInvoiceData(invoice);
-        } else{
-            JOptionPane.showMessageDialog(null, "The specified invoice does not exist!", "Invoice Not Found",
-                                    JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_nextButtonActionPerformed
 
     private void invoiceItemTableMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_invoiceItemTableMousePressed
         int lastRow = invoiceItemTable.getRowCount()-1;
-        if((invoiceItemTable.getValueAt(lastRow, 0))!=null) {
+        if(lastRow>=0 && (invoiceItemTable.getValueAt(lastRow, 0))instanceof Item) {
             DefaultTableModel defaultTableModel = (DefaultTableModel)invoiceItemTable.getModel();
             //Autofill defaults
             Item item = (Item) defaultTableModel.getValueAt(lastRow, 0);
@@ -399,30 +429,23 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
             calculateInvoiceTotal();
         }
     }//GEN-LAST:event_invoiceItemTableMousePressed
-
+  
     private void invoiceItemTablePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_invoiceItemTablePropertyChange
         invoiceItemTableMousePressed(null);
         int rowindex = invoiceItemTable.getSelectedRow();
         if (rowindex < 0)
             return;
-        Action action = new AbstractAction()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                TableCellListener tcl = (TableCellListener)e.getSource();
-                
-                if(tcl.getColumn()==2 || tcl.getColumn()==3) {
-                    int quantity = (int) invoiceItemTable.getValueAt(tcl.getRow(), 3);
-                    double price = (double) invoiceItemTable.getValueAt(tcl.getRow(), 2);
-                    invoiceItemTable.setValueAt(price*quantity, tcl.getRow(), 4);
-                    calculateInvoiceTotal();
-                } 
-            }
-        };
-
-        TableCellListener tcl = new TableCellListener(invoiceItemTable, action);
-        System.err.println(evt.getPropertyName()+"\nOld: "+evt.getOldValue()+"\nNew: "+evt.getNewValue());
+        try {
+            int quantity = (int) invoiceItemTable.getValueAt(rowindex, 3);
+            double price = (double) invoiceItemTable.getValueAt(rowindex, 2);
+            invoiceItemTable.setValueAt(price*quantity, rowindex, 4);
+            calculateInvoiceTotal();
+            this.saveButton.setText("Save *");
+            this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+        }
     }//GEN-LAST:event_invoiceItemTablePropertyChange
 
     private void calculateInvoiceTotal() {
@@ -443,12 +466,19 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
             Customer customer = (Customer) customerCombobox.getSelectedItem();
             Invoice invoice = new Invoice(invoiceID, customer);
             invoice.setDateCreated(dateFormat.parse(dateCreatedField.getText()));
-            invoice.setPurchaseOrderNumber(Integer.parseInt(poNumberField.getText()));
+            if(poNumberField.getText().length()>0) invoice.setPurchaseOrderNumber(Integer.parseInt(poNumberField.getText()));
             
             InvoiceItem[] invoiceItems = new InvoiceItem[invoiceItemTable.getModel().getRowCount()-1];
             for(int i = 0; i < invoiceItemTable.getModel().getRowCount()-1; i++) {
                 InvoiceItem invoiceItem = new InvoiceItem();
-                invoiceItem.setName(((Item) invoiceItemTable.getValueAt(i, 0)).getName());
+                
+                //Really weird bug. Sometimes this is an item and sometimes a string for now, I'll code for both--MG 5.22.14
+                try {
+                    invoiceItem.setName(((Item) invoiceItemTable.getValueAt(i, 0)).getName());
+                }
+                catch(ClassCastException ex) {
+                    invoiceItem.setName(((String) invoiceItemTable.getValueAt(i, 0)));
+                }
                 invoiceItem.setDescription((String) invoiceItemTable.getValueAt(i, 1));
                 invoiceItem.setPrice((double) invoiceItemTable.getValueAt(i, 2));
                 invoiceItem.setQuantity((int) invoiceItemTable.getValueAt(i, 3));
@@ -456,33 +486,67 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
             } 
             invoice.setInvoiceItems(invoiceItems);
             
-            invoiceManager.addInvoice(invoice);
+            if(invoiceManager.exists(invoice.getInvoiceNumber())){
+                invoiceManager.updateInvoice(invoice);
+            }else {
+                invoiceManager.addInvoice(invoice);
+            }
+            this.saveButton.setText("Save");
+            this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
         } catch (ParseException ex) {
             Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
         } catch(NullPointerException npe) {
             JOptionPane.showMessageDialog(null, "Please complete the invoice before saving!", "Invoice Incomplete",
                                     JOptionPane.ERROR_MESSAGE);
+        } catch(Exception ex) {
+            Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
+        clearFields();
+        this.invoiceNumberField.setText(String.valueOf(invoiceManager.getHighestID()));
+    }//GEN-LAST:event_newButtonActionPerformed
+
+    private void poNumberFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_poNumberFieldActionPerformed
+        this.saveButton.setText("Save *");
+        this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+    }//GEN-LAST:event_poNumberFieldActionPerformed
+
+    private void dateCreatedFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dateCreatedFieldActionPerformed
+        this.saveButton.setText("Save *");
+        this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+    }//GEN-LAST:event_dateCreatedFieldActionPerformed
+
+    private void dateDueFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dateDueFieldActionPerformed
+        this.saveButton.setText("Save *");
+        this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+    }//GEN-LAST:event_dateDueFieldActionPerformed
+
+    private void clearFields() {
         this.customerCombobox.setSelectedIndex(-1);
         this.customerTextArea.setText("");
         this.dateCreatedField.setText(dateFormat.format(new Date(System.currentTimeMillis())));
-        this.invoiceNumberField.setText(String.valueOf(invoiceManager.getHighestID()));
         this.poNumberField.setText("");
         ((DefaultTableModel)this.invoiceItemTable.getModel()).setRowCount(0);
-        this.totalPaid.setText("0.0");
-        this.invoiceTotal.setText("0.0");
+        ((DefaultTableModel)this.invoiceItemTable.getModel()).addRow(new String[]{});
+        this.totalPaid.setText("-");
+        this.invoiceTotal.setText("-");
         this.datePaid.setText("-");
-    }//GEN-LAST:event_newButtonActionPerformed
-
-
+        int daysTillDue = Integer.parseInt(this.configurationManager.getValue("defaultDueDateDelay"));
+        Calendar c=new GregorianCalendar();
+        c.add(Calendar.DATE, daysTillDue);
+        Date dueDate=c.getTime();
+        this.dateDueField.setText(dateFormat.format(dueDate));
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel amountPaidLabel;
     private javax.swing.JComboBox customerCombobox;
     private javax.swing.JTextArea customerTextArea;
     private javax.swing.JFormattedTextField dateCreatedField;
+    private javax.swing.JTextField dateDueField;
+    private javax.swing.JLabel dateDueLabel;
     private javax.swing.JLabel datePaid;
     private javax.swing.JLabel datePaidLabel;
     private javax.swing.JTable invoiceItemTable;

@@ -22,59 +22,34 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.invoice;
-
-import org.mgenterprises.mgmoney.item.Item;
+package org.mgenterprises.mgmoney.configuration;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class InvoiceItem extends Item{
-    private int quantity;
-    private double price;
-    
-    public InvoiceItem() {
-    }
-    
-    public InvoiceItem(Item item){
-        super(item.getName(), item.getDescription(), item.getBasePrice());
-        price=item.getBasePrice();
+public class ConfigurationValue<T> {
+    private String className;
+    private Object value;
+
+    public ConfigurationValue(Object value) {
+        this.className = value.getClass().getName();
+        this.value = value;
     }
 
-    public InvoiceItem(int quantity, String name, String description, double basePrice) {
-        super(name, description, basePrice);
-        this.quantity = quantity;
+    public String getClassName() {
+        return className;
     }
 
-    public double getPrice() {
-        return price;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
-    }
-    
-    public int getQuantity() {
-        return quantity;
+    public T getValue() {
+        return (T) value;
     }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-    
-    @Override
-    public String toString(){
-        return getName();
-    }
-    
-    public Object[] formatForTable() {
-        Object[] data = new Object[5];
-        data[0] = getName();
-        data[1] = getDescription();
-        data[2] = getPrice();
-        data[3] = getQuantity();
-        data[4] = getPrice()*getQuantity();
-        return data;
+    public void setValue(Object value) {
+        this.value = value;
     }
 }

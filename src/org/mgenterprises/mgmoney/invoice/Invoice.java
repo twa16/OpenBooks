@@ -37,6 +37,7 @@ public class Invoice {
     private Date dateCreated;
     private double amountPaid;
     private Date datePaid = new Date(0);
+    private Date dateDue = new Date(System.currentTimeMillis()+(86400000*30));
     private int purchaseOrderNumber;
     private int customerID;
     private InvoiceItem[] invoiceItems;
@@ -100,6 +101,14 @@ public class Invoice {
 
     public void setInvoiceItems(InvoiceItem[] invoiceItems) {
         this.invoiceItems = invoiceItems;
+    }
+
+    public Date getDateDue() {
+        return dateDue;
+    }
+
+    public void setDateDue(Date dateDue) {
+        this.dateDue = dateDue;
     }
 
     public double getTotal(){

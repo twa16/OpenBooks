@@ -24,17 +24,57 @@
 
 package org.mgenterprises.mgmoney.views.panel;
 
+import java.text.SimpleDateFormat;
+import javax.swing.table.DefaultTableModel;
+import org.mgenterprises.mgmoney.configuration.ConfigurationManager;
+import org.mgenterprises.mgmoney.customer.Customer;
+import org.mgenterprises.mgmoney.customer.CustomerManager;
+import org.mgenterprises.mgmoney.invoice.Invoice;
+import org.mgenterprises.mgmoney.invoice.InvoiceManager;
+
 /**
  *
  * @author Manuel Gauto
  */
-public class InvoiceListPanel extends javax.swing.JPanel {
+public class InvoiceCenterPanel extends javax.swing.JPanel {
 
-    /**
-     * Creates new form InvoiceListPanel
-     */
-    public InvoiceListPanel() {
+    private final ConfigurationManager configurationManager;
+    private final InvoiceManager invoiceManager;
+    private final CustomerManager customerManager;
+    private SimpleDateFormat simpleDateFormat;
+    
+    public InvoiceCenterPanel(ConfigurationManager configurationManager, InvoiceManager invoiceManager, CustomerManager customerManager) {
+        this.configurationManager = configurationManager;
+        this.invoiceManager = invoiceManager;
+        this.customerManager = customerManager;
+        simpleDateFormat  = new SimpleDateFormat(configurationManager.getValue("dateFormatString"));
         initComponents();
+        loadInitialInvoiceList();
+    }
+    
+    private void loadInitialInvoiceList() {
+        Invoice[] invoices = invoiceManager.getInvoices();
+        
+        double total = 0.0;
+        double paid = 0.0;
+        DefaultTableModel defaultTableModel = (DefaultTableModel) invoiceTable.getModel();
+        for(Invoice invoice : invoices) {
+            Object[] data = new Object[6];
+            data[0]=invoice.getInvoiceNumber();
+            Customer customer = customerManager.getCustomer(invoice.getCustomerID());
+            data[1]=customer.toString();
+            data[2]=simpleDateFormat.format(invoice.getDateDue());
+            data[3]=invoice.getTotal()-invoice.getAmountPaid();
+            data[4]=invoice.getTotal();
+            data[5]=(invoice.getTotal()==invoice.getAmountPaid());
+            defaultTableModel.addRow(data);
+            
+            total+=invoice.getTotal();
+            paid+=invoice.getAmountPaid();
+        }
+        this.invoiceTable.setModel(defaultTableModel);
+        this.totalPaid.setText(String.valueOf(paid));
+        this.totalUnpaid.setText(String.valueOf(total));
     }
 
     /**
@@ -51,10 +91,10 @@ public class InvoiceListPanel extends javax.swing.JPanel {
         customerComboBox = new javax.swing.JComboBox();
         customerLabel = new javax.swing.JLabel();
         invoiceStatusLabel = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        totalPaidLabel = new javax.swing.JLabel();
+        totalPaid = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        invoiceTable = new javax.swing.JTable();
         jLabel5 = new javax.swing.JLabel();
         startDateField = new javax.swing.JFormattedTextField();
         endDateField = new javax.swing.JFormattedTextField();
@@ -78,22 +118,42 @@ public class InvoiceListPanel extends javax.swing.JPanel {
 
         invoiceStatusLabel.setText("Status");
 
-        jLabel3.setText("Total Paid:");
+        totalPaidLabel.setText("Total Paid:");
 
-        jLabel4.setText("Loading...");
+        totalPaid.setText("Loading...");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        invoiceTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "ID", "Customer", "Due Date", "Amount Due", "Total", "Paid"
             }
-        ));
-        jScrollPane2.setViewportView(jTable1);
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.Double.class, java.lang.Double.class, java.lang.Boolean.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane2.setViewportView(invoiceTable);
+        if (invoiceTable.getColumnModel().getColumnCount() > 0) {
+            invoiceTable.getColumnModel().getColumn(0).setMinWidth(30);
+            invoiceTable.getColumnModel().getColumn(0).setPreferredWidth(30);
+            invoiceTable.getColumnModel().getColumn(0).setMaxWidth(30);
+            invoiceTable.getColumnModel().getColumn(5).setMinWidth(35);
+            invoiceTable.getColumnModel().getColumn(5).setPreferredWidth(35);
+            invoiceTable.getColumnModel().getColumn(5).setMaxWidth(35);
+        }
 
         jLabel5.setText("Start Date");
 
@@ -123,11 +183,11 @@ public class InvoiceListPanel extends javax.swing.JPanel {
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(totalUnpaidLabel)
-                            .addComponent(jLabel3))
+                            .addComponent(totalPaidLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(totalUnpaid, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4)))
+                            .addComponent(totalPaid)))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -163,15 +223,16 @@ public class InvoiceListPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(customerComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(customerLabel)
-                    .addComponent(invoiceStatusLabel)
-                    .addComponent(jLabel5)
-                    .addComponent(startDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(paidCheckbox)
-                    .addComponent(unpaidCheckbox)
-                    .addComponent(jCheckBox2))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jCheckBox2, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(customerComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(customerLabel)
+                        .addComponent(invoiceStatusLabel)
+                        .addComponent(jLabel5)
+                        .addComponent(startDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(paidCheckbox)
+                        .addComponent(unpaidCheckbox)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -184,8 +245,8 @@ public class InvoiceListPanel extends javax.swing.JPanel {
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 522, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel4))
+                            .addComponent(totalPaidLabel)
+                            .addComponent(totalPaid))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(totalUnpaid)
@@ -201,18 +262,18 @@ public class InvoiceListPanel extends javax.swing.JPanel {
     private javax.swing.JLabel customerLabel;
     private javax.swing.JFormattedTextField endDateField;
     private javax.swing.JLabel invoiceStatusLabel;
+    private javax.swing.JTable invoiceTable;
     private javax.swing.JButton jButton1;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
     private javax.swing.JCheckBox paidCheckbox;
     private javax.swing.JCheckBox pastdueCheckbox;
     private javax.swing.JFormattedTextField startDateField;
+    private javax.swing.JLabel totalPaid;
+    private javax.swing.JLabel totalPaidLabel;
     private javax.swing.JLabel totalUnpaid;
     private javax.swing.JLabel totalUnpaidLabel;
     private javax.swing.JCheckBox unpaidCheckbox;
