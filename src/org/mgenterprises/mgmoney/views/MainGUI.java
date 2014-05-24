@@ -151,7 +151,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
         itemManagerMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("MGMoney");
+        setTitle("OpenBill");
         setMinimumSize(new java.awt.Dimension(700, 750));
         setPreferredSize(new java.awt.Dimension(700, 750));
 
