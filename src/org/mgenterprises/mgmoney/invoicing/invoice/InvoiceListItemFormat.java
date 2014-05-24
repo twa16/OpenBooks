@@ -22,19 +22,12 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.estimate;
-
-import org.mgenterprises.mgmoney.customer.Customer;
-import org.mgenterprises.mgmoney.invoice.Invoice;
+package org.mgenterprises.mgmoney.invoicing.invoice;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class Estimate extends Invoice{
-    
-    public Estimate(int invoiceNumber, Customer customer) {
-        super(invoiceNumber, customer);
-    }
+public class InvoiceListItemFormat {
     
 }

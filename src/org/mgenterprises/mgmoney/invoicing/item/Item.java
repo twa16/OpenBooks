@@ -22,12 +22,52 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.invoice;
+package org.mgenterprises.mgmoney.invoicing.item;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class InvoiceListItemFormat {
-    
+public class Item {
+    private String name;
+    private String description;
+    private double basePrice;
+
+    public Item() {
+    }
+
+    public Item(String name, String description, double basePrice) {
+        this.name = name;
+        this.description = description;
+        this.basePrice = basePrice;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public double getBasePrice() {
+        return basePrice;
+    }
+
+    public void setBasePrice(double basePrice) {
+        this.basePrice = basePrice;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

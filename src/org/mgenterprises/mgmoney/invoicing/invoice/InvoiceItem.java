@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.invoice;
+package org.mgenterprises.mgmoney.invoicing.invoice;
 
-import org.mgenterprises.mgmoney.item.Item;
+import org.mgenterprises.mgmoney.invoicing.item.Item;
 
 /**
  *

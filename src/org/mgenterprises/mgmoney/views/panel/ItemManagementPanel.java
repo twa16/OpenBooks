@@ -28,8 +28,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
-import org.mgenterprises.mgmoney.item.Item;
-import org.mgenterprises.mgmoney.item.ItemManager;
+import org.mgenterprises.mgmoney.invoicing.item.Item;
+import org.mgenterprises.mgmoney.invoicing.item.ItemManager;
 import org.mgenterprises.mgmoney.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.mgmoney.views.actionlistener.DeleteItemActionListener;
 

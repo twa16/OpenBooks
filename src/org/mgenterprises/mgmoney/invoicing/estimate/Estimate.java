@@ -22,52 +22,19 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.item;
+package org.mgenterprises.mgmoney.invoicing.estimate;
+
+import org.mgenterprises.mgmoney.customer.Customer;
+import org.mgenterprises.mgmoney.invoicing.invoice.Invoice;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class Item {
-    private String name;
-    private String description;
-    private double basePrice;
-
-    public Item() {
+public class Estimate extends Invoice{
+    
+    public Estimate(int invoiceNumber, Customer customer) {
+        super(invoiceNumber, customer);
     }
-
-    public Item(String name, String description, double basePrice) {
-        this.name = name;
-        this.description = description;
-        this.basePrice = basePrice;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public double getBasePrice() {
-        return basePrice;
-    }
-
-    public void setBasePrice(double basePrice) {
-        this.basePrice = basePrice;
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
+    
 }

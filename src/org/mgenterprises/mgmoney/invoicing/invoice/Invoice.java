@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.invoice;
+package org.mgenterprises.mgmoney.invoicing.invoice;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

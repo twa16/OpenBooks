@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.item;
+package org.mgenterprises.mgmoney.invoicing.item;
 
 import java.util.ArrayList;
 import java.util.HashMap;

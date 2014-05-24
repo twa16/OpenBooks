@@ -29,7 +29,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import org.mgenterprises.mgmoney.customer.CustomerManager;
-import org.mgenterprises.mgmoney.invoice.InvoiceManager;
+import org.mgenterprises.mgmoney.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.mgmoney.util.CustomerUtils;
 
 /**

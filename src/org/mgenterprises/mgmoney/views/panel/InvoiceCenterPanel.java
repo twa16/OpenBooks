@@ -29,8 +29,8 @@ import javax.swing.table.DefaultTableModel;
 import org.mgenterprises.mgmoney.configuration.ConfigurationManager;
 import org.mgenterprises.mgmoney.customer.Customer;
 import org.mgenterprises.mgmoney.customer.CustomerManager;
-import org.mgenterprises.mgmoney.invoice.Invoice;
-import org.mgenterprises.mgmoney.invoice.InvoiceManager;
+import org.mgenterprises.mgmoney.invoicing.invoice.Invoice;
+import org.mgenterprises.mgmoney.invoicing.invoice.InvoiceManager;
 
 /**
  *

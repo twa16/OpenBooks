@@ -24,7 +24,7 @@
 
 package org.mgenterprises.mgmoney.util;
 
-import org.mgenterprises.mgmoney.invoice.Invoice;
+import org.mgenterprises.mgmoney.invoicing.invoice.Invoice;
 
 /**
  *

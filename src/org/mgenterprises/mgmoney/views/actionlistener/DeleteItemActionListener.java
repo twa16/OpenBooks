@@ -28,8 +28,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
 import org.mgenterprises.mgmoney.customer.CustomerManager;
-import org.mgenterprises.mgmoney.invoice.InvoiceManager;
-import org.mgenterprises.mgmoney.item.ItemManager;
+import org.mgenterprises.mgmoney.invoicing.invoice.InvoiceManager;
+import org.mgenterprises.mgmoney.invoicing.item.ItemManager;
 import org.mgenterprises.mgmoney.util.CustomerUtils;
 
 /**
