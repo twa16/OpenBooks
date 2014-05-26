@@ -26,17 +26,24 @@ package org.mgenterprises.mgmoney.invoicing.item;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.mgenterprises.mgmoney.saving.SaveServerConnection;
 import org.mgenterprises.mgmoney.saving.Saveable;
+import org.mgenterprises.mgmoney.saving.ServerBackedMap;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class ItemManager extends Saveable{
-    private HashMap<String, Item> items = new HashMap<String, Item>();
+public class ItemManager{
+    private ServerBackedMap<Item> items;
+
+    public ItemManager(SaveServerConnection saveServerConnection) {
+        this.items = new ServerBackedMap<Item>(new Item(),
+                                               saveServerConnection);
+    }
     
     public void addItem(Item item){
-        items.put(item.getName(), item);
+        items.put(item);
     }
     
     public void deleteItem(String itemName) {

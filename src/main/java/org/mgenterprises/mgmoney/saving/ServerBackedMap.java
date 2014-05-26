@@ -54,6 +54,17 @@ public class ServerBackedMap<V extends Saveable> {
     private byte[] salt;
     private CryptoUtils cryptoUtils = new CryptoUtils();
 
+    public ServerBackedMap(V v, SaveServerConnection saveServerConnection) {
+        this.v = v;
+        this.serverAddress = saveServerConnection.getServerAddress();
+        this.serverPort = saveServerConnection.getServerPort();
+        this.username = saveServerConnection.getUsername();
+        this.passwordHash = saveServerConnection.getPasswordHash();
+        GsonBuilder gsonBilder = new GsonBuilder();
+        gsonBilder.registerTypeAdapter(Saveable.class, new AbstractSaveableAdapter());
+        gson = gsonBilder.create();
+    }
+    
     public ServerBackedMap(V v, String serverAddress, short serverPort, String username, String passwordHash) {
         this.v = v;
         this.serverAddress = serverAddress;

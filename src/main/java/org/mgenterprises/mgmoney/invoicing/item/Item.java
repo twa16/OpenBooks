@@ -24,11 +24,13 @@
 
 package org.mgenterprises.mgmoney.invoicing.item;
 
+import org.mgenterprises.mgmoney.saving.Saveable;
+
 /**
  *
  * @author Manuel Gauto
  */
-public class Item {
+public class Item extends Saveable{
     private String name;
     private String description;
     private double basePrice;
@@ -68,6 +70,16 @@ public class Item {
 
     @Override
     public String toString() {
+        return name;
+    }
+
+    @Override
+    public String getSaveableModuleName() {
+        return this.getClass().getName();
+    }
+
+    @Override
+    public String getUniqueId() {
         return name;
     }
 }
