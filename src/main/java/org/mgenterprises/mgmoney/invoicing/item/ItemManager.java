@@ -24,6 +24,7 @@
 
 package org.mgenterprises.mgmoney.invoicing.item;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.mgenterprises.mgmoney.saving.SaveServerConnection;
@@ -42,34 +43,30 @@ public class ItemManager{
                                                saveServerConnection);
     }
     
-    public void addItem(Item item){
+    public void addItem(Item item) throws IOException{
         items.put(item);
     }
     
-    public void deleteItem(String itemName) {
+    public void deleteItem(String itemName) throws IOException {
         items.remove(itemName);
     }
     
-    public Item getItem(String name) {
+    public Item getItem(String name) throws IOException {
         return items.get(name);
     }
     
-    public void updateItem(Item item) {
+    public void updateItem(Item item) throws IOException {
         addItem(item);
     }
     
-    public void renameItem(String oldItemName, Item item){
+    public void renameItem(String oldItemName, Item item) throws IOException{
         items.remove(oldItemName);
         addItem(item);
     }
     
-    public Item[] getItems() {
-        Item[] temp = new Item[items.size()];
-        return items.values().toArray(temp);
-    }
-
-    @Override
-    public String getSaveableModuleName() {
-        return "ItemManager";
+    public Item[] getItems() throws IOException {
+        ArrayList<Item> itemsList =  items.values();
+        Item[] temp = new Item[itemsList.size()];
+        return itemsList.toArray(temp);
     }
 }

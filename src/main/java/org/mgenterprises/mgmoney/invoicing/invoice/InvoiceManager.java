@@ -24,41 +24,49 @@
 
 package org.mgenterprises.mgmoney.invoicing.invoice;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.mgenterprises.mgmoney.customer.Customer;
+import org.mgenterprises.mgmoney.saving.SaveServerConnection;
 import org.mgenterprises.mgmoney.saving.Saveable;
+import org.mgenterprises.mgmoney.saving.ServerBackedMap;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class InvoiceManager extends Saveable {
-    private HashMap<Integer, Invoice> invoices = new HashMap<Integer, Invoice>();
+public class InvoiceManager{
+    private ServerBackedMap<Invoice> invoices;
     private int highestID = 0;
+
+    public InvoiceManager(SaveServerConnection saveServerConnection) {
+         invoices = new ServerBackedMap<Invoice>(new Invoice(),
+                                                 saveServerConnection);
+    }
     
-    public void addInvoice(Invoice item){
-        invoices.put(item.getInvoiceNumber(), item);
+    public void addInvoice(Invoice item) throws IOException{
+        invoices.put(item);
         highestID++;
     }
     
-    public Invoice getInvoice(int id) {
-        return invoices.get(id);
+    public Invoice getInvoice(int id) throws IOException {
+        return invoices.get(String.valueOf(id));
     }
     
-    public void updateInvoice(Invoice invoice) {
-        invoices.put(invoice.getInvoiceNumber(), invoice);
+    public void updateInvoice(Invoice invoice) throws IOException {
+        invoices.put(invoice);
     }
     
-    public boolean exists(int id) {
-        return invoices.containsKey(id);
+    public boolean exists(int id) throws IOException {
+        return invoices.existsAndAllowed(String.valueOf(id));
     }
     
-    public int removeAllCustomerInvoices(Customer customer){
+    public int removeAllCustomerInvoices(Customer customer) throws IOException{
         int count = 0;
         for(Invoice invoice : invoices.values()) {
             if(invoice.getCustomerID()==customer.getCustomerNumber()){
-                invoices.remove(invoice.getInvoiceNumber());
+                invoices.remove(String.valueOf(invoice.getInvoiceNumber()));
                 count++;
             }
         }
@@ -69,12 +77,13 @@ public class InvoiceManager extends Saveable {
         return highestID;
     }
     
-    public Invoice[] getInvoices() {
-        Invoice[] temp = new Invoice[invoices.size()];
-        return invoices.values().toArray(temp);
+    public Invoice[] getInvoices() throws IOException {
+        ArrayList<Invoice> invoiceList = invoices.values();
+        Invoice[] invoices = new Invoice[invoiceList.size()];
+        return invoiceList.toArray(invoices);
     }
     
-    public Invoice[] getCustomerInvoices(Customer customer) {
+    public Invoice[] getCustomerInvoices(Customer customer) throws IOException {
         ArrayList<Invoice> customerInvoices = new ArrayList<Invoice>();
         for(Invoice invoice : invoices.values()) {
             if(invoice.getCustomerID()==customer.getCustomerNumber()){
@@ -83,10 +92,5 @@ public class InvoiceManager extends Saveable {
         }
         Invoice[] temp = new Invoice[customerInvoices.size()];
         return customerInvoices.toArray(temp);
-    }
- 
-    @Override
-    public String getSaveableModuleName() {
-        return "InvoiceManager";
     }
 }

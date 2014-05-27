@@ -24,6 +24,7 @@
 
 package org.mgenterprises.mgmoney.customer;
 
+import org.mgenterprises.mgmoney.saving.Saveable;
 import org.mgenterprises.mgmoney.util.State;
 import org.mgenterprises.mgmoney.views.RowView;
 
@@ -31,7 +32,7 @@ import org.mgenterprises.mgmoney.views.RowView;
  *
  * @author Manuel Gauto
  */
-public class Customer{
+public class Customer extends Saveable{
     private int customerNumber;
     private String companyName;
     private String contactFirst;
@@ -127,5 +128,15 @@ public class Customer{
         else {
             return contactFirst+" "+contactLast;
         }
+    }
+
+    @Override
+    public String getSaveableModuleName() {
+        return this.getClass().getName();
+    }
+
+    @Override
+    public String getUniqueId() {
+        return String.valueOf(getCustomerNumber());
     }
 }

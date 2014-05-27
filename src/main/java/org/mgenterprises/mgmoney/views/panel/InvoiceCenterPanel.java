@@ -24,13 +24,18 @@
 
 package org.mgenterprises.mgmoney.views.panel;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.mgenterprises.mgmoney.configuration.ConfigurationManager;
 import org.mgenterprises.mgmoney.customer.Customer;
 import org.mgenterprises.mgmoney.customer.CustomerManager;
 import org.mgenterprises.mgmoney.invoicing.invoice.Invoice;
 import org.mgenterprises.mgmoney.invoicing.invoice.InvoiceManager;
+import org.mgenterprises.mgmoney.views.actionlistener.DeleteCustomerActionListener;
 
 /**
  *
@@ -53,6 +58,7 @@ public class InvoiceCenterPanel extends javax.swing.JPanel {
     }
     
     private void loadInitialInvoiceList() {
+        try {
         Invoice[] invoices = invoiceManager.getInvoices();
         
         double total = 0.0;
@@ -75,6 +81,11 @@ public class InvoiceCenterPanel extends javax.swing.JPanel {
         this.invoiceTable.setModel(defaultTableModel);
         this.totalPaid.setText(String.valueOf(paid));
         this.totalUnpaid.setText(String.valueOf(total));
+        }
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
     }
 
     /**

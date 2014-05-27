@@ -24,6 +24,7 @@
 
 package org.mgenterprises.mgmoney.util;
 
+import java.io.IOException;
 import org.mgenterprises.mgmoney.customer.Customer;
 import org.mgenterprises.mgmoney.customer.CustomerManager;
 import org.mgenterprises.mgmoney.invoicing.invoice.InvoiceManager;
@@ -41,7 +42,7 @@ public class CustomerUtils {
         this.customerManager = customerManager;
     }
     
-    public int deleteCustomer(Customer customer){
+    public int deleteCustomer(Customer customer) throws IOException{
         int removed = invoiceManager.removeAllCustomerInvoices(customer);
         customerManager.deleteCustomer(customer.getCustomerNumber());
         return removed;

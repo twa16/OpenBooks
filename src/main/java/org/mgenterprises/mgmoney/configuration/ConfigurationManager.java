@@ -33,7 +33,7 @@ import org.mgenterprises.mgmoney.saving.Saveable;
  *
  * @author Manuel Gauto
  */
-public class ConfigurationManager extends Saveable{
+public class ConfigurationManager {
     HashMap<String, String> configuration = new HashMap<String, String>();
 
     public void loadDefaultConfiguration(){
@@ -49,11 +49,6 @@ public class ConfigurationManager extends Saveable{
             configuration.put(key, configurationValue);
             return true;
         }
-    }
-    
-    @Override
-    public String getSaveableModuleName() {
-        return "ConfigurationManager";
     }
     
     public String getValue(String key) {

@@ -27,6 +27,7 @@ package org.mgenterprises.mgmoney.views.panel;
 import com.google.gson.Gson;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -52,6 +53,7 @@ import org.mgenterprises.mgmoney.invoicing.invoice.Invoice;
 import org.mgenterprises.mgmoney.invoicing.invoice.InvoiceItem;
 import org.mgenterprises.mgmoney.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.mgmoney.invoicing.item.Item;
+import org.mgenterprises.mgmoney.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.mgmoney.views.actionlistener.TableCellListener;
 
 /**
@@ -89,39 +91,50 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
     }
     
     private void setupTableView(){
-        JComboBox itemComboBox = new JComboBox(allPossibleItems);
-        this.invoiceItemTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(itemComboBox));
-        clearFields();
-        if(invoiceManager.exists(invoiceManager.getHighestID()-1)) loadInvoiceData(invoiceManager.getInvoice(invoiceManager.getHighestID()-1));
-        else {
-           newButtonActionPerformed(null);
+        try {
+            JComboBox itemComboBox = new JComboBox(allPossibleItems);
+            this.invoiceItemTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(itemComboBox));
+            clearFields();
+            if(invoiceManager.exists(invoiceManager.getHighestID()-1)) loadInvoiceData(invoiceManager.getInvoice(invoiceManager.getHighestID()-1));
+            else {
+               newButtonActionPerformed(null);
+            }
+        }
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }
     
     private void loadInvoiceData(Invoice invoice){
-        
-        DefaultTableModel defaultTableModel = (DefaultTableModel) this.invoiceItemTable.getModel();
-        //Top
-        this.customerCombobox.setSelectedItem(customerManager.getCustomer(invoice.getCustomerID()));
-        this.invoiceNumberField.setText(String.valueOf(invoice.getInvoiceNumber()));
-        this.poNumberField.setText(String.valueOf(invoice.getPurchaseOrderNumber()));
-        this.dateCreatedField.setText(dateFormat.format(invoice.getDateCreated()));
-        this.dateDueField.setText(dateFormat.format(invoice.getDateDue()));
-        defaultTableModel.setRowCount(0);
-        for(InvoiceItem invoiceItem : invoice.getInvoiceItems()){
-            defaultTableModel.addRow(invoiceItem.formatForTable());
-        }
-        //add an empty row so they can actually edit
-        ((DefaultTableModel)this.invoiceItemTable.getModel()).addRow(new String[]{});
-        
-        
-        //Bottom Row
-        this.totalPaid.setText(String.valueOf(invoice.getAmountPaid()));
-        if(invoice.getDatePaid().getTime()!=0) this.datePaid.setText(dateFormat.format(invoice.getDatePaid()));
-        
-        this.invoiceItemTable.setModel(defaultTableModel);
-    }
+        try {
+            DefaultTableModel defaultTableModel = (DefaultTableModel) this.invoiceItemTable.getModel();
+            //Top
+            this.customerCombobox.setSelectedItem(customerManager.getCustomer(invoice.getCustomerID()));
+            this.invoiceNumberField.setText(String.valueOf(invoice.getInvoiceNumber()));
+            this.poNumberField.setText(String.valueOf(invoice.getPurchaseOrderNumber()));
+            this.dateCreatedField.setText(dateFormat.format(invoice.getDateCreated()));
+            this.dateDueField.setText(dateFormat.format(invoice.getDateDue()));
+            defaultTableModel.setRowCount(0);
+            for(InvoiceItem invoiceItem : invoice.getInvoiceItems()){
+                defaultTableModel.addRow(invoiceItem.formatForTable());
+            }
+            //add an empty row so they can actually edit
+            ((DefaultTableModel)this.invoiceItemTable.getModel()).addRow(new String[]{});
 
+
+            //Bottom Row
+            this.totalPaid.setText(String.valueOf(invoice.getAmountPaid()));
+            if(invoice.getDatePaid().getTime()!=0) this.datePaid.setText(dateFormat.format(invoice.getDatePaid()));
+
+            this.invoiceItemTable.setModel(defaultTableModel);
+    
+        }
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -163,12 +176,18 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
         customerTextArea.setRows(5);
         jScrollPane1.setViewportView(customerTextArea);
 
-        customerCombobox.setModel(new javax.swing.DefaultComboBoxModel(customerManager.getCustomers()));
-        customerCombobox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                customerComboboxActionPerformed(evt);
-            }
-        });
+        try {
+            customerCombobox.setModel(new javax.swing.DefaultComboBoxModel(customerManager.getCustomers()));
+            customerCombobox.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    customerComboboxActionPerformed(evt);
+                }
+            });
+        }
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
 
         invoiceNumberField.setText("-1");
 
@@ -306,7 +325,7 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
                         .addComponent(previousButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(nextButton))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(saveButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -392,24 +411,36 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_customerComboboxActionPerformed
 
     private void previousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previousButtonActionPerformed
-        int last = Integer.parseInt(this.invoiceNumberField.getText())-1;
-        if(last>=0){
-            this.invoiceNumberField.setText(String.valueOf(last));
+        try {
+            int last = Integer.parseInt(this.invoiceNumberField.getText())-1;
+            if(last>=0){
+                this.invoiceNumberField.setText(String.valueOf(last));
+                clearFields();
+                if(invoiceManager.exists(last)){
+                    Invoice invoice = invoiceManager.getInvoice(last);
+                    loadInvoiceData(invoice);
+                }
+            }
+        }
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
+    }//GEN-LAST:event_previousButtonActionPerformed
+
+    private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
+        try {
+            int last = Integer.parseInt(this.invoiceNumberField.getText())+1;
+            if(last<=invoiceManager.getHighestID()) this.invoiceNumberField.setText(String.valueOf(last));
             clearFields();
             if(invoiceManager.exists(last)){
                 Invoice invoice = invoiceManager.getInvoice(last);
                 loadInvoiceData(invoice);
             }
         }
-    }//GEN-LAST:event_previousButtonActionPerformed
-
-    private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
-        int last = Integer.parseInt(this.invoiceNumberField.getText())+1;
-        if(last<=invoiceManager.getHighestID()) this.invoiceNumberField.setText(String.valueOf(last));
-        clearFields();
-        if(invoiceManager.exists(last)){
-            Invoice invoice = invoiceManager.getInvoice(last);
-            loadInvoiceData(invoice);
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }//GEN-LAST:event_nextButtonActionPerformed
 

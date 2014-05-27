@@ -24,8 +24,18 @@
 
 package org.mgenterprises.mgmoney;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.File;
+import java.net.UnknownHostException;
+import org.mgenterprises.mgmoney.saving.AbstractSaveableAdapter;
 import org.mgenterprises.mgmoney.saving.SaveFile;
+import org.mgenterprises.mgmoney.saving.SaveServerConnection;
+import org.mgenterprises.mgmoney.saving.Saveable;
+import org.mgenterprises.mgmoney.saving.server.SaveManager;
+import org.mgenterprises.mgmoney.saving.server.SaveServer;
+import org.mgenterprises.mgmoney.saving.server.users.UserManager;
+import org.mgenterprises.mgmoney.saving.server.users.UserProfile;
 import org.mgenterprises.mgmoney.views.MainGUI;
 
 /**
@@ -35,10 +45,23 @@ import org.mgenterprises.mgmoney.views.MainGUI;
 public class Main {
     private static MainGUI mainGUI;
     
-    public static void main(String[] args) {
-        SaveFile saveFile = new SaveFile(new File("save.mgm"));
-        mainGUI = new MainGUI(saveFile);
-        mainGUI.setVisible(true);
+    public static void main(String[] args) throws UnknownHostException {
+        /*File file = new File("/home/mgauto/Documents/MGM/");
+        SaveManager saveManager = new SaveManager(file);
+        UserManager userManager = new UserManager(new File(file+File.separator+"org.mgenterprises.mgmoney.saving.server.users.UserProfile"));
+        short port = 6969;
+        SaveServer saveServer = new SaveServer("127.0.0.1", port, userManager, saveManager);
+        saveServer.startServer();
+        
+        SaveServerConnection saveServerConnection = new SaveServerConnection("127.0.0.1", port, "admin", "$2a$10$vhtSFeYrU1OX3pIvuno7u.8MQHI7LRJTJ9ucUt/ww1P4CnOYOwIH.");
+        mainGUI = new MainGUI(saveServerConnection);
+        mainGUI.setVisible(true);*/
+        UserProfile user = new UserProfile("testuser", "testhash");
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(Saveable.class, new AbstractSaveableAdapter());
+        //gsonBuilder.registerTypeAdapter(Saveable[].class, new AbstractSaveableArrayAdapter());
+        Gson gson = gsonBuilder.create();
+        System.out.println(gson.toJson(user));
     }
     
     public static MainGUI getInstance(){

@@ -25,15 +25,18 @@
 package org.mgenterprises.mgmoney.saving.server.users;
 
 import java.util.ArrayList;
+import org.mgenterprises.mgmoney.saving.Saveable;
+import org.mgenterprises.mgmoney.saving.server.access.ACTION;
+import org.mgenterprises.mgmoney.saving.server.access.AccessRight;
 
 /**
  *
  * @author mgauto
  */
-public class UserProfile {
+public class UserProfile extends Saveable{
     private String username;
     private String passwordHash;
-    private ArrayList<String> accessRights = new ArrayList<String>();
+    private ArrayList<AccessRight> accessRights = new ArrayList<AccessRight>();
 
     public UserProfile(String username, String passwordHash) {
         this.username = username;
@@ -56,19 +59,35 @@ public class UserProfile {
         this.passwordHash = passwordHash;
     }
 
-    public ArrayList<String> getAccessRights() {
+    public ArrayList<AccessRight> getAccessRights() {
         return accessRights;
     }
 
-    public void setAccessRights(ArrayList<String> accessRights) {
+    public void setAccessRights(ArrayList<AccessRight> accessRights) {
         this.accessRights = accessRights;
     }
     
-    public void addAccessRight(String accessRight) {
-        this.accessRights.add(accessRight);
+    public void addAccessRight(String accessRight, ACTION action) {
+        this.accessRights.add(new AccessRight(accessRight, action));
     }
     
-    public boolean hasAccessRight(String accessRight) {
-        return this.accessRights.contains(accessRight);
+    public boolean hasAccessRight(String accessRightString, ACTION action) {
+        boolean hasRight = false;
+        for(AccessRight accessRight : accessRights) {
+            if(accessRight.getType().equals(accessRightString) && accessRight.getAction()==action){
+                hasRight = true;
+            }
+        }
+        return hasRight;
+    }
+
+    @Override
+    public String getSaveableModuleName() {
+        return this.getClass().getName();
+    }
+
+    @Override
+    public String getUniqueId() {
+        return username;
     }
 }

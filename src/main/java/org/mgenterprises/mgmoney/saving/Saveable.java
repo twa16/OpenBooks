@@ -24,7 +24,6 @@
 
 package org.mgenterprises.mgmoney.saving;
 
-import java.io.Serializable;
 
 /**
  *
@@ -35,14 +34,6 @@ public abstract class Saveable{
     private boolean locked = false;
     
     public Saveable() {
-    }
-    
-    public void setLocked(boolean locked) {
-        this.locked = locked;
-    }
-    
-    public boolean isLocked() {
-        return locked;
     }
     
     public abstract String getSaveableModuleName();

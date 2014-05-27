@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
+import org.mgenterprises.mgmoney.saving.server.access.ACTION;
 import org.mgenterprises.mgmoney.saving.server.packets.UserAuth;
 import org.mgenterprises.mgmoney.saving.server.security.BCrypt;
 import org.mgenterprises.mgmoney.saving.server.security.CryptoUtils;
@@ -110,13 +111,13 @@ public class UserManager {
         return userProfiles.get(username);
     }
     
-    public boolean userHasAccessRight(String username, String accessRight) {
+    public boolean userHasAccessRight(String username, String accessRight, ACTION action) {
         if(username.equals("admin")) {
             return true;
         }
         try {
             UserProfile userProfile = userProfiles.get(username);
-            return userProfile.hasAccessRight(accessRight);
+            return userProfile.hasAccessRight(accessRight, action);
         } catch (ExecutionException ex) {
             Logger.getLogger(UserManager.class.getName()).log(Level.SEVERE, null, ex);
             return false;

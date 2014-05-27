@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.mgenterprises.mgmoney.saving.AbstractSaveableAdapter;
+import org.mgenterprises.mgmoney.saving.AbstractSaveableArrayAdapter;
 import org.mgenterprises.mgmoney.saving.Saveable;
 
 /**
@@ -49,18 +50,22 @@ public class SaveManager {
 
     public SaveManager(File saveRootDirectory) {
         this.saveRootDirectory = saveRootDirectory;
-        GsonBuilder gsonBilder = new GsonBuilder();
-        gsonBilder.registerTypeAdapter(Saveable.class, new AbstractSaveableAdapter());
-        gson = gsonBilder.create();
+         GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(Saveable.class, new AbstractSaveableAdapter());
+        //gsonBuilder.registerTypeAdapter(Saveable[].class, new AbstractSaveableArrayAdapter());
+        gson = gsonBuilder.create();
     }
     
     public boolean persistSaveable(String holder, Saveable saveable) {
+        File saveDir = new File(saveRootDirectory + File.separator + saveable.getSaveableModuleName());
         File saveFile = new File(saveRootDirectory + File.separator + saveable.getSaveableModuleName() + File.separator + saveable.getUniqueId());
         try {
-            if(!getLockHolder(saveable.getSaveableModuleName(), saveable.getUniqueId()).equals(holder)) {
+            if(hasLock(saveable.getSaveableModuleName(), saveable.getUniqueId()) && !getLockHolder(saveable.getSaveableModuleName(), saveable.getUniqueId()).equals(holder)) {
                 return false;
             }
             else {
+                saveDir.mkdirs();
+                saveFile.createNewFile();
                 BufferedWriter bw = new BufferedWriter(new FileWriter(saveFile));
                 String json = gson.toJson(saveable);
                 bw.write(json);
@@ -80,9 +85,15 @@ public class SaveManager {
         FileUtils.deleteQuietly(saveFile);
     }
     
+    public void removeSaveable(String type, String id) {
+        File saveFile = new File(saveRootDirectory + File.separator + type + File.separator + id +".lock");
+        FileUtils.deleteQuietly(saveFile);
+    }
+    
     public void createLock(String holder, String type, String id) {
         File saveFile = new File(saveRootDirectory + File.separator + type + File.separator + id +".lock");
         try {
+            saveFile.createNewFile();
             FileWriter fw = new FileWriter(saveFile);
             fw.append(holder);
             fw.append("\n");
@@ -91,6 +102,10 @@ public class SaveManager {
         } catch (IOException ex) {
             Logger.getLogger(SaveManager.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public boolean hasLock(String type, String id) {
+        return !getLockHolder(type, id).equals("");
     }
     
     public String getLockHolder(String type, String id) {
@@ -128,5 +143,24 @@ public class SaveManager {
             Logger.getLogger(SaveManager.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
+    }
+    
+    public Saveable[] getAllSaveables(String type) {
+        File dir = new File(saveRootDirectory + File.separator + type);
+        if(!dir.exists()) {
+            return new Saveable[0];
+        }
+        File[] files = dir.listFiles();
+        Saveable[] saveables = new Saveable[files.length];
+        for(int i = 0; i < saveables.length; i++) {
+            String name = files[i].getName();
+            saveables[i] = getSaveable(type, name);
+        }
+        return saveables;
+    }
+    
+    public int getSaveableCount(String type) {
+        File[] files = new File(saveRootDirectory + File.separator + type).listFiles();
+        return files.length;
     }
 }

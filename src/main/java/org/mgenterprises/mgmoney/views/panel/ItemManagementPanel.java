@@ -24,7 +24,11 @@
 
 package org.mgenterprises.mgmoney.views.panel;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -47,14 +51,20 @@ public class ItemManagementPanel extends javax.swing.JPanel {
     }
     
     private void loadItems(){
-        DefaultTableModel defaultTableModel = (DefaultTableModel) itemTable.getModel();
-        defaultTableModel.setRowCount(0);
-        for(Item item : itemManager.getItems()){
-            Object[] data = new Object[3];
-            data[0]=item.getName();
-            data[1]=item.getDescription();
-            data[2]=item.getBasePrice();
-            defaultTableModel.addRow(data);
+        try {
+            DefaultTableModel defaultTableModel = (DefaultTableModel) itemTable.getModel();
+            defaultTableModel.setRowCount(0);
+            for(Item item : itemManager.getItems()){
+                Object[] data = new Object[3];
+                data[0]=item.getName();
+                data[1]=item.getDescription();
+                data[2]=item.getBasePrice();
+                defaultTableModel.addRow(data);
+            }
+        }
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }
 
@@ -226,18 +236,24 @@ public class ItemManagementPanel extends javax.swing.JPanel {
 
     private String oldItemName = "";
     private void itemTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_itemTableMouseClicked
-        int row = itemTable.getSelectedRow();
-        //Make sure a selection was made
-        if(row==-1) clearFields();
-        
-        //Populate fields
-        String itemName = (String) itemTable.getValueAt(row, 0);
-        this.itemNameField.setText(itemName);
-        //Cache itemname in case it is changed
-        oldItemName = itemName;
-        Item item = itemManager.getItem(itemName);
-        this.descriptionField.setText(item.getDescription());
-        this.basePriceField.setText(String.valueOf(item.getBasePrice()));
+        try {
+            int row = itemTable.getSelectedRow();
+            //Make sure a selection was made
+            if(row==-1) clearFields();
+
+            //Populate fields
+            String itemName = (String) itemTable.getValueAt(row, 0);
+            this.itemNameField.setText(itemName);
+            //Cache itemname in case it is changed
+            oldItemName = itemName;
+            Item item = itemManager.getItem(itemName);
+            this.descriptionField.setText(item.getDescription());
+            this.basePriceField.setText(String.valueOf(item.getBasePrice()));
+        }
+        catch(IOException ex){
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
     }//GEN-LAST:event_itemTableMouseClicked
 
     private void clearFields(){
@@ -247,19 +263,25 @@ public class ItemManagementPanel extends javax.swing.JPanel {
     }
     
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        String name = itemNameField.getText();
-        String description = descriptionField.getText();
-        double basePrice = Double.parseDouble(basePriceField.getText());
-        Item item = new Item();
-        item.setName(name);
-        item.setDescription(description);
-        item.setBasePrice(basePrice);
-        if(oldItemName.equals(itemNameField.getText())){
-            itemManager.updateItem(item);
-        } else{
-            itemManager.renameItem(oldItemName, item);
+        try {
+            String name = itemNameField.getText();
+            String description = descriptionField.getText();
+            double basePrice = Double.parseDouble(basePriceField.getText());
+            Item item = new Item();
+            item.setName(name);
+            item.setDescription(description);
+            item.setBasePrice(basePrice);
+            if(oldItemName.equals(itemNameField.getText())){
+                itemManager.updateItem(item);
+            } else{
+                itemManager.renameItem(oldItemName, item);
+            }
+            loadItems();
         }
-        loadItems();
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void itemTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_itemTableMouseReleased

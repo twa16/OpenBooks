@@ -26,6 +26,9 @@ package org.mgenterprises.mgmoney.views.actionlistener;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.mgenterprises.mgmoney.customer.CustomerManager;
 import org.mgenterprises.mgmoney.invoicing.invoice.InvoiceManager;
@@ -47,9 +50,15 @@ public class DeleteItemActionListener  implements ActionListener {
     
     @Override
     public void actionPerformed(ActionEvent ae) {
-        int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete "+itemName+"?", "Warning!", JOptionPane.YES_NO_OPTION);
-        if(dialogResult == JOptionPane.YES_OPTION){
-            itemManager.deleteItem(itemName);
+        try {
+            int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete "+itemName+"?", "Warning!", JOptionPane.YES_NO_OPTION);
+            if(dialogResult == JOptionPane.YES_OPTION){
+                itemManager.deleteItem(itemName);
+            }
+        }
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }
     

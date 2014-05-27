@@ -26,8 +26,12 @@ package org.mgenterprises.mgmoney.views.panel;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -59,20 +63,25 @@ public class CustomerUpdatePanel extends javax.swing.JPanel {
     }
     
     public void processData(){
-        DefaultTableModel tableModel = (DefaultTableModel) customerTable.getModel();
-        tableModel.setRowCount(0);
-        for(Customer customer : customerManager.getCustomers()) {
-            Object[] data = new Object[4];
-            data[0]=customer.getCustomerNumber();
-            data[1]=customer.getCompanyName();
-            data[2]=customer.getState().toString();
-            Invoice[] invoiceItems = invoiceManager.getCustomerInvoices(customer);
-            data[3] = new InvoiceUtils().getInvoiceSetTotal(invoiceItems);
-            tableModel.addRow(data);
+        try {
+            DefaultTableModel tableModel = (DefaultTableModel) customerTable.getModel();
+            tableModel.setRowCount(0);
+            for(Customer customer : customerManager.getCustomers()) {
+                Object[] data = new Object[4];
+                data[0]=customer.getCustomerNumber();
+                data[1]=customer.getCompanyName();
+                data[2]=customer.getState().toString();
+                Invoice[] invoiceItems = invoiceManager.getCustomerInvoices(customer);
+                data[3] = new InvoiceUtils().getInvoiceSetTotal(invoiceItems);
+                tableModel.addRow(data);
+            }
+            customerTable.setModel(tableModel);
+            customerTable.repaint();
         }
-        customerTable.setModel(tableModel);
-        customerTable.repaint();
-        
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
     }
 
     /**
@@ -305,25 +314,31 @@ public class CustomerUpdatePanel extends javax.swing.JPanel {
     }
     
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        if(this.idField.getText().equals("000000")) return;
-        Customer customer = new Customer();
-        customer.setCustomerNumber(Integer.parseInt(this.idField.getText()));
-        customer.setCompanyName(this.companyNameField.getText());
-        customer.setContactFirst(this.contactFirstField.getText());
-        customer.setContactLast(this.contactLastField.getText());
-        customer.setPhoneNumber(this.phoneNumberField.getText());
-        customer.setStreetAddress(this.streetAddressField.getText());
-        customer.setCityName(this.cityField.getText());
-        customer.setState((State)this.stateCombo.getSelectedItem());
-        
-        if(customerManager.exists(customer.getCustomerNumber())){
-            customerManager.updateCustomer(customer);
+        try {
+            if(this.idField.getText().equals("000000")) return;
+            Customer customer = new Customer();
+            customer.setCustomerNumber(Integer.parseInt(this.idField.getText()));
+            customer.setCompanyName(this.companyNameField.getText());
+            customer.setContactFirst(this.contactFirstField.getText());
+            customer.setContactLast(this.contactLastField.getText());
+            customer.setPhoneNumber(this.phoneNumberField.getText());
+            customer.setStreetAddress(this.streetAddressField.getText());
+            customer.setCityName(this.cityField.getText());
+            customer.setState((State)this.stateCombo.getSelectedItem());
+
+            if(customerManager.exists(customer.getCustomerNumber())){
+                customerManager.updateCustomer(customer);
+            }
+            else {
+                customerManager.addCustomer(customer);
+            }
+            clearFields();
+            processData();
         }
-        else {
-            customerManager.addCustomer(customer);
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
-        clearFields();
-        processData();
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void customerTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_customerTableMouseClicked
@@ -358,6 +373,7 @@ public class CustomerUpdatePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_customerTableMouseReleased
 
     public void setFields(int row){
+        try {
         //Get Customer ID from Table
         int cusId = (int) customerTable.getValueAt(row, 0);
         this.idField.setText(String.valueOf(cusId));
@@ -370,6 +386,12 @@ public class CustomerUpdatePanel extends javax.swing.JPanel {
         this.streetAddressField.setText(customer.getStreetAddress());
         this.cityField.setText(customer.getCityName());
         this.stateCombo.setSelectedItem(customer.getState());
+    
+        }
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

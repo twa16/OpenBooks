@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -38,6 +39,8 @@ import org.mgenterprises.mgmoney.customer.CustomerManager;
 import org.mgenterprises.mgmoney.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.mgmoney.invoicing.item.ItemManager;
 import org.mgenterprises.mgmoney.saving.SaveFile;
+import org.mgenterprises.mgmoney.saving.SaveServerConnection;
+import org.mgenterprises.mgmoney.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.mgmoney.views.panel.CustomerUpdatePanel;
 import org.mgenterprises.mgmoney.views.panel.InvoiceCenterPanel;
 import org.mgenterprises.mgmoney.views.panel.InvoiceUpdatePanel;
@@ -49,15 +52,15 @@ import org.mgenterprises.mgmoney.views.panel.ItemManagementPanel;
  */
 public class MainGUI extends javax.swing.JFrame implements WindowListener{
     private ConfigurationManager configurationManager = new ConfigurationManager();
-    private CustomerManager customerManager = new CustomerManager();
-    private ItemManager itemManager = new ItemManager();
-    private InvoiceManager invoiceManager = new InvoiceManager();
+    private CustomerManager customerManager;
+    private ItemManager itemManager;
+    private InvoiceManager invoiceManager;
     
     private SaveFile saveFile;
     /**
      * Creates new form MainGUI
      */
-    public MainGUI(SaveFile saveFile) {
+    public MainGUI(SaveServerConnection saveServerConnection) {
         try {
             UIManager.setLookAndFeel(
                     UIManager.getSystemLookAndFeelClassName());
@@ -72,10 +75,9 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
         }
         this.saveFile = saveFile;
         loadSave();
-        saveFile.registerSaveable(configurationManager);
-        saveFile.registerSaveable(itemManager);
-        saveFile.registerSaveable(invoiceManager);
-        saveFile.registerSaveable(customerManager);
+        customerManager = new CustomerManager(saveServerConnection);
+        itemManager = new ItemManager(saveServerConnection);
+        invoiceManager = new InvoiceManager(saveServerConnection);
         initComponents();
         addWindowListener(this);
     }
@@ -104,31 +106,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
     }
     
     private void loadSave() {
-        try {
-            saveFile.load();
-        } catch (IOException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
         
-        if(saveFile.exists(configurationManager.getSaveableModuleName())) {
-            configurationManager = (ConfigurationManager) saveFile.getSaveableModule(configurationManager.getSaveableModuleName());
-            System.out.println("ConfigurationManager loaded from save!");
-        }
-        if(saveFile.exists(customerManager.getSaveableModuleName())) {
-            customerManager = (CustomerManager) saveFile.getSaveableModule(customerManager.getSaveableModuleName());
-            System.out.println("CustomerManager loaded from save!");
-        }
-        if(saveFile.exists(itemManager.getSaveableModuleName())) {
-            itemManager = (ItemManager) saveFile.getSaveableModule(itemManager.getSaveableModuleName());
-            System.out.println("ItemManager loaded from save!");
-        }
-        if(saveFile.exists(invoiceManager.getSaveableModuleName())) {
-            invoiceManager = (InvoiceManager) saveFile.getSaveableModule(invoiceManager.getSaveableModuleName());
-            System.out.println("InvoiceManager loaded from save!");
-        }
-        configurationManager.loadDefaultConfiguration();
     }
 
     /**
@@ -229,7 +207,13 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
     }//GEN-LAST:event_invoiceCenterButtonActionPerformed
 
     private void createInvoiceMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createInvoiceMenuItemActionPerformed
-        changePanel(new InvoiceUpdatePanel(configurationManager, customerManager, invoiceManager, itemManager.getItems()));
+        try {
+            changePanel(new InvoiceUpdatePanel(configurationManager, customerManager, invoiceManager, itemManager.getItems()));
+        }
+        catch(IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
     }//GEN-LAST:event_createInvoiceMenuItemActionPerformed
 
     private void itemManagerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemManagerMenuItemActionPerformed
@@ -250,11 +234,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
 
     @Override
     public void windowClosing(WindowEvent we) {
-         try {
-            saveFile.save();
-        } catch (IOException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        
     }
 
     @Override

@@ -27,12 +27,13 @@ package org.mgenterprises.mgmoney.invoicing.invoice;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.mgenterprises.mgmoney.customer.Customer;
+import org.mgenterprises.mgmoney.saving.Saveable;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class Invoice {
+public class Invoice extends Saveable{
     private int invoiceNumber;
     private Date dateCreated;
     private double amountPaid;
@@ -45,6 +46,10 @@ public class Invoice {
     public Invoice(int invoiceNumber, Customer customer) {
         this.invoiceNumber = invoiceNumber;
         this.customerID = customer.getCustomerNumber();
+    }
+
+    public Invoice() {
+        
     }
 
     public int getInvoiceNumber() {
@@ -117,5 +122,15 @@ public class Invoice {
             total+=invoiceItems.getPrice();
         }
         return total;
+    }
+
+    @Override
+    public String getSaveableModuleName() {
+        return this.getClass().getName();
+    }
+
+    @Override
+    public String getUniqueId() {
+        return String.valueOf(getInvoiceNumber());
     }
 }

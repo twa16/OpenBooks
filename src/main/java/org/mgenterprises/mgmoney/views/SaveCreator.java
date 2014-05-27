@@ -26,6 +26,9 @@ package org.mgenterprises.mgmoney.views;
 
 import java.io.File;
 import javax.swing.JFileChooser;
+import org.mgenterprises.mgmoney.saving.server.SaveManager;
+import org.mgenterprises.mgmoney.saving.server.security.BCrypt;
+import org.mgenterprises.mgmoney.saving.server.users.UserProfile;
 
 /**
  *
@@ -76,6 +79,11 @@ public class SaveCreator extends javax.swing.JFrame {
         pathLabel.setText("Path:");
 
         saveButton.setText("Create Save");
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
 
         findButton.setText("Find");
         findButton.addActionListener(new java.awt.event.ActionListener() {
@@ -154,6 +162,20 @@ public class SaveCreator extends javax.swing.JFrame {
         this.pathField.setText(chooser.getSelectedFile()+File.separator);
     }
     }//GEN-LAST:event_findButtonActionPerformed
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        String username = usernameField.getText();
+        String salt = BCrypt.gensalt();
+        String passHash = BCrypt.hashpw(passwordField.getText(), salt);
+        UserProfile userProfile = new UserProfile(username, passHash);
+        File dataDir = new File(pathField.getText());
+        dataDir.mkdirs();
+        SaveManager saveManager = new SaveManager(dataDir);
+        saveManager.persistSaveable("SERVER", userProfile);
+        //saveManager.removeLock(userProfile.getSaveableModuleName(), userProfile.getUniqueId());
+        //this.setVisible(false);
+        //this.dispose();
+    }//GEN-LAST:event_saveButtonActionPerformed
 
     /**
      * @param args the command line arguments

@@ -24,50 +24,55 @@
 
 package org.mgenterprises.mgmoney.customer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.mgenterprises.mgmoney.invoicing.invoice.Invoice;
+import org.mgenterprises.mgmoney.saving.SaveServerConnection;
 import org.mgenterprises.mgmoney.saving.Saveable;
+import org.mgenterprises.mgmoney.saving.ServerBackedMap;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class CustomerManager extends Saveable{
+public class CustomerManager{
     private int highestId = 0;
-    private HashMap<Integer, Customer> customers = new HashMap<Integer, Customer>();
+    private ServerBackedMap<Customer> customers;
     
-    public void addCustomer(Customer item){
-        customers.put(item.getCustomerNumber(), item);
+    public CustomerManager(SaveServerConnection saveServerConnection) {
+         customers = new ServerBackedMap<Customer>(new Customer(),
+                                                 saveServerConnection);
+    }
+    
+    public void addCustomer(Customer item) throws IOException{
+        customers.put(item);
         highestId++;
     }
     
-    public Customer[] getCustomers() {
-        Customer[] temp = new Customer[customers.size()];
-        return customers.values().toArray(temp);
+    public Customer[] getCustomers() throws IOException {
+        ArrayList<Customer> customerList = customers.values();
+        Customer[] temp = new Customer[customerList.size()];
+        return customerList.toArray(temp);
     }
     
-    public void updateCustomer(Customer customer) {
-        customers.put(customer.getCustomerNumber(), customer);
+    public void updateCustomer(Customer customer) throws IOException {
+        customers.put(customer);
     }
     
-    public boolean exists(int id){
-        return customers.containsKey(id);
+    public boolean exists(int id) throws IOException{
+        return customers.existsAndAllowed(String.valueOf(id));
     }
     
-    public void deleteCustomer(int id) {
-        customers.remove(id);
+    public void deleteCustomer(int id) throws IOException {
+        customers.remove(String.valueOf(id));
     }
     
-    public Customer getCustomer(int id){
-        return customers.get(id);
+    public Customer getCustomer(int id) throws IOException{
+        return customers.get(String.valueOf(id));
     }
 
     public int getHighestId() {
         return highestId;
-    }
-
-    @Override
-    public String getSaveableModuleName() {
-        return "CustomerManager";
     }
 }

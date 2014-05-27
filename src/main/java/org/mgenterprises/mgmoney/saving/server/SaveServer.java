@@ -24,6 +24,8 @@
 
 package org.mgenterprises.mgmoney.saving.server;
 
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.BufferedReader;
@@ -35,11 +37,18 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.mgenterprises.mgmoney.saving.AbstractSaveableAdapter;
+import org.mgenterprises.mgmoney.saving.AbstractSaveableArrayAdapter;
 import org.mgenterprises.mgmoney.saving.Saveable;
+import org.mgenterprises.mgmoney.saving.server.access.ACTION;
+import org.mgenterprises.mgmoney.saving.server.security.CryptoUtils;
 import org.mgenterprises.mgmoney.saving.server.security.SecureMessage;
 import org.mgenterprises.mgmoney.saving.server.users.UserManager;
 
@@ -52,6 +61,8 @@ public class SaveServer implements Runnable{
     private short port;
     private boolean running = true;
     
+    private SecureRandom secureRandom = new SecureRandom();
+    private CryptoUtils cryptoUtils = new CryptoUtils();
     private Gson gson;
     private UserManager userManager;
     private SaveManager saveManager;
@@ -61,13 +72,15 @@ public class SaveServer implements Runnable{
         this.bindAddress = InetAddress.getByName(listenAddress);
         this.userManager = userManager;
         this.saveManager = saveManager;
-        GsonBuilder gsonBilder = new GsonBuilder();
-        gsonBilder.registerTypeAdapter(Saveable.class, new AbstractSaveableAdapter());
-        gson = gsonBilder.create();
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(Saveable.class, new AbstractSaveableAdapter());
+        //gsonBuilder.registerTypeAdapter(Saveable[].class, new AbstractSaveableArrayAdapter());
+        gson = gsonBuilder.create();
     }
     
-    private void startServer() {
-        
+    public void startServer() {
+        Thread thread = new Thread(this);
+        thread.start();
     }
 
     @Override
@@ -88,7 +101,7 @@ public class SaveServer implements Runnable{
                 try {
                     request = userManager.decryptMessage(secureMessage);
                 } catch (InvalidKeySpecException ex) {
-                    bw.write("ERROR");
+                    bw.write("500");
                     bw.newLine();
                     bw.flush();
                     bw.close();
@@ -97,9 +110,10 @@ public class SaveServer implements Runnable{
                 }
                 if(request.length()!=0) {
                     String[] requestParts = request.split(Saveable.DELIMITER);
-
+                    
+                    System.out.println(Arrays.toString(requestParts));
                     String verb = requestParts[0];
-                    String response = "ERROR";
+                    String response = "500";
                     switch(verb) {
                         case "GET":
                             response = processGET(username, requestParts);
@@ -107,13 +121,30 @@ public class SaveServer implements Runnable{
                         case "PUT":
                             response = processPUT(username, requestParts);
                             break;
+                        case "REMOVE":
+                            response = processREMOVE(username, requestParts);
+                            break;
+                        case "SIZE":
+                            response = processSIZE(username, requestParts);
+                            break;
                         case "RELEASE":
                             response = processRELEASE(username, requestParts);
                             break;
                     }
-                    bw.write(response);
-                    bw.newLine();
-                    bw.flush();
+                    try {
+                        byte[] salt = cryptoUtils.getSalt(secureRandom);
+                        String password=userManager.getUserProfile(username).getPasswordHash();//Hashing.sha256().hashString(userManager.getUserProfile(username).getPasswordHash()+System.currentTimeMillis(), Charsets.UTF_8).toString();
+                        secureMessage = cryptoUtils.encrypt(username, response, password, salt, false);
+                        bw.write(gson.toJson(secureMessage));
+                        bw.newLine();
+                        bw.flush();
+                    } catch (ExecutionException ex) {
+                        Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvalidKeySpecException ex) {
+                        Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchAlgorithmException ex) {
+                        Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     bw.close();
                     br.close();
                     socket.close();
@@ -127,38 +158,97 @@ public class SaveServer implements Runnable{
     private String processGET(String user, String[] requestParts) {
         String type = requestParts[1];
         String id = requestParts[2];
-        saveManager.createLock(user, type, id);
-        Saveable saveable = saveManager.getSaveable(type, id);
-        if(saveable!=null){
-            Logger.getLogger("SaveServer").log(Level.INFO, "GET from {0} for t: {1} i: {2}", new Object[]{user, type, id});
-            return gson.toJson(saveable);
+        if(userManager.userHasAccessRight(user, type, ACTION.GET)) {
+            if(id.equals("ALL")) {
+                Saveable[] saveables = saveManager.getAllSaveables(type);
+                return gson.toJson(saveables);
+            }
+            else {
+                saveManager.createLock(user, type, id);
+                Saveable saveable = saveManager.getSaveable(type, id);
+                if(saveable!=null){
+                    Logger.getLogger("SaveServer").log(Level.INFO, "GET from {0} for t: {1} i: {2}", new Object[]{user, type, id});
+                    return gson.toJson(saveable);
+                }
+                else {
+                    Logger.getLogger("SaveServer").log(Level.INFO, "GET from {0} for t: {1} i: {2}", new Object[]{user, type, id});
+                    return "404";
+                }
+            }
         }
         else {
-            Logger.getLogger("SaveServer").log(Level.INFO, "GET from {0} for t: {1} i: {2}", new Object[]{user, type, id});
-            return "404";
+            Logger.getLogger("SaveServer").log(Level.INFO, "Denied GET from {0} for t: {1} i: {2}", new Object[]{user, type, id});
+            return "401";
+        }
+    }
+    
+    private String processSIZE(String user, String[] requestParts) {
+        String type = requestParts[1];
+        if(userManager.userHasAccessRight(user, type, ACTION.GET)) {
+            Logger.getLogger("SaveServer").log(Level.INFO, "SIZE from {0} for t: {1} i: {2}", new Object[]{user, type});
+            return String.valueOf(saveManager.getSaveableCount(type));
+        }
+        else {
+            Logger.getLogger("SaveServer").log(Level.INFO, "Denied SIZE from {0} for t: {1} i: {2}", new Object[]{user, type});
+            return "401";
         }
     }
     
     private String processPUT(String user, String[] requestParts) {
         String data = requestParts[1];
         Saveable saveable = gson.fromJson(data, Saveable.class);
-        if(saveManager.getLockHolder(saveable.getSaveableModuleName(), saveable.getUniqueId()).equals(user)){
-            saveManager.persistSaveable(user, saveable);
-            Logger.getLogger("SaveServer").log(Level.INFO, "PUT from {0}", new Object[]{user});
-            return "OK";
+        if(userManager.userHasAccessRight(user, saveable.getSaveableModuleName(), ACTION.PUT)) {
+            if(saveManager.getLockHolder(saveable.getSaveableModuleName(), saveable.getUniqueId()).equals(user)){
+                saveManager.persistSaveable(user, saveable);
+                Logger.getLogger("SaveServer").log(Level.INFO, "PUT from {0}", new Object[]{user});
+                return "201";
+            }
+            else {
+                Logger.getLogger("SaveServer").log(Level.INFO, "Denied PUT from {0}-Locked", new Object[]{user});
+                return "503";
+            }
         }
         else {
-            Logger.getLogger("SaveServer").log(Level.INFO, "Denied PUT from {0}-Locked", new Object[]{user});
-            return "LOCKED";
+            Logger.getLogger("SaveServer").log(Level.INFO, "Denied PUT from {0}", new Object[]{user});
+            return "401";
+        }
+    }
+    
+    private String processREMOVE(String user, String[] requestParts) {
+        if(requestParts.length!=3) {
+            return "404";
+        }
+        String type = requestParts[1];
+        String id = requestParts[2];
+        if(userManager.userHasAccessRight(user, type, ACTION.REMOVE) ) {
+            if(saveManager.getLockHolder(type, id).equals(user)) {
+                saveManager.removeSaveable(type, id);
+                Logger.getLogger("SaveServer").log(Level.INFO, "REMOVE from {0} for {1} {2}", new Object[]{user, type, id});
+                return "200";
+            }
+            else {
+                Logger.getLogger("SaveServer").log(Level.INFO, "Denied REMOVE from {0} for {1} {2}", new Object[]{user, type, id});
+                return "503";
+            }
+        }
+        else {
+            Logger.getLogger("SaveServer").log(Level.INFO, "Denied REMOVE from {0} for {1} {2}", new Object[]{user, type, id});
+            return "401";
         }
     }
     
     private String processRELEASE(String user, String[] requestParts) {
         String type = requestParts[1];
         String id = requestParts[2];
-        saveManager.removeLock(type, id);
-        Logger.getLogger("SaveServer").log(Level.INFO, "RELEASE from {0} for {1} {2}", new Object[]{user, type, id});
-        return "RELEASED";
+        if(saveManager.getLockHolder(type, id).equals(user)) {
+            saveManager.removeLock(type, id);
+            Logger.getLogger("SaveServer").log(Level.INFO, "RELEASE from {0} for {1} {2}", new Object[]{user, type, id});
+            return "200";
+        }
+        else {
+            Logger.getLogger("SaveServer").log(Level.INFO, "Denied RELEASE from {0} for {1} {2}", new Object[]{user, type, id});
+            return "401";
+        }
     }
     
     public void stop() {

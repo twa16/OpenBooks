@@ -28,28 +28,30 @@ package org.mgenterprises.mgmoney.configuration;
  *
  * @author Manuel Gauto
  */
-public class ConfigurationValue<T> {
-    private String className;
+public class ConfigurationValue {
+    private String name;
     private Object value;
 
-    public ConfigurationValue(Object value) {
-        this.className = value.getClass().getName();
+    public ConfigurationValue(String name, Object value) {
+        this.name = name;
         this.value = value;
     }
 
-    public String getClassName() {
-        return className;
+    public String getName() {
+        return name;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public T getValue() {
-        return (T) value;
+    public Object getValue() {
+        return value;
     }
 
     public void setValue(Object value) {
         this.value = value;
     }
+
+    
 }
