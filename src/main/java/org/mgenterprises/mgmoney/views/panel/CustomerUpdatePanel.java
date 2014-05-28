@@ -24,8 +24,11 @@
 
 package org.mgenterprises.mgmoney.views.panel;
 
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,7 +50,7 @@ import org.mgenterprises.mgmoney.views.actionlistener.DeleteCustomerActionListen
  *
  * @author Manuel Gauto
  */
-public class CustomerUpdatePanel extends javax.swing.JPanel {
+public class CustomerUpdatePanel extends javax.swing.JPanel implements HierarchyListener{
 
     private CustomerManager customerManager;
     private InvoiceManager invoiceManager;
@@ -58,6 +61,7 @@ public class CustomerUpdatePanel extends javax.swing.JPanel {
         this.customerManager = customerManager;
         this.invoiceManager = invoiceManager;
         initComponents();
+        this.addHierarchyListener(this);
         processData();
         stateCombo.setModel(new DefaultComboBoxModel<>(State.values()));
     }
@@ -120,19 +124,60 @@ public class CustomerUpdatePanel extends javax.swing.JPanel {
 
         companyNameLabel.setText("Company Name");
 
+        companyNameField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                companyNameFieldActionPerformed(evt);
+            }
+        });
+
         contactFirstLabel.setText("Contact First Name");
+
+        contactFirstField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                contactFirstFieldActionPerformed(evt);
+            }
+        });
 
         contactLastLabel.setText("Company Last Name");
 
+        contactLastField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                contactLastFieldActionPerformed(evt);
+            }
+        });
+
         phoneNumberLabel.setText("Phone Number");
+
+        phoneNumberField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                phoneNumberFieldActionPerformed(evt);
+            }
+        });
 
         streetAddressLabel.setText("Street Address");
 
+        streetAddressField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                streetAddressFieldActionPerformed(evt);
+            }
+        });
+
         cityLabel.setText("City");
+
+        cityField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cityFieldActionPerformed(evt);
+            }
+        });
 
         stateLabel.setText("State");
 
         stateCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        stateCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stateComboActionPerformed(evt);
+            }
+        });
 
         customerTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -332,6 +377,9 @@ public class CustomerUpdatePanel extends javax.swing.JPanel {
             else {
                 customerManager.addCustomer(customer);
             }
+            customerManager.getCustomerMap().releaseLock(new Customer().getSaveableModuleName(), idField.getText());
+            this.saveButton.setText("Save");
+            this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
             clearFields();
             processData();
         }
@@ -372,21 +420,64 @@ public class CustomerUpdatePanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_customerTableMouseReleased
 
+    private void companyNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_companyNameFieldActionPerformed
+        onModify();
+    }//GEN-LAST:event_companyNameFieldActionPerformed
+
+    private void contactFirstFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_contactFirstFieldActionPerformed
+        onModify();
+    }//GEN-LAST:event_contactFirstFieldActionPerformed
+
+    private void contactLastFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_contactLastFieldActionPerformed
+        onModify();
+    }//GEN-LAST:event_contactLastFieldActionPerformed
+
+    private void phoneNumberFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneNumberFieldActionPerformed
+        onModify();
+    }//GEN-LAST:event_phoneNumberFieldActionPerformed
+
+    private void streetAddressFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_streetAddressFieldActionPerformed
+        onModify();
+    }//GEN-LAST:event_streetAddressFieldActionPerformed
+
+    private void cityFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cityFieldActionPerformed
+        onModify();
+    }//GEN-LAST:event_cityFieldActionPerformed
+
+    private void stateComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stateComboActionPerformed
+        onModify();
+    }//GEN-LAST:event_stateComboActionPerformed
+
+    private void onModify() {
+        if(!saveButton.getText().contains("(Locked)")) {
+            this.saveButton.setText("Save *");
+            this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+        }
+    }
+    
     public void setFields(int row){
         try {
-        //Get Customer ID from Table
-        int cusId = (int) customerTable.getValueAt(row, 0);
-        this.idField.setText(String.valueOf(cusId));
-        
-        Customer customer = customerManager.getCustomer(cusId);
-        this.companyNameField.setText(customer.getCompanyName());
-        this.contactFirstField.setText(customer.getContactFirst());
-        this.contactLastField.setText(customer.getContactLast());
-        this.phoneNumberField.setText(customer.getPhoneNumber());
-        this.streetAddressField.setText(customer.getStreetAddress());
-        this.cityField.setText(customer.getCityName());
-        this.stateCombo.setSelectedItem(customer.getState());
-    
+            //Get Customer ID from Table
+            int cusId = (int) customerTable.getValueAt(row, 0);
+            this.idField.setText(String.valueOf(cusId));
+
+            Customer customer = customerManager.getCustomer(cusId);
+            this.companyNameField.setText(customer.getCompanyName());
+            this.contactFirstField.setText(customer.getContactFirst());
+            this.contactLastField.setText(customer.getContactLast());
+            this.phoneNumberField.setText(customer.getPhoneNumber());
+            this.streetAddressField.setText(customer.getStreetAddress());
+            this.cityField.setText(customer.getCityName());
+            this.stateCombo.setSelectedItem(customer.getState());
+
+            if(!customerManager.exists(cusId)){
+                this.saveButton.setText("Save (Locked)");
+                this.saveButton.setEnabled(false);
+            }
+            else {
+                this.saveButton.setText("Save");
+                this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
+            }
         }
         catch(IOException ex) {
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
@@ -417,4 +508,20 @@ public class CustomerUpdatePanel extends javax.swing.JPanel {
     private javax.swing.JTextField streetAddressField;
     private javax.swing.JLabel streetAddressLabel;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void hierarchyChanged(HierarchyEvent e) {
+        if(e.getChangeFlags() == HierarchyEvent.DISPLAYABILITY_CHANGED)
+        {       
+             //do the required action upon close
+            if(!this.isDisplayable()){           
+                try {
+                    customerManager.getCustomerMap().releaseAllLocks();
+                } catch (IOException ex) {
+                    Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+        }
+    }
 }

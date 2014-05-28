@@ -27,6 +27,8 @@ package org.mgenterprises.mgmoney.views.panel;
 import com.google.gson.Gson;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -60,7 +62,7 @@ import org.mgenterprises.mgmoney.views.actionlistener.TableCellListener;
  *
  * @author Manuel Gauto
  */
-public class InvoiceUpdatePanel extends javax.swing.JPanel {
+public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyListener {
     private ConfigurationManager configurationManager;
     private InvoiceManager invoiceManager;
     private CustomerManager customerManager;
@@ -112,7 +114,8 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
         try {
             DefaultTableModel defaultTableModel = (DefaultTableModel) this.invoiceItemTable.getModel();
             //Top
-            this.customerCombobox.setSelectedItem(customerManager.getCustomer(invoice.getCustomerID()));
+            Customer customer = customerManager.getCustomer(invoice.getCustomerID());
+            this.customerCombobox.setSelectedIndex(customer.getCustomerNumber());
             customerManager.getCustomerMap().releaseLock(new Customer().getSaveableModuleName(), String.valueOf(invoice.getCustomerID()));
             this.invoiceNumberField.setText(String.valueOf(invoice.getInvoiceNumber()));
             this.poNumberField.setText(String.valueOf(invoice.getPurchaseOrderNumber()));
@@ -132,7 +135,7 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
 
             this.invoiceItemTable.setModel(defaultTableModel);
             
-            if(invoiceManager.exists(invoice.getCustomerID())) {
+            if(!invoiceManager.exists(invoice.getCustomerID())) {
                 this.saveButton.setEnabled(false);
                 this.saveButton.setText("Save (Locked)");
             }
@@ -552,6 +555,8 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
         clearFields();
         try {
+            this.saveButton.setText("Save");
+            this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
             this.invoiceNumberField.setText(String.valueOf(invoiceManager.getHighestID()));
         } catch (IOException ex) {
             Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -627,4 +632,20 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
     private javax.swing.JButton saveButton;
     private javax.swing.JLabel totalPaid;
     // End of variables declaration//GEN-END:variables
+   
+    @Override
+    public void hierarchyChanged(HierarchyEvent e) {
+        if(e.getChangeFlags() == HierarchyEvent.DISPLAYABILITY_CHANGED)
+        {       
+             //do the required action upon close
+            if(!this.isDisplayable()){           
+                try {
+                    invoiceManager.getInvoiceMap().releaseAllLocks();
+                } catch (IOException ex) {
+                    Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+        }
+    }
 }

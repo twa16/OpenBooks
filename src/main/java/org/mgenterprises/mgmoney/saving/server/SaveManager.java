@@ -33,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
@@ -151,18 +152,26 @@ public class SaveManager {
             return new Saveable[0];
         }
         File[] files = dir.listFiles();
-        Saveable[] saveables = new Saveable[files.length];
-        for(int i = 0; i < saveables.length; i++) {
+        
+        ArrayList<Saveable> saveableList = new ArrayList<Saveable>();
+        for(int i = 0; i < files.length; i++) {
             String name = files[i].getName();
-            if(!name.contains("lock")) {
-                saveables[i] = getSaveable(type, name);
+            if(!name.contains(".lock")) {
+                saveableList.add(getSaveable(type, name));
             }
         }
-        return saveables;
+        Saveable[] saveables = new Saveable[saveableList.size()];
+        return saveableList.toArray(saveables);
     }
     
     public int getSaveableCount(String type) {
         File[] files = new File(saveRootDirectory + File.separator + type).listFiles();
-        return files.length;
+        int count = 0;
+        for (File file : files) {
+            if(!file.getName().contains(".lock")){
+                count ++;
+            }
+        }
+        return count;
     }
 }

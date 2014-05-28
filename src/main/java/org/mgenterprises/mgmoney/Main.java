@@ -46,7 +46,7 @@ public class Main {
     private static MainGUI mainGUI;
     
     public static void main(String[] args) throws UnknownHostException {
-        File file = new File("/home/mgauto/Documents/MGM/");
+        File file = new File("D:\\My Documents\\MGM\\");
         SaveManager saveManager = new SaveManager(file);
         UserManager userManager = new UserManager(new File(file+File.separator+"org.mgenterprises.mgmoney.saving.server.users.UserProfile"));
         short port = 6969;

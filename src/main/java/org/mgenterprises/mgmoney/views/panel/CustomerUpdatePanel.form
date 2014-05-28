@@ -136,6 +136,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="companyNameField">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="companyNameFieldActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="contactFirstLabel">
       <Properties>
@@ -143,6 +146,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="contactFirstField">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="contactFirstFieldActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="contactLastLabel">
       <Properties>
@@ -150,6 +156,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="contactLastField">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="contactLastFieldActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="phoneNumberLabel">
       <Properties>
@@ -157,6 +166,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="phoneNumberField">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="phoneNumberFieldActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="streetAddressLabel">
       <Properties>
@@ -164,6 +176,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="streetAddressField">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="streetAddressFieldActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="cityLabel">
       <Properties>
@@ -171,6 +186,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="cityField">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cityFieldActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="stateLabel">
       <Properties>
@@ -188,6 +206,9 @@
           </StringArray>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="stateComboActionPerformed"/>
+      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JComboBox(State.values());"/>
       </AuxValues>

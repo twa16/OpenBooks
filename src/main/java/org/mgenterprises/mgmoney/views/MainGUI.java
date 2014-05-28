@@ -84,6 +84,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
     }
     
     public void changePanel(JPanel jpanel) {
+        mainPanelArea.setVisible(false);
         this.remove(mainPanelArea);
         mainPanelArea = jpanel;
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
