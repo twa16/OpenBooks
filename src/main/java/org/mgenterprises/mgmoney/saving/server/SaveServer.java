@@ -57,6 +57,7 @@ import org.mgenterprises.mgmoney.saving.server.users.UserManager;
  * @author mgauto
  */
 public class SaveServer implements Runnable{
+    public static final String DELIMITER=":#:";
     private InetAddress bindAddress;
     private short port;
     private boolean running = true;
@@ -109,7 +110,7 @@ public class SaveServer implements Runnable{
                     socket.close();
                 }
                 if(request.length()!=0) {
-                    String[] requestParts = request.split(Saveable.DELIMITER);
+                    String[] requestParts = request.split(SaveServer.DELIMITER);
                     
                     System.out.println(Arrays.toString(requestParts));
                     String verb = requestParts[0];

@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.mgenterprises.mgmoney.saving.server.SaveServer;
 import org.mgenterprises.mgmoney.saving.server.security.CryptoUtils;
 import org.mgenterprises.mgmoney.saving.server.security.SecureMessage;
 
@@ -80,7 +81,7 @@ public class ServerBackedMap<V extends Saveable> {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String request = "PUT"+Saveable.DELIMITER+gson.toJson(value);
+        String request = "PUT"+SaveServer.DELIMITER+gson.toJson(value);
         SecureMessage secureMessage;
         try {
             secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
@@ -109,7 +110,7 @@ public class ServerBackedMap<V extends Saveable> {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String request = "GET"+Saveable.DELIMITER+v.getSaveableModuleName()+Saveable.DELIMITER+key;
+        String request = "GET"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+key;
         SecureMessage secureMessage;
         try {
             secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
@@ -142,7 +143,7 @@ public class ServerBackedMap<V extends Saveable> {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String request = "GET"+Saveable.DELIMITER+v.getSaveableModuleName()+Saveable.DELIMITER+"ALL";
+        String request = "GET"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+"ALL";
         SecureMessage secureMessage;
         try {
             secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
@@ -179,7 +180,7 @@ public class ServerBackedMap<V extends Saveable> {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String request = "GET"+Saveable.DELIMITER+v.getSaveableModuleName()+Saveable.DELIMITER+"ALL";
+        String request = "GET"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+"ALL";
         SecureMessage secureMessage;
         try {
             secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
@@ -208,7 +209,7 @@ public class ServerBackedMap<V extends Saveable> {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String request = "REMOVE"+Saveable.DELIMITER+v.getSaveableModuleName()+Saveable.DELIMITER+key;
+        String request = "REMOVE"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+key;
         SecureMessage secureMessage;
         try {
             secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
