@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -59,6 +60,7 @@ public class ServerBackedMap<V extends Saveable> {
     private Gson gson;
     private byte[] salt;
     private CryptoUtils cryptoUtils = new CryptoUtils();
+    private ArrayList<String> lockedIDs = new ArrayList<String>(); 
 
     public ServerBackedMap(V v, SaveServerConnection saveServerConnection) {
         this.v = v;
@@ -81,7 +83,7 @@ public class ServerBackedMap<V extends Saveable> {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String request = "PUT"+SaveServer.DELIMITER+gson.toJson(value);
+        String request = "PUT"+SaveServer.DELIMITER+gson.toJson(value, Saveable.class);
         SecureMessage secureMessage;
         try {
             secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
@@ -124,9 +126,14 @@ public class ServerBackedMap<V extends Saveable> {
             if(json.equals("NO")) {
                 return null;
             }
-            
-            Saveable saveable = gson.fromJson(json, Saveable.class);
-            return (V) saveable;
+            try {
+                Saveable saveable = gson.fromJson(json, Saveable.class);
+                System.err.println(json);
+                return (V) saveable;
+            }
+            catch(JsonSyntaxException ex) {
+                return null;
+            }
         } catch (InvalidKeySpecException ex) {
             Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchAlgorithmException ex) {
@@ -180,7 +187,7 @@ public class ServerBackedMap<V extends Saveable> {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String request = "GET"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+"ALL";
+        String request = "SIZE"+SaveServer.DELIMITER+v.getSaveableModuleName();
         SecureMessage secureMessage;
         try {
             secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
@@ -223,6 +230,75 @@ public class ServerBackedMap<V extends Saveable> {
             
             
             return Boolean.getBoolean(json);
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        finally {
+            bw.close();
+            br.close();
+        }
+        return false;
+    }
+    
+    public void releaseAllLocks() throws IOException {
+        for(String s : lockedIDs) {
+            String[] parts = s.split(":#:");
+            String type = parts[0];
+            String id = parts[1];
+            releaseLock(type, id);
+        }
+    }
+    
+    public boolean tryLock(String type, String id) throws IOException {
+        Socket socket = new Socket(serverAddress, serverPort);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        String request = "LOCK"+SaveServer.DELIMITER+type+SaveServer.DELIMITER+id;
+        SecureMessage secureMessage;
+        try {
+            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
+            bw.write(gson.toJson(secureMessage));
+            bw.newLine();
+            bw.flush();
+            String ejson = br.readLine();
+            
+            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
+            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
+            
+            this.lockedIDs.add(type+":#:"+id);
+            return (json.equals("200"));
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        finally {
+            bw.close();
+            br.close();
+        }
+        return false;
+    }
+    
+    public boolean releaseLock(String type, String id) throws IOException {
+        Socket socket = new Socket(serverAddress, serverPort);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        String request = "RELEASE"+SaveServer.DELIMITER+type+SaveServer.DELIMITER+id;
+        SecureMessage secureMessage;
+        try {
+            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
+            bw.write(gson.toJson(secureMessage));
+            bw.newLine();
+            bw.flush();
+            String ejson = br.readLine();
+            
+            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
+            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
+            
+            this.lockedIDs.remove(type+":#:"+id);
+            return (json.equals("200"));
         } catch (InvalidKeySpecException ex) {
             Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchAlgorithmException ex) {

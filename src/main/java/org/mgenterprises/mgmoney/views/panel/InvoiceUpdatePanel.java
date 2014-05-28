@@ -95,7 +95,9 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
             JComboBox itemComboBox = new JComboBox(allPossibleItems);
             this.invoiceItemTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(itemComboBox));
             clearFields();
-            if(invoiceManager.exists(invoiceManager.getHighestID()-1)) loadInvoiceData(invoiceManager.getInvoice(invoiceManager.getHighestID()-1));
+            if(invoiceManager.exists(invoiceManager.getHighestID()-1)) {
+                loadInvoiceData(invoiceManager.getInvoice(invoiceManager.getHighestID()-1));
+            }
             else {
                newButtonActionPerformed(null);
             }
@@ -111,6 +113,7 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
             DefaultTableModel defaultTableModel = (DefaultTableModel) this.invoiceItemTable.getModel();
             //Top
             this.customerCombobox.setSelectedItem(customerManager.getCustomer(invoice.getCustomerID()));
+            customerManager.getCustomerMap().releaseLock(new Customer().getSaveableModuleName(), String.valueOf(invoice.getCustomerID()));
             this.invoiceNumberField.setText(String.valueOf(invoice.getInvoiceNumber()));
             this.poNumberField.setText(String.valueOf(invoice.getPurchaseOrderNumber()));
             this.dateCreatedField.setText(dateFormat.format(invoice.getDateCreated()));
@@ -128,6 +131,15 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
             if(invoice.getDatePaid().getTime()!=0) this.datePaid.setText(dateFormat.format(invoice.getDatePaid()));
 
             this.invoiceItemTable.setModel(defaultTableModel);
+            
+            if(invoiceManager.exists(invoice.getCustomerID())) {
+                this.saveButton.setEnabled(false);
+                this.saveButton.setText("Save (Locked)");
+            }
+            else {
+                this.saveButton.setEnabled(true);
+                this.saveButton.setText("Save");
+            }
     
         }
         catch(IOException ex) {
@@ -419,6 +431,7 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
                 if(invoiceManager.exists(last)){
                     Invoice invoice = invoiceManager.getInvoice(last);
                     loadInvoiceData(invoice);
+                    invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), String.valueOf(last));
                 }
             }
         }
@@ -435,6 +448,7 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
             clearFields();
             if(invoiceManager.exists(last)){
                 Invoice invoice = invoiceManager.getInvoice(last);
+                invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), String.valueOf(last));
                 loadInvoiceData(invoice);
             }
         }
@@ -471,8 +485,7 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
             double price = (double) invoiceItemTable.getValueAt(rowindex, 2);
             invoiceItemTable.setValueAt(price*quantity, rowindex, 4);
             calculateInvoiceTotal();
-            this.saveButton.setText("Save *");
-            this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+            onModify();
         }
         catch(Exception ex) {
             ex.printStackTrace();
@@ -522,6 +535,8 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
             }else {
                 invoiceManager.addInvoice(invoice);
             }
+            
+            invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), this.invoiceNumberField.getText());
             this.saveButton.setText("Save");
             this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
         } catch (ParseException ex) {
@@ -536,22 +551,23 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
         clearFields();
-        this.invoiceNumberField.setText(String.valueOf(invoiceManager.getHighestID()));
+        try {
+            this.invoiceNumberField.setText(String.valueOf(invoiceManager.getHighestID()));
+        } catch (IOException ex) {
+            Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_newButtonActionPerformed
 
     private void poNumberFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_poNumberFieldActionPerformed
-        this.saveButton.setText("Save *");
-        this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+        onModify();
     }//GEN-LAST:event_poNumberFieldActionPerformed
 
     private void dateCreatedFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dateCreatedFieldActionPerformed
-        this.saveButton.setText("Save *");
-        this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+        onModify();
     }//GEN-LAST:event_dateCreatedFieldActionPerformed
 
     private void dateDueFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dateDueFieldActionPerformed
-        this.saveButton.setText("Save *");
-        this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+        onModify();
     }//GEN-LAST:event_dateDueFieldActionPerformed
 
     private void clearFields() {
@@ -569,6 +585,21 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel {
         c.add(Calendar.DATE, daysTillDue);
         Date dueDate=c.getTime();
         this.dateDueField.setText(dateFormat.format(dueDate));
+    }
+    
+    private void onModify() {
+        try {
+            if(invoiceManager.tryLock(new Invoice().getSaveableModuleName(), this.invoiceNumberField.getText())){
+                this.saveButton.setText("Save *");
+                this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+            }
+            else {
+                this.saveButton.setText("Save (Locked)");
+                this.saveButton.setEnabled(false);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

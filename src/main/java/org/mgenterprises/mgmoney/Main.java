@@ -46,7 +46,7 @@ public class Main {
     private static MainGUI mainGUI;
     
     public static void main(String[] args) throws UnknownHostException {
-        /*File file = new File("/home/mgauto/Documents/MGM/");
+        File file = new File("/home/mgauto/Documents/MGM/");
         SaveManager saveManager = new SaveManager(file);
         UserManager userManager = new UserManager(new File(file+File.separator+"org.mgenterprises.mgmoney.saving.server.users.UserProfile"));
         short port = 6969;
@@ -55,13 +55,8 @@ public class Main {
         
         SaveServerConnection saveServerConnection = new SaveServerConnection("127.0.0.1", port, "admin", "$2a$10$vhtSFeYrU1OX3pIvuno7u.8MQHI7LRJTJ9ucUt/ww1P4CnOYOwIH.");
         mainGUI = new MainGUI(saveServerConnection);
-        mainGUI.setVisible(true);*/
-        UserProfile user = new UserProfile("testuser", "testhash");
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(Saveable.class, new AbstractSaveableAdapter());
-        //gsonBuilder.registerTypeAdapter(Saveable[].class, new AbstractSaveableArrayAdapter());
-        Gson gson = gsonBuilder.create();
-        System.out.println(gson.toJson(user));
+        mainGUI.setVisible(true);
+        
     }
     
     public static MainGUI getInstance(){

@@ -78,6 +78,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
         customerManager = new CustomerManager(saveServerConnection);
         itemManager = new ItemManager(saveServerConnection);
         invoiceManager = new InvoiceManager(saveServerConnection);
+        configurationManager.loadDefaultConfiguration();
         initComponents();
         addWindowListener(this);
     }
@@ -234,7 +235,13 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
 
     @Override
     public void windowClosing(WindowEvent we) {
-        
+        try {
+            customerManager.getCustomerMap().releaseAllLocks();
+            itemManager.getItemMap().releaseAllLocks();
+            invoiceManager.getInvoiceMap().releaseAllLocks();
+        } catch (IOException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

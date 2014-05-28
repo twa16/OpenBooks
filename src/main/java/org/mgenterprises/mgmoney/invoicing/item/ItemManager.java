@@ -69,4 +69,9 @@ public class ItemManager{
         Item[] temp = new Item[itemsList.size()];
         return itemsList.toArray(temp);
     }
+
+    public ServerBackedMap<Item> getItemMap() {
+        return items;
+    }
+    
 }

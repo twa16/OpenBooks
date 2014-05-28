@@ -128,6 +128,9 @@ public class SaveServer implements Runnable{
                         case "SIZE":
                             response = processSIZE(username, requestParts);
                             break;
+                        case "LOCK":
+                            response = processLOCK(username, requestParts);
+                            break;
                         case "RELEASE":
                             response = processRELEASE(username, requestParts);
                             break;
@@ -169,10 +172,11 @@ public class SaveServer implements Runnable{
                 Saveable saveable = saveManager.getSaveable(type, id);
                 if(saveable!=null){
                     Logger.getLogger("SaveServer").log(Level.INFO, "GET from {0} for t: {1} i: {2}", new Object[]{user, type, id});
-                    return gson.toJson(saveable);
+                    return gson.toJson(saveable, Saveable.class);
                 }
                 else {
                     Logger.getLogger("SaveServer").log(Level.INFO, "GET from {0} for t: {1} i: {2}", new Object[]{user, type, id});
+                    saveManager.removeLock(type, id);
                     return "404";
                 }
             }
@@ -199,7 +203,7 @@ public class SaveServer implements Runnable{
         String data = requestParts[1];
         Saveable saveable = gson.fromJson(data, Saveable.class);
         if(userManager.userHasAccessRight(user, saveable.getSaveableModuleName(), ACTION.PUT)) {
-            if(saveManager.getLockHolder(saveable.getSaveableModuleName(), saveable.getUniqueId()).equals(user)){
+            if(!saveManager.hasLock(saveable.getSaveableModuleName(), saveable.getUniqueId()) || saveManager.getLockHolder(saveable.getSaveableModuleName(), saveable.getUniqueId()).equals(user)){
                 saveManager.persistSaveable(user, saveable);
                 Logger.getLogger("SaveServer").log(Level.INFO, "PUT from {0}", new Object[]{user});
                 return "201";
@@ -248,6 +252,20 @@ public class SaveServer implements Runnable{
         }
         else {
             Logger.getLogger("SaveServer").log(Level.INFO, "Denied RELEASE from {0} for {1} {2}", new Object[]{user, type, id});
+            return "401";
+        }
+    }
+    
+    private String processLOCK(String user, String[] requestParts) {
+        String type = requestParts[1];
+        String id = requestParts[2];
+        if(!saveManager.hasLock(type, id)) {
+            saveManager.removeLock(type, id);
+            Logger.getLogger("SaveServer").log(Level.INFO, "LOCK from {0} for {1} {2}", new Object[]{user, type, id});
+            return "200";
+        }
+        else {
+            Logger.getLogger("SaveServer").log(Level.INFO, "Denied LOCK from {0} for {1} {2}", new Object[]{user, type, id});
             return "401";
         }
     }

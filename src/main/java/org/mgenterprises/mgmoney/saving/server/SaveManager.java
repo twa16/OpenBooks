@@ -67,7 +67,7 @@ public class SaveManager {
                 saveDir.mkdirs();
                 saveFile.createNewFile();
                 BufferedWriter bw = new BufferedWriter(new FileWriter(saveFile));
-                String json = gson.toJson(saveable);
+                String json = gson.toJson(saveable, Saveable.class);
                 bw.write(json);
                 bw.newLine();
                 bw.flush();
@@ -154,7 +154,9 @@ public class SaveManager {
         Saveable[] saveables = new Saveable[files.length];
         for(int i = 0; i < saveables.length; i++) {
             String name = files[i].getName();
-            saveables[i] = getSaveable(type, name);
+            if(!name.contains("lock")) {
+                saveables[i] = getSaveable(type, name);
+            }
         }
         return saveables;
     }

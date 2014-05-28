@@ -75,4 +75,9 @@ public class CustomerManager{
     public int getHighestId() {
         return highestId;
     }
+
+    public ServerBackedMap<Customer> getCustomerMap() {
+        return customers;
+    }
+    
 }

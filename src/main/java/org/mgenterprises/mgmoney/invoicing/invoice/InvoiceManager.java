@@ -38,7 +38,6 @@ import org.mgenterprises.mgmoney.saving.ServerBackedMap;
  */
 public class InvoiceManager{
     private ServerBackedMap<Invoice> invoices;
-    private int highestID = 0;
 
     public InvoiceManager(SaveServerConnection saveServerConnection) {
          invoices = new ServerBackedMap<Invoice>(new Invoice(),
@@ -47,7 +46,6 @@ public class InvoiceManager{
     
     public void addInvoice(Invoice item) throws IOException{
         invoices.put(item);
-        highestID++;
     }
     
     public Invoice getInvoice(int id) throws IOException {
@@ -73,8 +71,8 @@ public class InvoiceManager{
         return count;
     }
 
-    public int getHighestID() {
-        return highestID;
+    public int getHighestID() throws IOException {
+        return invoices.size();
     }
     
     public Invoice[] getInvoices() throws IOException {
@@ -93,4 +91,17 @@ public class InvoiceManager{
         Invoice[] temp = new Invoice[customerInvoices.size()];
         return customerInvoices.toArray(temp);
     }
+    
+    public boolean releaseLock(String type, String id) throws IOException {
+        return invoices.releaseLock(type, id);
+    }
+    
+    public boolean tryLock(String type, String id) throws IOException {
+        return invoices.tryLock(type, id);
+    }
+
+    public ServerBackedMap<Invoice> getInvoiceMap() {
+        return invoices;
+    }
+    
 }
