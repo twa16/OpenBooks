@@ -108,7 +108,7 @@ public class ServerBackedMap<V extends Saveable> {
         return false;
     }
     
-    public V get(String key) throws IOException {
+    public synchronized V get(String key) throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -129,6 +129,7 @@ public class ServerBackedMap<V extends Saveable> {
             try {
                 Saveable saveable = gson.fromJson(json, Saveable.class);
                 System.err.println(json);
+                this.lockedIDs.add(v.getSaveableModuleName()+":#:"+key);
                 return (V) saveable;
             }
             catch(JsonSyntaxException ex) {
@@ -242,16 +243,19 @@ public class ServerBackedMap<V extends Saveable> {
         return false;
     }
     
-    public void releaseAllLocks() throws IOException {
-        for(String s : lockedIDs) {
+    public synchronized void releaseAllLocks() throws IOException {
+        System.out.println("Releasing locks: "+v.getSaveableModuleName());
+        ArrayList<String> tempIDs = new ArrayList<String>(lockedIDs);
+        for(String s : tempIDs) {
             String[] parts = s.split(":#:");
             String type = parts[0];
             String id = parts[1];
+            System.out.println("      Released: "+id);
             releaseLock(type, id);
         }
     }
     
-    public boolean tryLock(String type, String id) throws IOException {
+    public synchronized boolean tryLock(String type, String id) throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));

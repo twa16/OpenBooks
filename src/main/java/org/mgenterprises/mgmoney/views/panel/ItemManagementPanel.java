@@ -24,6 +24,9 @@
 
 package org.mgenterprises.mgmoney.views.panel;
 
+import java.awt.Font;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,12 +44,13 @@ import org.mgenterprises.mgmoney.views.actionlistener.DeleteItemActionListener;
  *
  * @author Manuel Gauto
  */
-public class ItemManagementPanel extends javax.swing.JPanel {
+public class ItemManagementPanel extends javax.swing.JPanel implements HierarchyListener{
     private ItemManager itemManager;
 
     public ItemManagementPanel(ItemManager itemManager) {
         this.itemManager = itemManager;
         initComponents();
+        this.addHierarchyListener(this);
         loadItems();
     }
     
@@ -249,6 +253,14 @@ public class ItemManagementPanel extends javax.swing.JPanel {
             Item item = itemManager.getItem(itemName);
             this.descriptionField.setText(item.getDescription());
             this.basePriceField.setText(String.valueOf(item.getBasePrice()));
+            if(!itemManager.getItemMap().existsAndAllowed(item.getName())){
+                this.saveButton.setText("Save (Locked)");
+                this.saveButton.setEnabled(false);
+            }
+            else {
+                this.saveButton.setText("Save");
+                this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
+            }
         }
         catch(IOException ex){
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
@@ -276,6 +288,8 @@ public class ItemManagementPanel extends javax.swing.JPanel {
             } else{
                 itemManager.renameItem(oldItemName, item);
             }
+            this.saveButton.setText("Save");
+            this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
             loadItems();
         }
         catch(IOException ex) {
@@ -320,4 +334,16 @@ public class ItemManagementPanel extends javax.swing.JPanel {
     private javax.swing.JButton newButton;
     private javax.swing.JButton saveButton;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void hierarchyChanged(HierarchyEvent he) {
+        if(he.getChangeFlags() == HierarchyEvent.DISPLAYABILITY_CHANGED)
+        {           
+            try {
+                itemManager.getItemMap().releaseAllLocks();
+            } catch (IOException ex) {
+                Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
 }

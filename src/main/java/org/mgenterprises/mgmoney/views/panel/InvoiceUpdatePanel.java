@@ -637,15 +637,11 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyL
     public void hierarchyChanged(HierarchyEvent e) {
         if(e.getChangeFlags() == HierarchyEvent.DISPLAYABILITY_CHANGED)
         {       
-             //do the required action upon close
-            if(!this.isDisplayable()){           
-                try {
+            try {
                     invoiceManager.getInvoiceMap().releaseAllLocks();
                 } catch (IOException ex) {
                     Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-
-        }
     }
 }
