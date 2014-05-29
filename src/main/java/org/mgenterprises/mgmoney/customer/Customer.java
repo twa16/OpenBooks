@@ -37,23 +37,13 @@ public class Customer extends Saveable{
     private String companyName;
     private String contactFirst;
     private String contactLast;
+    private String emailAddress;
     private String phoneNumber;
     private String streetAddress;
     private String cityName;
     private State state;
 
     public Customer() {
-    }
-
-    public Customer(int customerNumber, String companyName, String contactFirst, String contactLast, String phoneNumber, String streetAddress, String cityName, State state) {
-        this.customerNumber = customerNumber;
-        this.companyName = companyName;
-        this.contactFirst = contactFirst;
-        this.contactLast = contactLast;
-        this.phoneNumber = phoneNumber;
-        this.streetAddress = streetAddress;
-        this.cityName = cityName;
-        this.state = state;
     }
 
     public int getCustomerNumber() {
@@ -88,6 +78,14 @@ public class Customer extends Saveable{
         this.contactLast = contactLast;
     }
 
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -119,6 +117,8 @@ public class Customer extends Saveable{
     public void setState(State state) {
         this.state = state;
     }
+
+    
 
     @Override
     public String toString() {

@@ -118,6 +118,8 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
         idField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         clearButton = new javax.swing.JButton();
+        emailLabel = new javax.swing.JLabel();
+        emailField = new javax.swing.JTextField();
 
         setMinimumSize(new java.awt.Dimension(650, 650));
         setName(""); // NOI18N
@@ -251,6 +253,8 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
             }
         });
 
+        emailLabel.setText("Email");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -270,11 +274,15 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
                         .addGap(18, 18, 18)
                         .addComponent(newCustomerButton))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(phoneNumberLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(phoneNumberField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(phoneNumberField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(emailLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(emailField))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(streetAddressLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -325,7 +333,9 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(phoneNumberLabel)
-                    .addComponent(phoneNumberField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(phoneNumberField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(emailLabel)
+                    .addComponent(emailField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(streetAddressLabel)
@@ -353,6 +363,7 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
         this.contactFirstField.setText("");
         this.contactLastField.setText("");
         this.phoneNumberField.setText("");
+        this.emailField.setText("");
         this.streetAddressField.setText("");
         this.cityField.setText("");
         this.stateCombo.setSelectedIndex(0);
@@ -370,6 +381,7 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
             customer.setStreetAddress(this.streetAddressField.getText());
             customer.setCityName(this.cityField.getText());
             customer.setState((State)this.stateCombo.getSelectedItem());
+            customer.setEmailAddress(this.emailField.getText());
 
             if(customerManager.exists(customer.getCustomerNumber())){
                 customerManager.updateCustomer(customer);
@@ -466,6 +478,7 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
             this.contactFirstField.setText(customer.getContactFirst());
             this.contactLastField.setText(customer.getContactLast());
             this.phoneNumberField.setText(customer.getPhoneNumber());
+            this.emailField.setText(customer.getEmailAddress());
             this.streetAddressField.setText(customer.getStreetAddress());
             this.cityField.setText(customer.getCityName());
             this.stateCombo.setSelectedItem(customer.getState());
@@ -496,6 +509,8 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
     private javax.swing.JTextField contactLastField;
     private javax.swing.JLabel contactLastLabel;
     private javax.swing.JTable customerTable;
+    private javax.swing.JTextField emailField;
+    private javax.swing.JLabel emailLabel;
     private javax.swing.JTextField idField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane2;
