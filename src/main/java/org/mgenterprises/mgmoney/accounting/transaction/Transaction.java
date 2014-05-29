@@ -25,14 +25,15 @@
 package org.mgenterprises.mgmoney.accounting.transaction;
 
 import java.util.Date;
-import org.mgenterprises.mgmoney.accounting.account.AccountType;
 
 /**
  *
  * @author Manuel Gauto
  */
 public class Transaction {
+    private int accountID;
+    private String transactionID;
     private String description;
-    private Date date;
+    private Date datePosted;
     private double amount;
 }

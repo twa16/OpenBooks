@@ -22,28 +22,12 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.accounting.account;
+package org.mgenterprises.mgmoney.accounting.ofx;
 
 /**
  *
  * @author Manuel Gauto
  */
-public enum AccountType {
-    ACCOUNTS_RECEIVABLE("Money that is owed to the business."),
-    ACCOUNTS_PAYABLE("Money that the business owes."),
-    ASSETS("Value of items owned by the business that have a resale value."),
-    EXPENSE("Money that is spent on things without resale value."),
-    INCOME("Money that the company earns."),
-    UNDEPOSITED_FUNDS("Money in the form of undeposited cash or checks.");
-  
-    String description;
-
-    private AccountType(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return description;
-    }
+public class UnsupportedAccountTypeException extends Exception{
     
 }

@@ -26,7 +26,7 @@ package org.mgenterprises.mgmoney.views;
 
 import java.io.File;
 import javax.swing.JFileChooser;
-import org.mgenterprises.mgmoney.saving.server.SaveManager;
+import org.mgenterprises.mgmoney.saving.server.FileBackedSaveManager;
 import org.mgenterprises.mgmoney.saving.server.security.BCrypt;
 import org.mgenterprises.mgmoney.saving.server.users.UserProfile;
 
@@ -170,7 +170,7 @@ public class SaveCreator extends javax.swing.JFrame {
         UserProfile userProfile = new UserProfile(username, passHash);
         File dataDir = new File(pathField.getText());
         dataDir.mkdirs();
-        SaveManager saveManager = new SaveManager(dataDir);
+        FileBackedSaveManager saveManager = new FileBackedSaveManager(dataDir);
         saveManager.persistSaveable("SERVER", userProfile);
         //saveManager.removeLock(userProfile.getSaveableModuleName(), userProfile.getUniqueId());
         //this.setVisible(false);

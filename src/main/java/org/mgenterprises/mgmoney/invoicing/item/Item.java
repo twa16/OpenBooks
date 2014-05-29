@@ -75,7 +75,7 @@ public class Item extends Saveable{
 
     @Override
     public String getSaveableModuleName() {
-        return this.getClass().getName();
+        return this.getClass().getSimpleName();
     }
 
     @Override

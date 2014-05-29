@@ -31,6 +31,11 @@
             <artifactId>flying-saucer-pdf</artifactId>
             <version>9.0.6</version>
         </dependency>
+        <dependency>
+            <groupId>net.sf.ofx4j</groupId>
+            <artifactId>ofx4j</artifactId>
+            <version>1.6</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
