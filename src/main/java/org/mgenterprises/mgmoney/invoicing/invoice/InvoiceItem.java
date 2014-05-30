@@ -24,13 +24,19 @@
 
 package org.mgenterprises.mgmoney.invoicing.invoice;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import org.mgenterprises.mgmoney.invoicing.item.Item;
 
 /**
  *
  * @author Manuel Gauto
  */
+@Entity
 public class InvoiceItem extends Item{
+    @ManyToOne
+    private Invoice invoice;
     private int quantity;
     private double price;
     
@@ -47,6 +53,15 @@ public class InvoiceItem extends Item{
         this.quantity = quantity;
     }
 
+    
+    public Invoice getInvoice() {
+        return invoice;
+    }
+
+    public void setInvoice(Invoice invoice) {
+        this.invoice = invoice;
+    }
+    
     public double getPrice() {
         return price;
     }

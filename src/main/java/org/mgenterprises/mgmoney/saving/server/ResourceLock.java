@@ -22,68 +22,55 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.invoicing.item;
+package org.mgenterprises.mgmoney.saving.server;
 
-import javax.persistence.Entity;
 import javax.persistence.Id;
-import org.mgenterprises.mgmoney.saving.Saveable;
 
 /**
  *
  * @author Manuel Gauto
  */
-@Entity
-public class Item extends Saveable{
-    private String name;
-    private String description;
-    private double basePrice;
+public class ResourceLock {
+    private long lockid;
+    private String type;
+    private String id;
+    private String holder;
 
-    public Item() {
-    }
-
-    public Item(String name, String description, double basePrice) {
-        this.name = name;
-        this.description = description;
-        this.basePrice = basePrice;
+    public ResourceLock() {
     }
 
     @Id
-    public String getName() {
-        return name;
+    public long getLockid() {
+        return lockid;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setLockid(long lockid) {
+        this.lockid = lockid;
+    }
+    
+    public String getType() {
+        return type;
     }
 
-    public String getDescription() {
-        return description;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public String getId() {
+        return id;
     }
 
-    public double getBasePrice() {
-        return basePrice;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public void setBasePrice(double basePrice) {
-        this.basePrice = basePrice;
+    public String getHolder() {
+        return holder;
     }
 
-    @Override
-    public String toString() {
-        return name;
+    public void setHolder(String holder) {
+        this.holder = holder;
     }
-
-    @Override
-    public String getSaveableModuleName() {
-        return this.getClass().getSimpleName();
-    }
-
-    @Override
-    public String getUniqueId() {
-        return name;
-    }
+    
+    
 }

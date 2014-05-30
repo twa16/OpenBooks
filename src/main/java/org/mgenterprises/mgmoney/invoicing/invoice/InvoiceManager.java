@@ -56,7 +56,7 @@ public class InvoiceManager{
         invoices.put(invoice);
     }
     
-    public boolean exists(int id) throws IOException {
+    public boolean exists(long id) throws IOException {
         return invoices.existsAndAllowed(String.valueOf(id));
     }
     

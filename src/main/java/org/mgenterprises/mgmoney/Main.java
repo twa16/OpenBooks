@@ -28,11 +28,16 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.net.UnknownHostException;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.mgenterprises.mgmoney.invoicing.invoice.Invoice;
+import org.mgenterprises.mgmoney.invoicing.invoice.InvoiceItem;
 import org.mgenterprises.mgmoney.saving.AbstractSaveableAdapter;
 import org.mgenterprises.mgmoney.saving.SaveFile;
 import org.mgenterprises.mgmoney.saving.SaveServerConnection;
 import org.mgenterprises.mgmoney.saving.Saveable;
 import org.mgenterprises.mgmoney.saving.server.FileBackedSaveManager;
+import org.mgenterprises.mgmoney.saving.server.HibernateBackedSaveManager;
 import org.mgenterprises.mgmoney.saving.server.SaveManager;
 import org.mgenterprises.mgmoney.saving.server.SaveServer;
 import org.mgenterprises.mgmoney.saving.server.users.UserManager;
@@ -48,7 +53,7 @@ public class Main {
     
     public static void main(String[] args) throws UnknownHostException {
         File file = new File("D:\\My Documents\\MGM\\");
-        SaveManager saveManager = new FileBackedSaveManager(file);
+        SaveManager saveManager = new HibernateBackedSaveManager();//FileBackedSaveManager(file);
         UserManager userManager = new UserManager(new File(file+File.separator+"org.mgenterprises.mgmoney.saving.server.users.UserProfile"));
         short port = 6969;
         SaveServer saveServer = new SaveServer("127.0.0.1", port, userManager, saveManager);

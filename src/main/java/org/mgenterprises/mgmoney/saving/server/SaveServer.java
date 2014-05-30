@@ -28,6 +28,9 @@ import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -45,7 +48,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.mgenterprises.mgmoney.saving.AbstractSaveableAdapter;
-import org.mgenterprises.mgmoney.saving.AbstractSaveableArrayAdapter;
 import org.mgenterprises.mgmoney.saving.Saveable;
 import org.mgenterprises.mgmoney.saving.server.access.ACTION;
 import org.mgenterprises.mgmoney.saving.server.security.CryptoUtils;
@@ -201,10 +203,16 @@ public class SaveServer implements Runnable{
     
     private String processPUT(String user, String[] requestParts) {
         String data = requestParts[1];
+        
+        JsonParser jsonParser = new JsonParser();
+        JsonElement json = jsonParser.parse(data); 
+        JsonObject jsonObject = json.getAsJsonObject();
+        String type = jsonObject.get("type").getAsString();
+        
         Saveable saveable = gson.fromJson(data, Saveable.class);
         if(userManager.userHasAccessRight(user, saveable.getSaveableModuleName(), ACTION.PUT)) {
             if(!saveManager.hasLock(saveable.getSaveableModuleName(), saveable.getUniqueId()) || saveManager.getLockHolder(saveable.getSaveableModuleName(), saveable.getUniqueId()).equals(user)){
-                saveManager.persistSaveable(user, saveable);
+                saveManager.persistSaveable(type, user, saveable);
                 Logger.getLogger("SaveServer").log(Level.INFO, "PUT from {0}", new Object[]{user});
                 return "201";
             }

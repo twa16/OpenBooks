@@ -24,21 +24,6 @@
 
 package org.mgenterprises.mgmoney.saving.server;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.io.FileUtils;
-import org.mgenterprises.mgmoney.saving.AbstractSaveableAdapter;
-import org.mgenterprises.mgmoney.saving.AbstractSaveableArrayAdapter;
 import org.mgenterprises.mgmoney.saving.Saveable;
 
 /**
@@ -47,7 +32,7 @@ import org.mgenterprises.mgmoney.saving.Saveable;
  */
 public interface SaveManager {
     
-    public boolean persistSaveable(String holder, Saveable saveable);
+    public boolean persistSaveable(String type, String holder, Saveable saveable);
     
     public void removeLock(String type, String id);
     
@@ -63,5 +48,5 @@ public interface SaveManager {
     
     public Saveable[] getAllSaveables(String type);
     
-    public int getSaveableCount(String type);
+    public long getSaveableCount(String type);
 }

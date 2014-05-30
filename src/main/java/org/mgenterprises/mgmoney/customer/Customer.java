@@ -24,6 +24,8 @@
 
 package org.mgenterprises.mgmoney.customer;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import org.mgenterprises.mgmoney.saving.Saveable;
 import org.mgenterprises.mgmoney.util.State;
 import org.mgenterprises.mgmoney.views.RowView;
@@ -32,6 +34,7 @@ import org.mgenterprises.mgmoney.views.RowView;
  *
  * @author Manuel Gauto
  */
+@Entity
 public class Customer extends Saveable{
     private int customerNumber;
     private String companyName;
@@ -46,6 +49,7 @@ public class Customer extends Saveable{
     public Customer() {
     }
 
+    @Id
     public int getCustomerNumber() {
         return customerNumber;
     }

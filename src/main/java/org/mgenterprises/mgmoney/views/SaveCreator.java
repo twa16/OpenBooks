@@ -171,7 +171,7 @@ public class SaveCreator extends javax.swing.JFrame {
         File dataDir = new File(pathField.getText());
         dataDir.mkdirs();
         FileBackedSaveManager saveManager = new FileBackedSaveManager(dataDir);
-        saveManager.persistSaveable("SERVER", userProfile);
+        saveManager.persistSaveable(userProfile.getClass().getSimpleName(), "SERVER", userProfile);
         //saveManager.removeLock(userProfile.getSaveableModuleName(), userProfile.getUniqueId());
         //this.setVisible(false);
         //this.dispose();

@@ -25,6 +25,8 @@
 package org.mgenterprises.mgmoney.saving.server.users;
 
 import java.util.ArrayList;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import org.mgenterprises.mgmoney.saving.Saveable;
 import org.mgenterprises.mgmoney.saving.server.access.ACTION;
 import org.mgenterprises.mgmoney.saving.server.access.AccessRight;
@@ -33,16 +35,21 @@ import org.mgenterprises.mgmoney.saving.server.access.AccessRight;
  *
  * @author mgauto
  */
+@Entity
 public class UserProfile extends Saveable{
     private String username;
     private String passwordHash;
     private ArrayList<AccessRight> accessRights = new ArrayList<AccessRight>();
+
+    public UserProfile() {
+    }
 
     public UserProfile(String username, String passwordHash) {
         this.username = username;
         this.passwordHash = passwordHash;
     }
 
+    @Id
     public String getUsername() {
         return username;
     }

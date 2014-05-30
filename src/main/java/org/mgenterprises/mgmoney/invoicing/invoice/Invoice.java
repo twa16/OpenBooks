@@ -26,6 +26,12 @@ package org.mgenterprises.mgmoney.invoicing.invoice;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
+import javax.persistence.Temporal;
 import org.mgenterprises.mgmoney.customer.Customer;
 import org.mgenterprises.mgmoney.saving.Saveable;
 
@@ -33,8 +39,9 @@ import org.mgenterprises.mgmoney.saving.Saveable;
  *
  * @author Manuel Gauto
  */
+@Entity
 public class Invoice extends Saveable{
-    private int invoiceNumber;
+    private long invoiceNumber;
     private Date dateCreated;
     private double amountPaid;
     private Date datePaid = new Date(0);
@@ -52,7 +59,8 @@ public class Invoice extends Saveable{
         
     }
 
-    public int getInvoiceNumber() {
+    @Id
+    public long getInvoiceNumber() {
         return invoiceNumber;
     }
 
@@ -60,6 +68,7 @@ public class Invoice extends Saveable{
         this.invoiceNumber = invoiceNumber;
     }
 
+    @Temporal(javax.persistence.TemporalType.DATE)
     public Date getDateCreated() {
         return dateCreated;
     }
@@ -76,6 +85,7 @@ public class Invoice extends Saveable{
         this.amountPaid = amountPaid;
     }
 
+    @Temporal(javax.persistence.TemporalType.DATE)
     public Date getDatePaid() {
         return datePaid;
     }
@@ -100,6 +110,8 @@ public class Invoice extends Saveable{
         this.customerID = customerID;
     }
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "invoice")
+    @OrderColumn(name = "invoice_index")
     public InvoiceItem[] getInvoiceItems() {
         return invoiceItems;
     }
@@ -108,6 +120,7 @@ public class Invoice extends Saveable{
         this.invoiceItems = invoiceItems;
     }
 
+    @Temporal(javax.persistence.TemporalType.DATE)
     public Date getDateDue() {
         return dateDue;
     }

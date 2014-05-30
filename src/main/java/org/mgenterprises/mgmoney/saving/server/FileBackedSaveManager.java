@@ -38,7 +38,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.mgenterprises.mgmoney.saving.AbstractSaveableAdapter;
-import org.mgenterprises.mgmoney.saving.AbstractSaveableArrayAdapter;
 import org.mgenterprises.mgmoney.saving.Saveable;
 
 /**
@@ -57,7 +56,7 @@ public class FileBackedSaveManager implements SaveManager {
         gson = gsonBuilder.create();
     }
     
-    public boolean persistSaveable(String holder, Saveable saveable) {
+    public boolean persistSaveable(String type, String holder, Saveable saveable) {
         File saveDir = new File(saveRootDirectory + File.separator + saveable.getSaveableModuleName());
         File saveFile = new File(saveRootDirectory + File.separator + saveable.getSaveableModuleName() + File.separator + saveable.getUniqueId());
         try {
@@ -164,7 +163,7 @@ public class FileBackedSaveManager implements SaveManager {
         return saveableList.toArray(saveables);
     }
     
-    public int getSaveableCount(String type) {
+    public long getSaveableCount(String type) {
         File[] files = new File(saveRootDirectory + File.separator + type).listFiles();
         int count = 0;
         for (File file : files) {
