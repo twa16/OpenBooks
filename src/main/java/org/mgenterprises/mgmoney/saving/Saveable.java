@@ -24,6 +24,8 @@
 
 package org.mgenterprises.mgmoney.saving;
 
+import javax.persistence.Transient;
+
 
 /**
  *
@@ -45,5 +47,9 @@ public abstract class Saveable{
     
     public abstract String getSaveableModuleName();
     
+    public void setSaveableModuleName(String name){}
+    
     public abstract String getUniqueId();
+    
+    public abstract void setUniqueId(String id);
 }

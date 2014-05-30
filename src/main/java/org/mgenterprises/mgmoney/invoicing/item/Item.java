@@ -25,6 +25,7 @@
 package org.mgenterprises.mgmoney.invoicing.item;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import org.mgenterprises.mgmoney.saving.Saveable;
 
@@ -79,11 +80,16 @@ public class Item extends Saveable{
 
     @Override
     public String getSaveableModuleName() {
-        return this.getClass().getSimpleName();
+        return this.getClass().getName();
     }
 
     @Override
     public String getUniqueId() {
         return name;
+    }
+
+    @Override
+    public void setUniqueId(String id) {
+        this.name = id;
     }
 }

@@ -26,6 +26,7 @@ package org.mgenterprises.mgmoney.invoicing.invoice;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import org.mgenterprises.mgmoney.invoicing.item.Item;
 
@@ -35,7 +36,6 @@ import org.mgenterprises.mgmoney.invoicing.item.Item;
  */
 @Entity
 public class InvoiceItem extends Item{
-    @ManyToOne
     private Invoice invoice;
     private int quantity;
     private double price;
@@ -54,6 +54,8 @@ public class InvoiceItem extends Item{
     }
 
     
+    @ManyToOne
+    @JoinColumn(name="invoiceNumber")
     public Invoice getInvoice() {
         return invoice;
     }

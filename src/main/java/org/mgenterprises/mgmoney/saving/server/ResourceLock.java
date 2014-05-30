@@ -24,12 +24,15 @@
 
 package org.mgenterprises.mgmoney.saving.server;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 /**
  *
  * @author Manuel Gauto
  */
+@Entity
 public class ResourceLock {
     private long lockid;
     private String type;
@@ -40,6 +43,7 @@ public class ResourceLock {
     }
 
     @Id
+    @GeneratedValue
     public long getLockid() {
         return lockid;
     }

@@ -32,6 +32,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 import org.mgenterprises.mgmoney.customer.Customer;
 import org.mgenterprises.mgmoney.saving.Saveable;
 
@@ -129,6 +130,7 @@ public class Invoice extends Saveable{
         this.dateDue = dateDue;
     }
 
+    @Transient
     public double getTotal(){
         double total = 0;
         for(InvoiceItem invoiceItems : getInvoiceItems()) {
@@ -139,11 +141,16 @@ public class Invoice extends Saveable{
 
     @Override
     public String getSaveableModuleName() {
-        return this.getClass().getSimpleName();
+        return this.getClass().getName();
     }
 
     @Override
     public String getUniqueId() {
         return String.valueOf(getInvoiceNumber());
+    }
+
+    @Override
+    public void setUniqueId(String id) {
+        this.invoiceNumber = Long.parseLong(id);
     }
 }

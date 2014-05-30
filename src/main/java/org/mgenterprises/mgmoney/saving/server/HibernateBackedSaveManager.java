@@ -65,6 +65,7 @@ public class HibernateBackedSaveManager implements SaveManager{
                 Session session = sessionFactory.openSession();
                 session.beginTransaction();
                 session.save(Class.forName(saveable.getSaveableModuleName()).cast(saveable));
+                session.getTransaction().commit();
                 return true;
             }
         } catch (ClassNotFoundException ex) {
@@ -89,8 +90,7 @@ public class HibernateBackedSaveManager implements SaveManager{
         Session session = sessionFactory.openSession();
         session.beginTransaction();
         session.beginTransaction();
-        Query query = session.createQuery("delete from Saveable where type=:type and id=:id");
-        query.setString("type", type);
+        Query query = session.createQuery("delete from "+getClassFromType(type)+" where id=:id");
         query.setString("id", id);
         session.getTransaction().commit();
     }
@@ -136,8 +136,7 @@ public class HibernateBackedSaveManager implements SaveManager{
     public Saveable getSaveable(String type, String id) {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
-        Query query = session.createQuery("From :type where id=:id");
-        query.setString("type", type);
+        Query query = session.createQuery("From "+getClassFromType(type)+" where id=:id");
         query.setString("id", id);
         Saveable saveable = (Saveable) query.uniqueResult();
         session.getTransaction().commit();
@@ -148,9 +147,8 @@ public class HibernateBackedSaveManager implements SaveManager{
     public Saveable[] getAllSaveables(String type) {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
-        System.err.println(type);
-        Query query = session.createQuery("From :type");
-        query.setString("type", type);
+        String queryString = "From "+getClassFromType(type);
+        Query query = session.createQuery(queryString);
         List list = query.list();
         Saveable[] saveables = new Saveable[list.size()];
         for(int i = 0; i < list.size(); i++){
@@ -169,4 +167,9 @@ public class HibernateBackedSaveManager implements SaveManager{
         return count.longValue();
     }
     
+    public String getClassFromType(String type) {
+        String[] parts = type.split("\\.");
+        System.out.println("   "+type+" --> "+parts[parts.length-1]);
+        return parts[parts.length-1];
+    }
 }

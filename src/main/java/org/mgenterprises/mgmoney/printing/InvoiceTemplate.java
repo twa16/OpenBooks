@@ -90,5 +90,10 @@ public class InvoiceTemplate extends Saveable{
     public String getUniqueId() {
         return String.valueOf(templateID);
     }
+
+    @Override
+    public void setUniqueId(String id) {
+        this.templateID = Integer.parseInt(id);
+    }
     
 }

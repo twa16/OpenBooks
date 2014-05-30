@@ -25,6 +25,7 @@
 package org.mgenterprises.mgmoney.customer;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import org.mgenterprises.mgmoney.saving.Saveable;
 import org.mgenterprises.mgmoney.util.State;
@@ -136,11 +137,16 @@ public class Customer extends Saveable{
 
     @Override
     public String getSaveableModuleName() {
-        return this.getClass().getSimpleName();
+        return this.getClass().getName();
     }
 
     @Override
     public String getUniqueId() {
         return String.valueOf(getCustomerNumber());
+    }
+
+    @Override
+    public void setUniqueId(String id) {
+        this.customerNumber=Integer.parseInt(id);
     }
 }

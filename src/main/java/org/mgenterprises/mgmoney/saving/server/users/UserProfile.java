@@ -26,6 +26,7 @@ package org.mgenterprises.mgmoney.saving.server.users;
 
 import java.util.ArrayList;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import org.mgenterprises.mgmoney.saving.Saveable;
 import org.mgenterprises.mgmoney.saving.server.access.ACTION;
@@ -90,11 +91,16 @@ public class UserProfile extends Saveable{
 
     @Override
     public String getSaveableModuleName() {
-        return this.getClass().getSimpleName();
+        return this.getClass().getName();
     }
 
     @Override
     public String getUniqueId() {
         return username;
+    }
+
+    @Override
+    public void setUniqueId(String id) {
+        this.username = id;
     }
 }

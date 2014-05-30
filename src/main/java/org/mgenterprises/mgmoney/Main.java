@@ -54,7 +54,7 @@ public class Main {
     public static void main(String[] args) throws UnknownHostException {
         File file = new File("D:\\My Documents\\MGM\\");
         SaveManager saveManager = new HibernateBackedSaveManager();//FileBackedSaveManager(file);
-        UserManager userManager = new UserManager(new File(file+File.separator+"org.mgenterprises.mgmoney.saving.server.users.UserProfile"));
+        UserManager userManager = new UserManager(new File(file+File.separator+"UserProfile"));
         short port = 6969;
         SaveServer saveServer = new SaveServer("127.0.0.1", port, userManager, saveManager);
         saveServer.startServer();
