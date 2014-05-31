@@ -37,7 +37,6 @@ import org.mgenterprises.mgmoney.saving.ServerBackedMap;
  * @author Manuel Gauto
  */
 public class CustomerManager{
-    private int highestId = 0;
     private ServerBackedMap<Customer> customers;
     
     public CustomerManager(SaveServerConnection saveServerConnection) {
@@ -47,7 +46,6 @@ public class CustomerManager{
     
     public void addCustomer(Customer item) throws IOException{
         customers.put(item);
-        highestId++;
     }
     
     public Customer[] getCustomers() throws IOException {
@@ -72,8 +70,8 @@ public class CustomerManager{
         return customers.get(String.valueOf(id));
     }
 
-    public int getHighestId() {
-        return highestId;
+    public int getHighestId() throws IOException {
+        return customers.size();
     }
 
     public ServerBackedMap<Customer> getCustomerMap() {

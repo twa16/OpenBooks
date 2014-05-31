@@ -24,10 +24,15 @@
 
 package org.mgenterprises.mgmoney.invoicing.invoice;
 
+import java.io.Serializable;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import org.mgenterprises.mgmoney.invoicing.item.Item;
 
 /**
@@ -35,8 +40,8 @@ import org.mgenterprises.mgmoney.invoicing.item.Item;
  * @author Manuel Gauto
  */
 @Entity
-public class InvoiceItem extends Item{
-    private Invoice invoice;
+@Table(name="InvoiceItem")
+public class InvoiceItem extends Item implements Serializable{
     private int quantity;
     private double price;
     
@@ -51,17 +56,6 @@ public class InvoiceItem extends Item{
     public InvoiceItem(int quantity, String name, String description, double basePrice) {
         super(name, description, basePrice);
         this.quantity = quantity;
-    }
-
-    
-    @ManyToOne
-    @JoinColumn(name="invoiceNumber")
-    public Invoice getInvoice() {
-        return invoice;
-    }
-
-    public void setInvoice(Invoice invoice) {
-        this.invoice = invoice;
     }
     
     public double getPrice() {

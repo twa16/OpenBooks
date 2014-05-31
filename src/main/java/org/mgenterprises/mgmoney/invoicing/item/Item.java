@@ -26,7 +26,10 @@ package org.mgenterprises.mgmoney.invoicing.item;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import org.mgenterprises.mgmoney.saving.Saveable;
 
 /**
@@ -34,7 +37,9 @@ import org.mgenterprises.mgmoney.saving.Saveable;
  * @author Manuel Gauto
  */
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Item extends Saveable{
+    private long ID;
     private String name;
     private String description;
     private double basePrice;
@@ -47,8 +52,17 @@ public class Item extends Saveable{
         this.description = description;
         this.basePrice = basePrice;
     }
-
+    
     @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    public long getID() {
+        return ID;
+    }
+
+    public void setID(long ID) {
+        this.ID = ID;
+    }
+    
     public String getName() {
         return name;
     }

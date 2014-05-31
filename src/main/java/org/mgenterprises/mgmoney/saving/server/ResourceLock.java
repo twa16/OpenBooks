@@ -24,9 +24,11 @@
 
 package org.mgenterprises.mgmoney.saving.server;
 
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -35,6 +37,7 @@ import javax.persistence.Id;
 @Entity
 public class ResourceLock {
     private long lockid;
+    private Date dateCreated = new Date(System.currentTimeMillis());
     private String type;
     private String id;
     private String holder;
@@ -50,6 +53,15 @@ public class ResourceLock {
 
     public void setLockid(long lockid) {
         this.lockid = lockid;
+    }
+
+    @Temporal(javax.persistence.TemporalType.DATE)
+    public Date getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(Date dateCreated) {
+        this.dateCreated = dateCreated;
     }
     
     public String getType() {

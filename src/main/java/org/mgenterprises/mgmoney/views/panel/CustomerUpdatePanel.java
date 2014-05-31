@@ -354,7 +354,12 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
     }// </editor-fold>//GEN-END:initComponents
 
     private void newCustomerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newCustomerButtonActionPerformed
-        this.idField.setText(String.valueOf(customerManager.getHighestId()));
+        try {
+            this.idField.setText(String.valueOf(customerManager.getHighestId()));
+        } catch (IOException ex) {
+            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
     }//GEN-LAST:event_newCustomerButtonActionPerformed
 
     private void clearFields(){

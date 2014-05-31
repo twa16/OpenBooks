@@ -21,14 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.mgenterprises.mgmoney.invoicing.invoice;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Temporal;
@@ -41,12 +46,14 @@ import org.mgenterprises.mgmoney.saving.Saveable;
  * @author Manuel Gauto
  */
 @Entity
-public class Invoice extends Saveable{
+@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
+public class Invoice extends Saveable implements Serializable {
+
     private long invoiceNumber;
     private Date dateCreated;
     private double amountPaid;
     private Date datePaid = new Date(0);
-    private Date dateDue = new Date(System.currentTimeMillis()+(86400000*30));
+    private Date dateDue = new Date(System.currentTimeMillis() + (86400000 * 30));
     private int purchaseOrderNumber;
     private int customerID;
     private InvoiceItem[] invoiceItems;
@@ -57,7 +64,7 @@ public class Invoice extends Saveable{
     }
 
     public Invoice() {
-        
+
     }
 
     @Id
@@ -65,11 +72,11 @@ public class Invoice extends Saveable{
         return invoiceNumber;
     }
 
-    public void setInvoiceNumber(int invoiceNumber) {
+    public void setInvoiceNumber(long invoiceNumber) {
         this.invoiceNumber = invoiceNumber;
     }
 
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     public Date getDateCreated() {
         return dateCreated;
     }
@@ -86,7 +93,7 @@ public class Invoice extends Saveable{
         this.amountPaid = amountPaid;
     }
 
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     public Date getDatePaid() {
         return datePaid;
     }
@@ -111,8 +118,11 @@ public class Invoice extends Saveable{
         this.customerID = customerID;
     }
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "invoice")
-    @OrderColumn(name = "invoice_index")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(name = "invoice_invoiceitems", joinColumns = {
+        @JoinColumn(name = "Invoice_ID")}, inverseJoinColumns = {
+        @JoinColumn(name = "Item_ID")})
+    @OrderColumn(name="invoiceitem_index")
     public InvoiceItem[] getInvoiceItems() {
         return invoiceItems;
     }
@@ -121,7 +131,7 @@ public class Invoice extends Saveable{
         this.invoiceItems = invoiceItems;
     }
 
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     public Date getDateDue() {
         return dateDue;
     }
@@ -131,10 +141,10 @@ public class Invoice extends Saveable{
     }
 
     @Transient
-    public double getTotal(){
+    public double getTotal() {
         double total = 0;
-        for(InvoiceItem invoiceItems : getInvoiceItems()) {
-            total+=invoiceItems.getPrice();
+        for (InvoiceItem invoiceItems : getInvoiceItems()) {
+            total += invoiceItems.getPrice();
         }
         return total;
     }

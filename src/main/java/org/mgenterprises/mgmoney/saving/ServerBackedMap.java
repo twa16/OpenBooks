@@ -271,8 +271,10 @@ public class ServerBackedMap<V extends Saveable> {
             SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
             String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
             
-            this.lockedIDs.add(type+":#:"+id);
-            return (json.equals("200"));
+            if(json.equals("200") || json.equals("302")) {
+                this.lockedIDs.add(type+":#:"+id);
+                return true;
+            }
         } catch (InvalidKeySpecException ex) {
             Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchAlgorithmException ex) {
