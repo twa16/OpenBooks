@@ -35,24 +35,22 @@ import org.mgenterprises.mgmoney.saving.ServerBackedMap;
  *
  * @author Manuel Gauto
  */
-public class ItemManager{
-    private ServerBackedMap<Item> items;
+public class ItemManager extends ServerBackedMap<Item>{
 
     public ItemManager(SaveServerConnection saveServerConnection) {
-        this.items = new ServerBackedMap<Item>(new Item(),
-                                               saveServerConnection);
+        super(new Item(), saveServerConnection);
     }
     
     public void addItem(Item item) throws IOException{
-        items.put(item);
+        put(item);
     }
     
     public void deleteItem(String itemName) throws IOException {
-        items.remove(itemName);
+        remove(itemName);
     }
     
     public Item getItem(String name) throws IOException {
-        return items.get(name);
+        return get(name);
     }
     
     public void updateItem(Item item) throws IOException {
@@ -60,18 +58,14 @@ public class ItemManager{
     }
     
     public void renameItem(String oldItemName, Item item) throws IOException{
-        items.remove(oldItemName);
+        remove(oldItemName);
         addItem(item);
     }
     
     public Item[] getItems() throws IOException {
-        ArrayList<Item> itemsList =  items.values();
+        ArrayList<Item> itemsList = values();
         Item[] temp = new Item[itemsList.size()];
         return itemsList.toArray(temp);
-    }
-
-    public ServerBackedMap<Item> getItemMap() {
-        return items;
     }
     
 }

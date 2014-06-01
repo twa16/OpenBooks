@@ -116,7 +116,7 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyL
             //Top
             Customer customer = customerManager.getCustomer(invoice.getCustomerID());
             this.customerCombobox.setSelectedIndex(customer.getCustomerNumber());
-            customerManager.getCustomerMap().releaseLock(new Customer().getSaveableModuleName(), String.valueOf(invoice.getCustomerID()));
+            customerManager.releaseLock(new Customer().getSaveableModuleName(), String.valueOf(invoice.getCustomerID()));
             this.invoiceNumberField.setText(String.valueOf(invoice.getInvoiceNumber()));
             this.poNumberField.setText(String.valueOf(invoice.getPurchaseOrderNumber()));
             this.dateCreatedField.setText(dateFormat.format(invoice.getDateCreated()));
@@ -594,7 +594,7 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyL
     
     private void onModify() {
         try {
-            if(invoiceManager.getInvoiceMap().existsAndAllowed(invoiceNumberField.getText()) || invoiceManager.tryLock(new Invoice().getSaveableModuleName(), this.invoiceNumberField.getText())){
+            if(invoiceManager.existsAndAllowed(invoiceNumberField.getText()) || invoiceManager.tryLock(new Invoice().getSaveableModuleName(), this.invoiceNumberField.getText())){
                 this.saveButton.setText("Save *");
                 this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
             }
@@ -638,7 +638,7 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyL
         if(e.getChangeFlags() == HierarchyEvent.DISPLAYABILITY_CHANGED)
         {       
             try {
-                    invoiceManager.getInvoiceMap().releaseAllLocks();
+                    invoiceManager.releaseAllLocks();
                 } catch (IOException ex) {
                     Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }

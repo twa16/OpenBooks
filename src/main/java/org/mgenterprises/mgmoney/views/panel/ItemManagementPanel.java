@@ -253,7 +253,7 @@ public class ItemManagementPanel extends javax.swing.JPanel implements Hierarchy
             Item item = itemManager.getItem(itemName);
             this.descriptionField.setText(item.getDescription());
             this.basePriceField.setText(String.valueOf(item.getBasePrice()));
-            if(!itemManager.getItemMap().existsAndAllowed(item.getName())){
+            if(!itemManager.existsAndAllowed(item.getName())){
                 this.saveButton.setText("Save (Locked)");
                 this.saveButton.setEnabled(false);
             }
@@ -340,7 +340,7 @@ public class ItemManagementPanel extends javax.swing.JPanel implements Hierarchy
         if(he.getChangeFlags() == HierarchyEvent.DISPLAYABILITY_CHANGED)
         {           
             try {
-                itemManager.getItemMap().releaseAllLocks();
+                itemManager.releaseAllLocks();
             } catch (IOException ex) {
                 Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
             }

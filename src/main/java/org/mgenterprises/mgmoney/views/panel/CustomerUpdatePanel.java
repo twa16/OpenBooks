@@ -394,7 +394,7 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
             else {
                 customerManager.addCustomer(customer);
             }
-            customerManager.getCustomerMap().releaseLock(new Customer().getSaveableModuleName(), idField.getText());
+            customerManager.releaseLock(new Customer().getSaveableModuleName(), idField.getText());
             this.saveButton.setText("Save");
             this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
             clearFields();
@@ -536,7 +536,7 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
              //do the required action upon close
             if(!this.isDisplayable()){           
                 try {
-                    customerManager.getCustomerMap().releaseAllLocks();
+                    customerManager.releaseAllLocks();
                 } catch (IOException ex) {
                     Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }

@@ -34,6 +34,7 @@ import net.sf.ofx4j.client.FinancialInstitutionData;
 import net.sf.ofx4j.client.FinancialInstitutionProfile;
 import net.sf.ofx4j.client.FinancialInstitutionService;
 import net.sf.ofx4j.client.impl.FinancialInstitutionServiceImpl;
+import net.sf.ofx4j.client.impl.OFXHomeFIDataStore;
 import net.sf.ofx4j.domain.data.banking.AccountType;
 import net.sf.ofx4j.domain.data.banking.BankAccountDetails;
 
@@ -45,10 +46,12 @@ public class BankOFXInterface {
     private FinancialInstitutionData bankData;
     private FinancialInstitutionProfile profile;
     private BankAccount bankAccount;
-
+    
     public BankOFXInterface(FinancialInstitutionData bankData) {
         this.bankData = bankData;
     }
+    
+    
     
     public BankAccount getBankAccount(AccountType accountType, String routingNumber, String accountNumber, String username, String password) throws OFXException, UnsupportedAccountTypeException {
         //Temporary check to make sure we only allow what we have implemented

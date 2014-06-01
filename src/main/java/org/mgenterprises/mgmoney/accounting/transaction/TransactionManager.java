@@ -22,54 +22,19 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.mgmoney.customer;
+package org.mgenterprises.mgmoney.accounting.transaction;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import org.mgenterprises.mgmoney.invoicing.invoice.Invoice;
 import org.mgenterprises.mgmoney.saving.SaveServerConnection;
-import org.mgenterprises.mgmoney.saving.Saveable;
 import org.mgenterprises.mgmoney.saving.ServerBackedMap;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class CustomerManager extends ServerBackedMap<Customer>{
+public class TransactionManager extends ServerBackedMap<Transaction>{
 
-    public CustomerManager(SaveServerConnection saveServerConnection) {
-        super(new Customer(), saveServerConnection);
-    }
-    
-    public void addCustomer(Customer item) throws IOException{
-        put(item);
-    }
-    
-    public Customer[] getCustomers() throws IOException {
-        ArrayList<Customer> customerList = values();
-        Customer[] temp = new Customer[customerList.size()];
-        return customerList.toArray(temp);
-    }
-    
-    public void updateCustomer(Customer customer) throws IOException {
-        put(customer);
-    }
-    
-    public boolean exists(int id) throws IOException{
-        return existsAndAllowed(String.valueOf(id));
-    }
-    
-    public void deleteCustomer(int id) throws IOException {
-        remove(String.valueOf(id));
-    }
-    
-    public Customer getCustomer(int id) throws IOException{
-        return get(String.valueOf(id));
-    }
-
-    public int getHighestId() throws IOException {
-        return size();
+    public TransactionManager(SaveServerConnection saveServerConnection) {
+        super(new Transaction(), saveServerConnection);
     }
     
 }

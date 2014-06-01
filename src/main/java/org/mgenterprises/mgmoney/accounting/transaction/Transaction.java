@@ -25,15 +25,31 @@
 package org.mgenterprises.mgmoney.accounting.transaction;
 
 import java.util.Date;
+import org.mgenterprises.mgmoney.saving.Saveable;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class Transaction {
+public class Transaction extends Saveable{
     private int accountID;
     private String transactionID;
     private String description;
     private Date datePosted;
     private double amount;
+
+    @Override
+    public String getSaveableModuleName() {
+        return this.getClass().getName();
+    }
+
+    @Override
+    public String getUniqueId() {
+        return transactionID;
+    }
+
+    @Override
+    public void setUniqueId(String id) {
+        this.transactionID = id;
+    }
 }

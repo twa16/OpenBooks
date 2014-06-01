@@ -237,9 +237,9 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
     @Override
     public void windowClosing(WindowEvent we) {
         try {
-            customerManager.getCustomerMap().releaseAllLocks();
-            itemManager.getItemMap().releaseAllLocks();
-            invoiceManager.getInvoiceMap().releaseAllLocks();
+            customerManager.releaseAllLocks();
+            itemManager.releaseAllLocks();
+            invoiceManager.releaseAllLocks();
         } catch (IOException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }

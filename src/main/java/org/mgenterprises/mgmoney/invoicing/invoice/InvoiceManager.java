@@ -26,45 +26,41 @@ package org.mgenterprises.mgmoney.invoicing.invoice;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.mgenterprises.mgmoney.customer.Customer;
 import org.mgenterprises.mgmoney.saving.SaveServerConnection;
-import org.mgenterprises.mgmoney.saving.Saveable;
 import org.mgenterprises.mgmoney.saving.ServerBackedMap;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class InvoiceManager{
-    private ServerBackedMap<Invoice> invoices;
+public class InvoiceManager extends ServerBackedMap<Invoice>{
 
     public InvoiceManager(SaveServerConnection saveServerConnection) {
-         invoices = new ServerBackedMap<Invoice>(new Invoice(),
-                                                 saveServerConnection);
+        super(new Invoice(), saveServerConnection);
     }
     
     public void addInvoice(Invoice item) throws IOException{
-        invoices.put(item);
+        put(item);
     }
     
     public Invoice getInvoice(int id) throws IOException {
-        return invoices.get(String.valueOf(id));
+        return get(String.valueOf(id));
     }
     
     public void updateInvoice(Invoice invoice) throws IOException {
-        invoices.put(invoice);
+        put(invoice);
     }
     
     public boolean exists(long id) throws IOException {
-        return invoices.existsAndAllowed(String.valueOf(id));
+        return existsAndAllowed(String.valueOf(id));
     }
     
     public int removeAllCustomerInvoices(Customer customer) throws IOException{
         int count = 0;
-        for(Invoice invoice : invoices.values()) {
+        for(Invoice invoice : values()) {
             if(invoice.getCustomerID()==customer.getCustomerNumber()){
-                invoices.remove(String.valueOf(invoice.getInvoiceNumber()));
+                remove(String.valueOf(invoice.getInvoiceNumber()));
                 count++;
             }
         }
@@ -72,18 +68,18 @@ public class InvoiceManager{
     }
 
     public int getHighestID() throws IOException {
-        return invoices.size();
+        return size();
     }
     
     public Invoice[] getInvoices() throws IOException {
-        ArrayList<Invoice> invoiceList = invoices.values();
+        ArrayList<Invoice> invoiceList = values();
         Invoice[] invoices = new Invoice[invoiceList.size()];
         return invoiceList.toArray(invoices);
     }
     
     public Invoice[] getCustomerInvoices(Customer customer) throws IOException {
         ArrayList<Invoice> customerInvoices = new ArrayList<Invoice>();
-        for(Invoice invoice : invoices.values()) {
+        for(Invoice invoice : values()) {
             if(invoice.getCustomerID()==customer.getCustomerNumber()){
                 customerInvoices.add(invoice);
             }
@@ -93,15 +89,11 @@ public class InvoiceManager{
     }
     
     public boolean releaseLock(String type, String id) throws IOException {
-        return invoices.releaseLock(type, id);
+        return releaseLock(type, id);
     }
     
     public boolean tryLock(String type, String id) throws IOException {
-        return invoices.tryLock(type, id);
-    }
-
-    public ServerBackedMap<Invoice> getInvoiceMap() {
-        return invoices;
+        return tryLock(type, id);
     }
     
 }
