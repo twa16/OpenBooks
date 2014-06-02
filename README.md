@@ -9,3 +9,10 @@ There are three steps that I always try to follow when building applications:
 3. Make it fast
 
 Current Step: 1
+
+There are a few pretty killer features that we will have:
+- Multiuser support!
+- OFX support(Bank synchronization) 
+- Email integration
+- PDF export
+- Paperwork templates based on HTML and CSS
