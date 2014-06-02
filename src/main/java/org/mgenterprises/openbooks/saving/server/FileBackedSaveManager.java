@@ -42,7 +42,10 @@ import org.mgenterprises.openbooks.saving.Saveable;
 
 /**
  * Manages data access and persistence
+ * 
+ * This was for initial testing only. This is replaced by the {@link HibernateBackedSaveManager}
  * @author mgauto
+ * @deprecated
  */
 public class FileBackedSaveManager implements SaveManager {
     private File saveRootDirectory;
@@ -172,5 +175,22 @@ public class FileBackedSaveManager implements SaveManager {
             }
         }
         return count;
+    }
+
+    /**
+     * If you really want this you will need to implement this. 
+     * We would much rather use hibernate with a sqlite file for a flatfileish save
+     * @param keys
+     * @param values
+     * @return 
+     */
+    @Override
+    public Saveable[] getWhere(String type, String[] keys, String[] values) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean isLockedForUser(String user, String type, String id) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

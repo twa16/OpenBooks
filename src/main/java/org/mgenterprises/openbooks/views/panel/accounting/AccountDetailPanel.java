@@ -24,17 +24,27 @@
 
 package org.mgenterprises.openbooks.views.panel.accounting;
 
+import org.mgenterprises.openbooks.accounting.account.Account;
+import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
+
 /**
  *
  * @author Manuel Gauto
  */
 public class AccountDetailPanel extends javax.swing.JPanel {
-
+    private Account account;
+    private TransactionManager transactionManager;
     /**
      * Creates new form AccountDetailPanel
      */
-    public AccountDetailPanel() {
+    public AccountDetailPanel(Account account, TransactionManager transactionManager) {
         initComponents();
+        this.account = account;
+        this.transactionManager = transactionManager;
+    }
+    
+    private void loadTransactions() {
+        
     }
 
     /**
@@ -52,7 +62,7 @@ public class AccountDetailPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
 
-        setMinimumSize(new java.awt.Dimension(650, 650));
+        setMinimumSize(new java.awt.Dimension(850, 650));
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel1.setText("Account Name");
@@ -63,16 +73,39 @@ public class AccountDetailPanel extends javax.swing.JPanel {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "ID", "Description", "Date Posted", "Amount"
             }
-        ));
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Double.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(jTable1);
+        if (jTable1.getColumnModel().getColumnCount() > 0) {
+            jTable1.getColumnModel().getColumn(0).setMinWidth(75);
+            jTable1.getColumnModel().getColumn(0).setPreferredWidth(75);
+            jTable1.getColumnModel().getColumn(0).setMaxWidth(75);
+            jTable1.getColumnModel().getColumn(2).setMinWidth(75);
+            jTable1.getColumnModel().getColumn(2).setPreferredWidth(75);
+            jTable1.getColumnModel().getColumn(2).setMaxWidth(75);
+            jTable1.getColumnModel().getColumn(3).setMinWidth(50);
+            jTable1.getColumnModel().getColumn(3).setPreferredWidth(50);
+            jTable1.getColumnModel().getColumn(3).setMaxWidth(50);
+        }
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -81,7 +114,7 @@ public class AccountDetailPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 830, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
@@ -97,13 +130,13 @@ public class AccountDetailPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 582, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 575, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(totalLabel)
                     .addComponent(totalField))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

@@ -95,7 +95,7 @@ public class ServerBackedMap<V extends Saveable> {
             SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
             String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
             
-            return Boolean.getBoolean(json);
+            return json.equals("201");
         } catch (InvalidKeySpecException ex) {
             Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchAlgorithmException ex) {
@@ -128,8 +128,45 @@ public class ServerBackedMap<V extends Saveable> {
             }
             try {
                 Saveable saveable = gson.fromJson(json, Saveable.class);
-                System.err.println(json);
                 this.lockedIDs.add(v.getSaveableModuleName()+":#:"+key);
+                return (V) saveable;
+            }
+            catch(JsonSyntaxException ex) {
+                return null;
+            }
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        finally {
+            bw.close();
+            br.close();
+        }
+        return null;
+    }
+    
+    
+    public synchronized V getWhere(String[] keys, String[] values, boolean tryLockAll) throws IOException {
+        Socket socket = new Socket(serverAddress, serverPort);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        String request = "QUERY"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+Arrays.toString(keys)+SaveServer.DELIMITER+Arrays.toString(values)+SaveServer.DELIMITER+tryLockAll;
+        SecureMessage secureMessage;
+        try {
+            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
+            bw.write(gson.toJson(secureMessage));
+            bw.newLine();
+            bw.flush();
+            String ejson = br.readLine();
+            
+            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
+            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
+            if(json.equals("NO")) {
+                return null;
+            }
+            try {
+                Saveable saveable = gson.fromJson(json, Saveable.class);
                 return (V) saveable;
             }
             catch(JsonSyntaxException ex) {

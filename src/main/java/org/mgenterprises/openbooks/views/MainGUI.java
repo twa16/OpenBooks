@@ -34,6 +34,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.mgenterprises.openbooks.accounting.account.AccountManager;
+import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
 import org.mgenterprises.openbooks.configuration.ConfigurationManager;
 import org.mgenterprises.openbooks.customer.CustomerManager;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
@@ -55,6 +57,8 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
     private CustomerManager customerManager;
     private ItemManager itemManager;
     private InvoiceManager invoiceManager;
+    private TransactionManager transactionManager;
+    private AccountManager accountManager;
     
     private SaveFile saveFile;
     /**
@@ -79,6 +83,8 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
         itemManager = new ItemManager(saveServerConnection);
         invoiceManager = new InvoiceManager(saveServerConnection);
         configurationManager.loadDefaultConfiguration();
+        transactionManager = new TransactionManager(saveServerConnection);
+        accountManager = new AccountManager(saveServerConnection);
         initComponents();
         addWindowListener(this);
     }

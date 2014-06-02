@@ -60,11 +60,27 @@ import org.mgenterprises.openbooks.saving.server.users.UserManager;
  */
 public class SaveServer implements Runnable {
 
+    /**
+     * Delimiter used for requests to the SaveServer
+     */
     public static final String DELIMITER = ":#:";
+    /**
+     * Address to listen on
+     */
     private InetAddress bindAddress;
+    /**
+     * Port to listen on
+     */
     private short port;
+    /**
+     * Controls the main loop of the server. If false, the server will stop
+     * processing requests and end
+     */
     private boolean running = true;
 
+    /**
+     * GSON instance used to process packets
+     */
     private Gson gson;
     private UserManager userManager;
     private SaveManager saveManager;
@@ -101,9 +117,10 @@ public class SaveServer implements Runnable {
     }
 
     public void stop() {
-            running = false;
+        running = false;
     }
 }
+
 class SaveServerRequestProcessor implements Runnable {
 
     private Socket socket;
@@ -120,21 +137,26 @@ class SaveServerRequestProcessor implements Runnable {
         this.userManager = userManager;
         this.saveManager = saveManager;
     }
-    
+
     @Override
     public void run() {
         try {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
+            //Read SecureMessage(Encrypted Request)
             String json = br.readLine();
+            //Parse JSON
             SecureMessage secureMessage = gson.fromJson(json, SecureMessage.class);
+            //Get username of requester
             String username = secureMessage.getUsername();
             String request = "";
 
             try {
+                //Decrypt message using stored password
                 request = userManager.decryptMessage(secureMessage);
             } catch (InvalidKeySpecException ex) {
+                //Password was incorrect
                 bw.write("500");
                 bw.newLine();
                 bw.flush();
@@ -142,15 +164,19 @@ class SaveServerRequestProcessor implements Runnable {
                 br.close();
                 socket.close();
             }
+            //Check to make sure message was actually decrypted
             if (request.length() != 0) {
+                //Split request string using delimiter
                 String[] requestParts = request.split(SaveServer.DELIMITER);
 
-                System.out.println(Arrays.toString(requestParts));
                 String verb = requestParts[0];
                 String response = "500";
                 switch (verb) {
                     case "GET":
                         response = processGET(username, requestParts);
+                        break;
+                    case "QUERY":
+                        response = processQUERY(username, requestParts);
                         break;
                     case "PUT":
                         response = processPUT(username, requestParts);
@@ -169,10 +195,15 @@ class SaveServerRequestProcessor implements Runnable {
                         break;
                 }
                 try {
+                    //Reuse salt for this conversation
                     byte[] salt = secureMessage.getSalt();//cryptoUtils.getSalt(secureRandom);
+                    //Get password from userManager
                     String password = userManager.getUserProfile(username).getPasswordHash();//Hashing.sha256().hashString(userManager.getUserProfile(username).getPasswordHash()+System.currentTimeMillis(), Charsets.UTF_8).toString();
+                    //Encrypt message using user password
                     secureMessage = cryptoUtils.encrypt(username, response, password, salt, false);
+                    //Write to client
                     bw.write(gson.toJson(secureMessage));
+                    //close
                     bw.newLine();
                     bw.flush();
                 } catch (ExecutionException ex) {
@@ -191,17 +222,37 @@ class SaveServerRequestProcessor implements Runnable {
         }
     }
 
+    /**
+     * Get the requested objects
+     * ALL does not lock objects
+     * locks object if it is not locked
+     * @param user
+     * @param requestParts
+     * @return 
+     */
     private String processGET(String user, String[] requestParts) {
         String type = requestParts[1];
         String id = requestParts[2];
+        //Make sure user can access this
         if (userManager.userHasAccessRight(user, type, ACTION.GET)) {
             if (id.equals("ALL")) {
                 Saveable[] saveables = saveManager.getAllSaveables(type);
                 return gson.toJson(saveables);
             } else {
-                saveManager.createLock(user, type, id);
+                //Get lock status
+                String lockHolder = saveManager.getLockHolder(type, id);
+                //If it isn't locked, lock it    
+                if (lockHolder==null) {
+                    saveManager.createLock(user, type, id);
+                }
                 Saveable saveable = saveManager.getSaveable(type, id);
+
+                //Check if the GET was successful
                 if (saveable != null) {
+                    //If it is locked by another user indicate that
+                    if (!lockHolder.equals(user)) {
+                        saveable.setLocked(true);
+                    }
                     Logger.getLogger("SaveServer").log(Level.INFO, "GET from {0} for t: {1} i: {2}", new Object[]{user, type, id});
                     return gson.toJson(saveable, Saveable.class);
                 } else {
@@ -214,6 +265,35 @@ class SaveServerRequestProcessor implements Runnable {
             Logger.getLogger("SaveServer").log(Level.INFO, "Denied GET from {0} for t: {1} i: {2}", new Object[]{user, type, id});
             return "401";
         }
+    }
+
+    private String processQUERY(String user, String[] requestParts) {
+        String type = requestParts[1];
+        String[] keys = fromArraysToString(requestParts[2]);
+        String[] values = fromArraysToString(requestParts[3]);
+        boolean tryLockAll = Boolean.getBoolean(requestParts[4]);
+        //Make sure user can access this
+        if (userManager.userHasAccessRight(user, type, ACTION.GET)) {
+            Saveable[] result = saveManager.getWhere(type, keys, values);
+            for(Saveable saveable : result) {
+                boolean isLockedForUser = saveManager.isLockedForUser(user, type, saveable.getUniqueId());
+                if(!isLockedForUser && tryLockAll) {
+                    saveManager.createLock(user, type, saveable.getUniqueId());
+                } else if(isLockedForUser) {
+                    saveable.setLocked(true);
+                }
+            }
+            Logger.getLogger("SaveServer").log(Level.INFO, "QUERY from {0} for t: {1} keys: {2}", new Object[]{user, type, requestParts[2]});
+            return gson.toJson(result, Saveable.class);
+        } else {
+            Logger.getLogger("SaveServer").log(Level.INFO, "Denied QUERY from {0} for t: {1} keys: {2}", new Object[]{user, type, requestParts[2]});
+            return "401";
+        }
+    }
+
+    private static String[] fromArraysToString(String string) {
+        String[] strings = string.replace("[", "").replace("]", "").split(", ");
+        return strings;
     }
 
     private String processSIZE(String user, String[] requestParts) {
@@ -237,7 +317,7 @@ class SaveServerRequestProcessor implements Runnable {
 
         Saveable saveable = gson.fromJson(data, Saveable.class);
         if (userManager.userHasAccessRight(user, saveable.getSaveableModuleName(), ACTION.PUT)) {
-            if (!saveManager.hasLock(saveable.getSaveableModuleName(), saveable.getUniqueId()) || saveManager.getLockHolder(saveable.getSaveableModuleName(), saveable.getUniqueId()).equals(user)) {
+            if (!saveManager.isLockedForUser(user, saveable.getSaveableModuleName(), saveable.getUniqueId())) {
                 saveManager.persistSaveable(type, user, saveable);
                 Logger.getLogger("SaveServer").log(Level.INFO, "PUT from {0}", new Object[]{user});
                 return "201";
@@ -288,13 +368,13 @@ class SaveServerRequestProcessor implements Runnable {
     private String processLOCK(String user, String[] requestParts) {
         String type = requestParts[1];
         String id = requestParts[2];
-        
+
         String lockHolder = saveManager.getLockHolder(type, id);
         if (lockHolder == null) {
             saveManager.createLock(user, type, id);
             Logger.getLogger("SaveServer").log(Level.INFO, "LOCK from {0} for {1} {2}", new Object[]{user, type, id});
             return "200";
-        } else if(lockHolder.equals(user)){
+        } else if (lockHolder.equals(user)) {
             Logger.getLogger("SaveServer").log(Level.INFO, "LOCK CHECK from {0} for {1} {2}", new Object[]{user, type, id});
             return "302";
         } else {

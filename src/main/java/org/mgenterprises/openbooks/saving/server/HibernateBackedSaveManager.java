@@ -173,4 +173,40 @@ public class HibernateBackedSaveManager implements SaveManager{
         String[] parts = type.split("\\.");
         return parts[parts.length-1];
     }
+
+    @Override
+    public Saveable[] getWhere(String type, String[] keys, String[] values) {
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < keys.length; i++) {
+            String key = keys[i];
+            sb.append(" ");
+            sb.append(key);
+            sb.append("=");
+            sb.append(values[i]);
+        }
+        String queryString = "From "+getClassFromType(type)+" where saveableModuleName=:type"+sb.toString();
+        Query query = session.createQuery(queryString);
+        query.setString("type", type);
+        List list = query.list();
+        Saveable[] saveables = new Saveable[list.size()];
+        for(int i = 0; i < list.size(); i++){
+            saveables[i] = (Saveable) list.get(i);
+        }
+        session.getTransaction().commit();
+        return saveables;
+    }
+
+    @Override
+    public boolean isLockedForUser(String user, String type, String id) {
+       Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        Query query = session.createQuery("From ResourceLock where type=:type and id=:id");
+        query.setString("type", type);
+        query.setString("id", id);
+        ResourceLock resourceLock = (ResourceLock) query.uniqueResult();
+        session.getTransaction().commit();
+        return resourceLock!=null && resourceLock.getHolder().equals(user);
+    }
 }

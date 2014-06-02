@@ -32,6 +32,8 @@ import org.mgenterprises.openbooks.saving.Saveable;
  */
 public interface SaveManager {
     
+    public Saveable[] getWhere(String type, String[] keys, String[] values);
+    
     public boolean persistSaveable(String type, String holder, Saveable saveable);
     
     public void removeLock(String type, String id);
@@ -41,6 +43,8 @@ public interface SaveManager {
     public void createLock(String holder, String type, String id);
     
     public boolean hasLock(String type, String id);
+    
+    public boolean isLockedForUser(String user, String type, String id);
     
     public String getLockHolder(String type, String id);
     
