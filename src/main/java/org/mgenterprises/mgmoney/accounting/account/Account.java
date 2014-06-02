@@ -24,10 +24,87 @@
 
 package org.mgenterprises.mgmoney.accounting.account;
 
+import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import org.mgenterprises.mgmoney.saving.Saveable;
+
 /**
  *
  * @author Manuel Gauto
  */
-public class Account {
+@Entity
+public class Account extends Saveable implements Serializable{
+    @Id
+    private int accountID;
+    private int parentAccount = -1;
+    private AccountType accountType;
+    private String accountName;
+    private String accountDescription;
+    private double accountBalance;
+
+    public int getAccountID() {
+        return accountID;
+    }
+
+    public void setAccountID(int accountID) {
+        this.accountID = accountID;
+    }
+
+    public int getParentAccount() {
+        return parentAccount;
+    }
+
+    public void setParentAccount(int parentAccount) {
+        this.parentAccount = parentAccount;
+    }
+
+    public AccountType getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
+    }
+
+    public String getAccountName() {
+        return accountName;
+    }
+
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
+    }
+
+    public String getAccountDescription() {
+        return accountDescription;
+    }
+
+    public void setAccountDescription(String accountDescription) {
+        this.accountDescription = accountDescription;
+    }
+
+    public double getAccountBalance() {
+        return accountBalance;
+    }
+
+    public void setAccountBalance(double accountBalance) {
+        this.accountBalance = accountBalance;
+    }
+
+    @Override
+    public String getSaveableModuleName() {
+        return this.getClass().getName();
+    }
+
+    @Override
+    public String getUniqueId() {
+        return String.valueOf(accountID);
+    }
+
+    @Override
+    public void setUniqueId(String id) {
+        accountID = Integer.parseInt(id);
+    }
+    
     
 }

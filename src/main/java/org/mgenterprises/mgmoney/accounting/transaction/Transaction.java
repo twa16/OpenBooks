@@ -25,19 +25,65 @@
 package org.mgenterprises.mgmoney.accounting.transaction;
 
 import java.util.Date;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Temporal;
 import org.mgenterprises.mgmoney.saving.Saveable;
 
 /**
  *
  * @author Manuel Gauto
  */
+@Entity
 public class Transaction extends Saveable{
+    @Id
     private int accountID;
     private String transactionID;
     private String description;
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date datePosted;
     private double amount;
 
+    public int getAccountID() {
+        return accountID;
+    }
+
+    public void setAccountID(int accountID) {
+        this.accountID = accountID;
+    }
+
+    public String getTransactionID() {
+        return transactionID;
+    }
+
+    public void setTransactionID(String transactionID) {
+        this.transactionID = transactionID;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Date getDatePosted() {
+        return datePosted;
+    }
+
+    public void setDatePosted(Date datePosted) {
+        this.datePosted = datePosted;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+    
     @Override
     public String getSaveableModuleName() {
         return this.getClass().getName();
