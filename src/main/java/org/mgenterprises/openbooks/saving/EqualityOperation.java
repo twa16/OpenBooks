@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Manuel Gauto.
+ * Copyright 2014 MG Enterprises Consulting LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,36 +22,32 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.openbooks.saving.server;
-
-import org.mgenterprises.openbooks.saving.EqualityOperation;
-import org.mgenterprises.openbooks.saving.Saveable;
+package org.mgenterprises.openbooks.saving;
 
 /**
- * Manages data access and persistence
- * @author mgauto
+ *
+ * @author Manuel Gauto
  */
-public interface SaveManager {
+public enum EqualityOperation {
+    EQUALS("="),
+    GREATER(">"),
+    LESS("<"),
+    GREATER_EQUALS(">="),
+    LESS_EQUALS("<=");
     
-    public Saveable[] getWhere(String type, String[] keys, EqualityOperation[] operations, String[] values);
+    private String opString;
+
+    private EqualityOperation(String opString) {
+        this.opString = opString;
+    }
+
+    public String getOpString() {
+        return opString;
+    }
     
-    public boolean persistSaveable(String type, String holder, Saveable saveable);
+    @Override
+    public String toString(){
+        return opString;
+    }
     
-    public void removeLock(String type, String id);
-    
-    public void removeSaveable(String type, String id);
-    
-    public void createLock(String holder, String type, String id);
-    
-    public boolean hasLock(String type, String id);
-    
-    public boolean isLockedForUser(String user, String type, String id);
-    
-    public String getLockHolder(String type, String id);
-    
-    public Saveable getSaveable(String type, String id);
-    
-    public Saveable[] getAllSaveables(String type);
-    
-    public long getSaveableCount(String type);
 }

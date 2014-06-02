@@ -147,11 +147,11 @@ public class ServerBackedMap<V extends Saveable> {
     }
     
     
-    public synchronized V getWhere(String[] keys, String[] values, boolean tryLockAll) throws IOException {
+    public synchronized V getWhere(String[] keys, EqualityOperation[] operations, String[] values, boolean tryLockAll) throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String request = "QUERY"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+Arrays.toString(keys)+SaveServer.DELIMITER+Arrays.toString(values)+SaveServer.DELIMITER+tryLockAll;
+        String request = "QUERY"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+Arrays.toString(keys)+SaveServer.DELIMITER+Arrays.toString(operations)+SaveServer.DELIMITER+Arrays.toString(values)+SaveServer.DELIMITER+tryLockAll;
         SecureMessage secureMessage;
         try {
             secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);

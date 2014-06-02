@@ -63,6 +63,7 @@ import org.mgenterprises.openbooks.views.actionlistener.TableCellListener;
  * @author Manuel Gauto
  */
 public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyListener {
+    private Invoice loadedInvoice;
     private ConfigurationManager configurationManager;
     private InvoiceManager invoiceManager;
     private CustomerManager customerManager;
@@ -111,6 +112,7 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyL
     }
     
     private void loadInvoiceData(Invoice invoice){
+        this.loadedInvoice = invoice;
         try {
             DefaultTableModel defaultTableModel = (DefaultTableModel) this.invoiceItemTable.getModel();
             //Top
@@ -446,12 +448,12 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyL
 
     private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
         try {
-            int last = Integer.parseInt(this.invoiceNumberField.getText())+1;
-            if(last<=invoiceManager.getHighestID()) this.invoiceNumberField.setText(String.valueOf(last));
+            int next = Integer.parseInt(this.invoiceNumberField.getText())+1;
             clearFields();
-            if(invoiceManager.exists(last)){
-                Invoice invoice = invoiceManager.getInvoice(last);
-                invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), String.valueOf(last));
+            if(next<=invoiceManager.getHighestID()) this.invoiceNumberField.setText(String.valueOf(next));
+            if(invoiceManager.exists(next)){
+                Invoice invoice = invoiceManager.getInvoice(next);
+                invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), String.valueOf(next));
                 loadInvoiceData(invoice);
             }
         }
@@ -557,7 +559,12 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyL
         try {
             this.saveButton.setText("Save");
             this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
-            this.invoiceNumberField.setText(String.valueOf(invoiceManager.getHighestID()));
+            
+            int nextInvoiceID = invoiceManager.getHighestID();
+            this.invoiceNumberField.setText(String.valueOf(nextInvoiceID));
+            while(invoiceManager.tryLock(new Invoice().getSaveableModuleName(), invoiceNumberField.getText())){
+                this.invoiceNumberField.setText(String.valueOf(nextInvoiceID));
+            }
         } catch (IOException ex) {
             Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -593,17 +600,13 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyL
     }
     
     private void onModify() {
-        try {
-            if(invoiceManager.existsAndAllowed(invoiceNumberField.getText()) || invoiceManager.tryLock(new Invoice().getSaveableModuleName(), this.invoiceNumberField.getText())){
-                this.saveButton.setText("Save *");
-                this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
-            }
-            else {
-                this.saveButton.setText("Save (Locked)");
-                this.saveButton.setEnabled(false);
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+        if(!loadedInvoice.isLocked()){
+            this.saveButton.setText("Save *");
+            this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+        }
+        else {
+            this.saveButton.setText("Save (Locked)");
+            this.saveButton.setEnabled(false);
         }
     }
     

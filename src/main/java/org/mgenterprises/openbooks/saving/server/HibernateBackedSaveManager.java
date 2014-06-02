@@ -32,6 +32,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Projections;
+import org.mgenterprises.openbooks.saving.EqualityOperation;
 import org.mgenterprises.openbooks.saving.Saveable;
 
 /**
@@ -175,7 +176,7 @@ public class HibernateBackedSaveManager implements SaveManager{
     }
 
     @Override
-    public Saveable[] getWhere(String type, String[] keys, String[] values) {
+    public Saveable[] getWhere(String type, String[] keys, EqualityOperation[] operations, String[] values) {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
         StringBuilder sb = new StringBuilder();
@@ -183,7 +184,7 @@ public class HibernateBackedSaveManager implements SaveManager{
             String key = keys[i];
             sb.append(" ");
             sb.append(key);
-            sb.append("=");
+            sb.append(operations[i]);
             sb.append(values[i]);
         }
         String queryString = "From "+getClassFromType(type)+" where saveableModuleName=:type"+sb.toString();

@@ -38,6 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.mgenterprises.openbooks.saving.AbstractSaveableAdapter;
+import org.mgenterprises.openbooks.saving.EqualityOperation;
 import org.mgenterprises.openbooks.saving.Saveable;
 
 /**
@@ -185,7 +186,7 @@ public class FileBackedSaveManager implements SaveManager {
      * @return 
      */
     @Override
-    public Saveable[] getWhere(String type, String[] keys, String[] values) {
+    public Saveable[] getWhere(String type, String[] keys, EqualityOperation[] operations, String[] values) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

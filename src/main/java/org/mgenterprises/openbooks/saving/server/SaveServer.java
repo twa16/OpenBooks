@@ -47,6 +47,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.mgenterprises.openbooks.saving.AbstractSaveableAdapter;
+import org.mgenterprises.openbooks.saving.EqualityOperation;
 import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.saving.server.access.ACTION;
 import org.mgenterprises.openbooks.saving.server.security.CryptoUtils;
@@ -269,12 +270,13 @@ class SaveServerRequestProcessor implements Runnable {
 
     private String processQUERY(String user, String[] requestParts) {
         String type = requestParts[1];
-        String[] keys = fromArraysToString(requestParts[2]);
-        String[] values = fromArraysToString(requestParts[3]);
-        boolean tryLockAll = Boolean.getBoolean(requestParts[4]);
+        EqualityOperation[] operations = fromArraysToStringEO(requestParts[2]);
+        String[] keys = fromArraysToString(requestParts[3]);
+        String[] values = fromArraysToString(requestParts[4]);
+        boolean tryLockAll = Boolean.getBoolean(requestParts[5]);
         //Make sure user can access this
         if (userManager.userHasAccessRight(user, type, ACTION.GET)) {
-            Saveable[] result = saveManager.getWhere(type, keys, values);
+            Saveable[] result = saveManager.getWhere(type, keys, operations, values);
             for(Saveable saveable : result) {
                 boolean isLockedForUser = saveManager.isLockedForUser(user, type, saveable.getUniqueId());
                 if(!isLockedForUser && tryLockAll) {
@@ -283,10 +285,10 @@ class SaveServerRequestProcessor implements Runnable {
                     saveable.setLocked(true);
                 }
             }
-            Logger.getLogger("SaveServer").log(Level.INFO, "QUERY from {0} for t: {1} keys: {2}", new Object[]{user, type, requestParts[2]});
+            Logger.getLogger("SaveServer").log(Level.INFO, "QUERY from {0} for t: {1} keys: {2}", new Object[]{user, type, requestParts[3]});
             return gson.toJson(result, Saveable.class);
         } else {
-            Logger.getLogger("SaveServer").log(Level.INFO, "Denied QUERY from {0} for t: {1} keys: {2}", new Object[]{user, type, requestParts[2]});
+            Logger.getLogger("SaveServer").log(Level.INFO, "Denied QUERY from {0} for t: {1} keys: {2}", new Object[]{user, type, requestParts[3]});
             return "401";
         }
     }
@@ -294,6 +296,18 @@ class SaveServerRequestProcessor implements Runnable {
     private static String[] fromArraysToString(String string) {
         String[] strings = string.replace("[", "").replace("]", "").split(", ");
         return strings;
+    }
+    
+    private static EqualityOperation[] fromArraysToStringEO(String string) {
+        String[] strings = string.replace("[", "").replace("]", "").split(", ");
+        EqualityOperation[] ops = new EqualityOperation[strings.length];
+        for(int i = 0; i < strings.length; i++) {
+            String s = strings[i];
+            for(EqualityOperation eo : EqualityOperation.values()) {
+                if(eo.toString().equals(s)) ops[i]=eo;
+            }
+        }
+        return ops;
     }
 
     private String processSIZE(String user, String[] requestParts) {
