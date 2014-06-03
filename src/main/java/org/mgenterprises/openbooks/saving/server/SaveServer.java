@@ -270,13 +270,16 @@ class SaveServerRequestProcessor implements Runnable {
 
     private String processQUERY(String user, String[] requestParts) {
         String type = requestParts[1];
-        EqualityOperation[] operations = fromArraysToStringEO(requestParts[2]);
-        String[] keys = fromArraysToString(requestParts[3]);
+        String[] keys = fromArraysToString(requestParts[2]);
+        EqualityOperation[] operations = fromArraysToStringEO(requestParts[3]);
         String[] values = fromArraysToString(requestParts[4]);
-        boolean tryLockAll = Boolean.getBoolean(requestParts[5]);
+        String[] conjunctions = fromArraysToString(requestParts[5]);
+        
+        boolean arraysOK = keys.length==operations.length&&operations.length==values.length&&values.length==conjunctions.length;
+        boolean tryLockAll = Boolean.getBoolean(requestParts[6]);
         //Make sure user can access this
-        if (userManager.userHasAccessRight(user, type, ACTION.GET)) {
-            Saveable[] result = saveManager.getWhere(type, keys, operations, values);
+        if (userManager.userHasAccessRight(user, type, ACTION.GET) || !arraysOK) {
+            Saveable[] result = saveManager.getWhere(type, keys, operations,values, conjunctions);
             for(Saveable saveable : result) {
                 boolean isLockedForUser = saveManager.isLockedForUser(user, type, saveable.getUniqueId());
                 if(!isLockedForUser && tryLockAll) {

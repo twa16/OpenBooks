@@ -146,12 +146,34 @@ public class ServerBackedMap<V extends Saveable> {
         return null;
     }
     
-    
-    public synchronized V getWhere(String[] keys, EqualityOperation[] operations, String[] values, boolean tryLockAll) throws IOException {
+    /**
+     * 
+     * SAMPLE DATA
+     * 
+     * KEYS
+     *  [0]=name
+     *  [1]=age
+     * 
+     * EQUALITY_OPERATIONS
+     *  [0]="="
+     *  [1]="="
+     * VALUES
+     *  [0]="\"Test User\" OR"
+     *  [1]="17"
+     * 
+     * @param keys
+     * @param operations
+     * @param values value to look for and a logic operator at the end if it isn't last
+     * @param conjunctions
+     * @param tryLockAll
+     * @return
+     * @throws IOException 
+     */
+    public synchronized V getWhere(String[] keys, EqualityOperation[] operations, String[] values, String[] conjunctions, boolean tryLockAll) throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String request = "QUERY"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+Arrays.toString(keys)+SaveServer.DELIMITER+Arrays.toString(operations)+SaveServer.DELIMITER+Arrays.toString(values)+SaveServer.DELIMITER+tryLockAll;
+        String request = "GETWHERE"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+Arrays.toString(keys)+SaveServer.DELIMITER+Arrays.toString(operations)+SaveServer.DELIMITER+Arrays.toString(values)+SaveServer.DELIMITER+Arrays.toString(conjunctions)+SaveServer.DELIMITER+tryLockAll;
         SecureMessage secureMessage;
         try {
             secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);

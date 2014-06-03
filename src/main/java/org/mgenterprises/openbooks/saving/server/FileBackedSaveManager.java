@@ -186,7 +186,7 @@ public class FileBackedSaveManager implements SaveManager {
      * @return 
      */
     @Override
-    public Saveable[] getWhere(String type, String[] keys, EqualityOperation[] operations, String[] values) {
+    public Saveable[] getWhere(String type, String[] keys, EqualityOperation[] operations, String[] values, String[] conjunctions) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

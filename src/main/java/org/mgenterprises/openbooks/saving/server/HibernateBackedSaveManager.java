@@ -176,7 +176,7 @@ public class HibernateBackedSaveManager implements SaveManager{
     }
 
     @Override
-    public Saveable[] getWhere(String type, String[] keys, EqualityOperation[] operations, String[] values) {
+    public Saveable[] getWhere(String type, String[] keys, EqualityOperation[] operations, String[] values, String[] conjunctions) {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
         StringBuilder sb = new StringBuilder();
@@ -186,6 +186,8 @@ public class HibernateBackedSaveManager implements SaveManager{
             sb.append(key);
             sb.append(operations[i]);
             sb.append(values[i]);
+            sb.append(" ");
+            sb.append(conjunctions[i]);
         }
         String queryString = "From "+getClassFromType(type)+" where saveableModuleName=:type"+sb.toString();
         Query query = session.createQuery(queryString);

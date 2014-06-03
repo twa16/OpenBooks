@@ -33,7 +33,7 @@ import org.mgenterprises.openbooks.saving.Saveable;
  */
 public interface SaveManager {
     
-    public Saveable[] getWhere(String type, String[] keys, EqualityOperation[] operations, String[] values);
+    public Saveable[] getWhere(String type, String[] keys, EqualityOperation[] operations, String[] values, String[] conjunctions);
     
     public boolean persistSaveable(String type, String holder, Saveable saveable);
     

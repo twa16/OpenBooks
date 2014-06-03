@@ -9,6 +9,8 @@ There are three steps that I always try to follow when building applications:
 3. Make it fast
 
 Current Step: 1
+Since we are at step one #####This code is ALPHA quality
+
 
 There are a few pretty killer features that we will have:
 - Multiuser support!
