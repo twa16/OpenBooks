@@ -1,4 +1,4 @@
-OpenBooks
+OpenBooks          [![Build Status](https://travis-ci.org/twa16/OpenBooks.svg?branch=master)](https://travis-ci.org/twa16/OpenBooks)
 =========
 Open source billing solution for any business. We aim to replace the popular closed source solution.
 
