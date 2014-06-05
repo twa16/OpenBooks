@@ -198,7 +198,7 @@ public class ServerBackedMap<V extends Saveable> {
      * @return
      * @throws IOException  Thrown if there is a problem connecting to the server
      */
-    public synchronized V getWhere(String[] keys, EqualityOperation[] operations, String[] values, String[] conjunctions, boolean tryLockAll) throws IOException {
+    public synchronized V[] getWhere(String[] keys, EqualityOperation[] operations, String[] values, String[] conjunctions, boolean tryLockAll) throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -217,8 +217,8 @@ public class ServerBackedMap<V extends Saveable> {
                 return null;
             }
             try {
-                Saveable saveable = gson.fromJson(json, Saveable.class);
-                return (V) saveable;
+                Saveable[] saveable = gson.fromJson(json, Saveable[].class);
+                return (V[]) saveable;
             }
             catch(JsonSyntaxException ex) {
                 return null;

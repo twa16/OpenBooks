@@ -24,8 +24,11 @@
 
 package org.mgenterprises.openbooks.views.panel.accounting;
 
+import javax.swing.SwingWorker;
 import org.mgenterprises.openbooks.accounting.account.Account;
+import org.mgenterprises.openbooks.accounting.transaction.Transaction;
 import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
+import org.mgenterprises.openbooks.saving.EqualityOperation;
 
 /**
  *
@@ -44,7 +47,18 @@ public class AccountDetailPanel extends javax.swing.JPanel {
     }
     
     private void loadTransactions() {
-        
+        SwingWorker<Void,Void> transactionLoadWorker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                String[] keys = {"accountID"};
+                EqualityOperation[] operations = {EqualityOperation.EQUALS};
+                String[] values = new String[0];
+                String[] conjunctions = {""};
+                Transaction[] transactions = (Transaction[]) transactionManager.getWhere(keys, operations, values, conjunctions, false);
+            }
+            
+        };
     }
 
     /**
