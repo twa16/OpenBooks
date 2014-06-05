@@ -189,7 +189,9 @@ public class HibernateBackedSaveManager implements SaveManager{
             sb.append(" ");
             sb.append(conjunctions[i]);
         }
-        String queryString = "From "+getClassFromType(type)+" where saveableModuleName=:type"+sb.toString();
+        String queryS = sb.toString();
+        System.out.println("Custom Hibernate Query: "+queryS);
+        String queryString = "From "+getClassFromType(type)+" where saveableModuleName=:type"+queryS;
         Query query = session.createQuery(queryString);
         query.setString("type", type);
         List list = query.list();

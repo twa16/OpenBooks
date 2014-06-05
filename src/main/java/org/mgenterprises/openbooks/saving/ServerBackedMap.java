@@ -48,7 +48,14 @@ import org.mgenterprises.openbooks.saving.server.security.CryptoUtils;
 import org.mgenterprises.openbooks.saving.server.security.SecureMessage;
 
 /**
- *
+ * Allows easy access to the OpenBooks storage backend.
+ * We could technically integrate directly with MYSQL or some other SQL backend
+ * but that presents some challenges. The main thing that swayed my decision was that
+ * some popular databases do not encrypt communication by default which is a no-no 
+ * with financial software. Secondly, I was much happier with the idea of having a
+ * different system double checking the locks and access since we can't 100 percent
+ * trust the client.
+ * 
  * @author mgauto
  */
 public class ServerBackedMap<V extends Saveable> {
@@ -62,6 +69,12 @@ public class ServerBackedMap<V extends Saveable> {
     private CryptoUtils cryptoUtils = new CryptoUtils();
     private ArrayList<String> lockedIDs = new ArrayList<String>(); 
 
+    /**
+     * Default Constructor 
+     * 
+     * @param v Instance of the type that this map will be managing
+     * @param saveServerConnection Connection data for link to server
+     */
     public ServerBackedMap(V v, SaveServerConnection saveServerConnection) {
         this.v = v;
         this.serverAddress = saveServerConnection.getServerAddress();
@@ -75,10 +88,27 @@ public class ServerBackedMap<V extends Saveable> {
         salt = cryptoUtils.getSalt(new SecureRandom());
     }
     
+    /**
+     * Check if the specified key exists and if the user is allowed to edit it.
+     * The user is allowed to edit it only if there is no lock on the item or
+     * if the user is the holder of the lock
+     * 
+     * @param key Key to check access to
+     * @return true is the key exists and the user is able to edit
+     * @throws IOException Thrown if there is a problem connecting to the server
+     */
     public boolean existsAndAllowed(String key) throws IOException {
         return get(key)!=null;
     }
     
+    /**
+     * Persists the specified value to the database.
+     * The object will overwrite any object that is already persisted that has the same key and type.
+     * 
+     * @param value Object that will be persisted in the database
+     * @return true if the object was successfully created or updated
+     * @throws IOException Thrown if there is a problem connecting to the server
+     */
     public boolean put(V value) throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -108,6 +138,14 @@ public class ServerBackedMap<V extends Saveable> {
         return false;
     }
     
+    /**
+     * Retrieve a saveable with the given key. The key only has to be unique with the scope of the type
+     * of the saveable. Returns null if the object was not found.
+     * 
+     * @param key Key to search for
+     * @return Object requested or null if it does not exist
+     * @throws IOException Thrown if there is a problem connecting to the server
+     */
     public synchronized V get(String key) throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -147,25 +185,16 @@ public class ServerBackedMap<V extends Saveable> {
     }
     
     /**
+     * This method is used to generate custom queries to retrieve a set of saveables.
+     * The queries are built from keys, operations, values and conjunctions. These parts
+     * are combined by the {@link SaveManager} implementation to retrieve the objects
+     * requested. 
      * 
-     * SAMPLE DATA
-     * 
-     * KEYS
-     *  [0]=name
-     *  [1]=age
-     * 
-     * EQUALITY_OPERATIONS
-     *  [0]="="
-     *  [1]="="
-     * VALUES
-     *  [0]="\"Test User\" OR"
-     *  [1]="17"
-     * 
-     * @param keys
-     * @param operations
-     * @param values value to look for and a logic operator at the end if it isn't last
-     * @param conjunctions
-     * @param tryLockAll
+     * @param keys Keys to use in the WHERE query
+     * @param operations Determines how the key should be compared with the value
+     * @param values values to check for
+     * @param conjunctions Determines the logical links between the key/value comparisons(AND, OR)
+     * @param tryLockAll Determines whether or not the objects retrieved should be locked.
      * @return
      * @throws IOException 
      */
@@ -206,6 +235,11 @@ public class ServerBackedMap<V extends Saveable> {
         return null;
     }
     
+    /**
+     * Returns all the values stored
+     * @return
+     * @throws IOException 
+     */
     public ArrayList<V> values() throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
