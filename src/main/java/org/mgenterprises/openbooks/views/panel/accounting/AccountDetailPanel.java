@@ -56,6 +56,7 @@ public class AccountDetailPanel extends javax.swing.JPanel {
                 String[] values = new String[0];
                 String[] conjunctions = {""};
                 Transaction[] transactions = (Transaction[]) transactionManager.getWhere(keys, operations, values, conjunctions, false);
+                return null;
             }
             
         };
