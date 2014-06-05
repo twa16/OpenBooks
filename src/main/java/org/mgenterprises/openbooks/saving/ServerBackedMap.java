@@ -196,7 +196,7 @@ public class ServerBackedMap<V extends Saveable> {
      * @param conjunctions Determines the logical links between the key/value comparisons(AND, OR)
      * @param tryLockAll Determines whether or not the objects retrieved should be locked.
      * @return
-     * @throws IOException 
+     * @throws IOException  Thrown if there is a problem connecting to the server
      */
     public synchronized V getWhere(String[] keys, EqualityOperation[] operations, String[] values, String[] conjunctions, boolean tryLockAll) throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
@@ -236,9 +236,10 @@ public class ServerBackedMap<V extends Saveable> {
     }
     
     /**
-     * Returns all the values stored
-     * @return
-     * @throws IOException 
+     * Returns all the values stored of the given type.
+     * 
+     * @return ArrayList of the values of the given type
+     * @throws IOException Thrown if there is a problem connecting to the server 
      */
     public ArrayList<V> values() throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
@@ -277,7 +278,13 @@ public class ServerBackedMap<V extends Saveable> {
         return null;
     }
     
-    public int size() throws IOException {
+    /**
+     * Returns an long representing how many objects are stored
+     * 
+     * @return Count of objects stored
+     * @throws IOException IOException Thrown if there is a problem connecting to the server 
+     */
+    public long size() throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -293,7 +300,7 @@ public class ServerBackedMap<V extends Saveable> {
             SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
             String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
             
-            return Integer.parseInt(json);
+            return Long.parseLong(json);
         } catch (InvalidKeySpecException ex) {
             Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchAlgorithmException ex) {
@@ -306,6 +313,12 @@ public class ServerBackedMap<V extends Saveable> {
         return -1;
     }
     
+    /**
+     * 
+     * @param key
+     * @return
+     * @throws IOException  IOException Thrown if there is a problem connecting to the server 
+     */
     public boolean remove(String key) throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -336,6 +349,10 @@ public class ServerBackedMap<V extends Saveable> {
         return false;
     }
     
+    /**
+     * 
+     * @throws IOException  IOException Thrown if there is a problem connecting to the server 
+     */
     public synchronized void releaseAllLocks() throws IOException {
         System.out.println("Releasing locks: "+v.getSaveableModuleName());
         ArrayList<String> tempIDs = new ArrayList<String>(lockedIDs);
@@ -348,6 +365,13 @@ public class ServerBackedMap<V extends Saveable> {
         }
     }
     
+    /**
+     * 
+     * @param type
+     * @param id
+     * @return
+     * @throws IOException  IOException Thrown if there is a problem connecting to the server 
+     */
     public synchronized boolean tryLock(String type, String id) throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -380,6 +404,13 @@ public class ServerBackedMap<V extends Saveable> {
         return false;
     }
     
+    /**
+     * 
+     * @param type
+     * @param id
+     * @return
+     * @throws IOException  IOException Thrown if there is a problem connecting to the server 
+     */
     public boolean releaseLock(String type, String id) throws IOException {
         Socket socket = new Socket(serverAddress, serverPort);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));

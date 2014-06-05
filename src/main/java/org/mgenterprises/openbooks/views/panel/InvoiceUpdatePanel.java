@@ -560,7 +560,7 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyL
             this.saveButton.setText("Save");
             this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
             
-            int nextInvoiceID = invoiceManager.getHighestID();
+            long nextInvoiceID = invoiceManager.getHighestID();
             this.invoiceNumberField.setText(String.valueOf(nextInvoiceID));
             while(invoiceManager.tryLock(new Invoice().getSaveableModuleName(), invoiceNumberField.getText())){
                 this.invoiceNumberField.setText(String.valueOf(nextInvoiceID));

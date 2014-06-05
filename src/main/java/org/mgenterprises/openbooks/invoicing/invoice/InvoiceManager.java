@@ -44,7 +44,7 @@ public class InvoiceManager extends ServerBackedMap<Invoice>{
         put(item);
     }
     
-    public Invoice getInvoice(int id) throws IOException {
+    public Invoice getInvoice(long id) throws IOException {
         return get(String.valueOf(id));
     }
     
@@ -67,7 +67,7 @@ public class InvoiceManager extends ServerBackedMap<Invoice>{
         return count;
     }
 
-    public int getHighestID() throws IOException {
+    public long getHighestID() throws IOException {
         return size();
     }
     
