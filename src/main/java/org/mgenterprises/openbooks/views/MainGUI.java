@@ -24,12 +24,14 @@
 
 package org.mgenterprises.openbooks.views;
 
+import java.awt.CardLayout;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -44,6 +46,7 @@ import org.mgenterprises.openbooks.saving.SaveFile;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.panel.CustomerUpdatePanel;
+import org.mgenterprises.openbooks.views.panel.HomepagePanel;
 import org.mgenterprises.openbooks.views.panel.InvoiceCenterPanel;
 import org.mgenterprises.openbooks.views.panel.InvoiceUpdatePanel;
 import org.mgenterprises.openbooks.views.panel.ItemManagementPanel;
@@ -78,7 +81,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.saveFile = saveFile;
-        loadSave();
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         customerManager = new CustomerManager(saveServerConnection);
         itemManager = new ItemManager(saveServerConnection);
         invoiceManager = new InvoiceManager(saveServerConnection);
@@ -87,34 +90,20 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
         accountManager = new AccountManager(saveServerConnection);
         initComponents();
         addWindowListener(this);
+        loadCards();
     }
     
-    public void changePanel(JPanel jpanel) {
-        mainPanelArea.setVisible(false);
-        this.remove(mainPanelArea);
-        mainPanelArea = jpanel;
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(mainPanelArea, javax.swing.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(mainPanelArea, javax.swing.GroupLayout.DEFAULT_SIZE, 647, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        pack();
-    }
-    
-    private void loadSave() {
-        
+    public void loadCards() {
+        mainPanelArea.add(new HomepagePanel(), "HomepagePanel");
+        mainPanelArea.add(new InvoiceCenterPanel(configurationManager, invoiceManager, customerManager), "InvoiceCenterPanel");
+        mainPanelArea.add(new CustomerUpdatePanel(customerManager, invoiceManager), "CustomerUpdatePanel");
+        try {
+            mainPanelArea.add(new InvoiceUpdatePanel(configurationManager, customerManager, invoiceManager, itemManager.getItems()), "InvoiceUpdatePanel");
+        } catch (IOException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
+        mainPanelArea.add(new ItemManagementPanel(itemManager), "ItemManagementPanel");
     }
 
     /**
@@ -140,6 +129,10 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
         setTitle("OpenBill");
         setMinimumSize(new java.awt.Dimension(700, 750));
         setPreferredSize(new java.awt.Dimension(700, 750));
+        getContentPane().setLayout(new java.awt.CardLayout());
+
+        mainPanelArea.setLayout(new java.awt.CardLayout());
+        getContentPane().add(mainPanelArea, "card2");
 
         jMenu1.setText("File");
         jMenuBar1.add(jMenu1);
@@ -186,46 +179,28 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
 
         setJMenuBar(jMenuBar1);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(mainPanelArea, javax.swing.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(mainPanelArea, javax.swing.GroupLayout.DEFAULT_SIZE, 647, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void customerCenterMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customerCenterMenuItemActionPerformed
-        changePanel(new CustomerUpdatePanel(customerManager, invoiceManager));
+        CardLayout cl = (CardLayout)(mainPanelArea.getLayout());
+         cl.show(mainPanelArea, "CustomerUpdatePanel");
     }//GEN-LAST:event_customerCenterMenuItemActionPerformed
 
     private void invoiceCenterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_invoiceCenterButtonActionPerformed
-        changePanel(new InvoiceCenterPanel(configurationManager, invoiceManager, customerManager));
+        //changePanel(new InvoiceCenterPanel(configurationManager, invoiceManager, customerManager));
+         CardLayout cl = (CardLayout)(mainPanelArea.getLayout());
+         cl.show(mainPanelArea, "InvoiceCenterPanel");
     }//GEN-LAST:event_invoiceCenterButtonActionPerformed
 
     private void createInvoiceMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createInvoiceMenuItemActionPerformed
-        try {
-            changePanel(new InvoiceUpdatePanel(configurationManager, customerManager, invoiceManager, itemManager.getItems()));
-        }
-        catch(IOException ex) {
-            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
-        }
+        CardLayout cl = (CardLayout)(mainPanelArea.getLayout());
+        cl.show(mainPanelArea, "InvoiceUpdatePanel");
     }//GEN-LAST:event_createInvoiceMenuItemActionPerformed
 
     private void itemManagerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemManagerMenuItemActionPerformed
-        changePanel(new ItemManagementPanel(itemManager));
+        CardLayout cl = (CardLayout)(mainPanelArea.getLayout());
+         cl.show(mainPanelArea, "ItemManagementPanel");
     }//GEN-LAST:event_itemManagerMenuItemActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
