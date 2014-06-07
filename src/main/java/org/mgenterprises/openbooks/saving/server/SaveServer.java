@@ -219,7 +219,7 @@ class SaveServerRequestProcessor implements Runnable {
                 socket.close();
             }
         } catch (IOException ex) {
-            Logger.getLogger(SaveServerRequestProcessor.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger("SaveServer").log(Level.SEVERE, null, ex);
         }
     }
 
