@@ -200,6 +200,9 @@ class SaveServerRequestProcessor implements Runnable {
                     case "RELEASE":
                         response = processRELEASE(username, requestParts);
                         break;
+                    case "READJOURNAL":
+                        response = processREADJOURNAL(username, requestParts);
+                        break;
                  }
                 try {
                     //Reuse salt for this conversation
@@ -408,6 +411,19 @@ class SaveServerRequestProcessor implements Runnable {
             Logger.getLogger("SaveServer").log(Level.INFO, "Denied LOCK from {0} for {1} {2}", new Object[]{user, type, id});
             return "401";
         }
+    }
+    
+    private String processREADJOURNAL(String user, String[] requestParts) {
+        String startIdString = requestParts[1];
+        try {
+            long startId = Long.parseLong(startIdString);
+            ChangeRecord[] changes = changeJournal.getChangesSince(startId);
+            return gson.toJson(changes);
+        } catch(NumberFormatException ex) {
+            Logger.getLogger("SaveServer").log(Level.INFO, "Invalid READJOURNAL requestfrom {0}", new Object[]{user});
+            return "400";
+        }
+        
     }
 
 }
