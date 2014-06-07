@@ -131,7 +131,7 @@ public class HibernateBackedSaveManager implements SaveManager{
         query.setString("id", id);
         ResourceLock resourceLock = (ResourceLock) query.uniqueResult();
         session.getTransaction().commit();
-        return resourceLock.getHolder();
+        return resourceLock==null ? "" : resourceLock.getHolder();
     }
 
     @Override

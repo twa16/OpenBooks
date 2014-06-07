@@ -88,12 +88,4 @@ public class InvoiceManager extends ServerBackedMap<Invoice>{
         return customerInvoices.toArray(temp);
     }
     
-    public boolean releaseLock(String type, String id) throws IOException {
-        return releaseLock(type, id);
-    }
-    
-    public boolean tryLock(String type, String id) throws IOException {
-        return tryLock(type, id);
-    }
-    
 }
