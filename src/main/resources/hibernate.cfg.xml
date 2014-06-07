@@ -8,11 +8,11 @@
     <property name="hibernate.connection.username">root</property>
     <property name="hibernate.connection.password">DEVELOPMENT</property>
     <property name="hibernate.hbm2ddl.auto">update</property>
-    <mapping class="org.mgenterprises.mgmoney.invoicing.invoice.Invoice"/>
-    <mapping class="org.mgenterprises.mgmoney.invoicing.invoice.InvoiceItem"/>
-    <mapping class="org.mgenterprises.mgmoney.saving.server.users.UserProfile"/>
-    <mapping class="org.mgenterprises.mgmoney.invoicing.item.Item"/>
-    <mapping class="org.mgenterprises.mgmoney.customer.Customer"/>
-    <mapping class="org.mgenterprises.mgmoney.saving.server.ResourceLock"/>
+    <mapping class="org.mgenterprises.openbooks.invoicing.invoice.Invoice"/>
+    <mapping class="org.mgenterprises.openbooks.invoicing.invoice.InvoiceItem"/>
+    <mapping class="org.mgenterprises.openbooks.saving.server.users.UserProfile"/>
+    <mapping class="org.mgenterprises.openbooks.invoicing.item.Item"/>
+    <mapping class="org.mgenterprises.openbooks.customer.Customer"/>
+    <mapping class="org.mgenterprises.openbooks.saving.server.ResourceLock"/>
   </session-factory>
 </hibernate-configuration>

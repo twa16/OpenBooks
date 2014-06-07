@@ -31,20 +31,29 @@ import org.mgenterprises.openbooks.saving.Saveable;
  * @author Manuel Gauto
  */
 public class InvoiceTemplate extends Saveable{
+    public static final String TABLE_KEY="{{TABLE}}";
+    public static final String TABLE_ROW_START="{{TABLE_ROW_START}}";
+    public static final String TABLE_ROW_END="{{TABLE_ROW_END}}";
+    public static final String LOGO_KEY="{{LOGO}}";
+    public static final String COMPANY_NAME_KEY="{{COMPANY_NAME}}";
+    public static final String COMPANY_INFO_KEY="{{COMPANY_INFO}}";
+    public static final String CLIENT_NAME="{{CLIENT_NAME}}";
+    public static final String CLIENT_INFO="{{CLIENT_INFO}}";
+    public static final String INVOICE_NUMBER="{{INVOICE_NUMBER}}";
+    public static final String SUBTOTAL="{{SUBTOTAL}}";
+    public static final String TAX="{{TAX}}";
+    public static final String TOTAL="{{TOTAL}}";
+    
     private int templateID;
-    private String header;
-    private String table;
-    private String footer;
+    private String contentHTML;
 
     public InvoiceTemplate(){
         
     }
     
-    public InvoiceTemplate(int templateID, String header, String table, String footer) {
+    public InvoiceTemplate(int templateID, String contentHTML) {
         this.templateID = templateID;
-        this.header = header;
-        this.table = table;
-        this.footer = footer;
+        this.contentHTML = contentHTML;
     }
 
     public int getTemplateID() {
@@ -55,31 +64,13 @@ public class InvoiceTemplate extends Saveable{
         this.templateID = templateID;
     }
 
-    public String getHeader() {
-        return header;
+    public String getContentHTML() {
+        return contentHTML;
     }
 
-    public void setHeader(String header) {
-        this.header = header;
+    public void setContentHTML(String contentHTML) {
+        this.contentHTML = contentHTML;
     }
-
-    public String getTable() {
-        return table;
-    }
-
-    public void setTable(String table) {
-        this.table = table;
-    }
-
-    public String getFooter() {
-        return footer;
-    }
-
-    public void setFooter(String footer) {
-        this.footer = footer;
-    }
-    
-    
     
     @Override
     public String getSaveableModuleName() {
