@@ -167,7 +167,7 @@ public class HibernateBackedSaveManager implements SaveManager{
         session.beginTransaction();
         Number count = (Number) session.createCriteria(type).setProjection(Projections.rowCount()).uniqueResult();
         session.getTransaction().commit();
-        return count.longValue();
+        return count==null?0:count.longValue();
     }
     
     public String getClassFromType(String type) {
@@ -191,7 +191,7 @@ public class HibernateBackedSaveManager implements SaveManager{
         }
         String queryS = sb.toString();
         System.out.println("Custom Hibernate Query: "+queryS);
-        String queryString = "From "+getClassFromType(type)+" where saveableModuleName=:type"+queryS;
+        String queryString = "From "+getClassFromType(type)+" where saveableModuleName=:type AND ("+queryS+")";
         Query query = session.createQuery(queryString);
         query.setString("type", type);
         List list = query.list();
@@ -212,6 +212,6 @@ public class HibernateBackedSaveManager implements SaveManager{
         query.setString("id", id);
         ResourceLock resourceLock = (ResourceLock) query.uniqueResult();
         session.getTransaction().commit();
-        return resourceLock!=null && resourceLock.getHolder().equals(user);
+        return resourceLock!=null && !resourceLock.getHolder().equals(user);
     }
 }

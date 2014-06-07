@@ -50,6 +50,8 @@ import org.mgenterprises.openbooks.saving.AbstractSaveableAdapter;
 import org.mgenterprises.openbooks.saving.EqualityOperation;
 import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.saving.server.access.ACTION;
+import org.mgenterprises.openbooks.saving.server.journal.ChangeRecord;
+import org.mgenterprises.openbooks.saving.server.journal.ChangeJournal;
 import org.mgenterprises.openbooks.saving.server.security.CryptoUtils;
 import org.mgenterprises.openbooks.saving.server.security.SecureMessage;
 import org.mgenterprises.openbooks.saving.server.users.UserManager;
@@ -85,6 +87,7 @@ public class SaveServer implements Runnable {
     private Gson gson;
     private UserManager userManager;
     private SaveManager saveManager;
+    private ChangeJournal changeJournal;
     private SecureRandom secureRandom = new SecureRandom();
 
     public SaveServer(String listenAddress, short port, UserManager userManager, SaveManager saveManager) throws UnknownHostException {
@@ -92,6 +95,7 @@ public class SaveServer implements Runnable {
         this.bindAddress = InetAddress.getByName(listenAddress);
         this.userManager = userManager;
         this.saveManager = saveManager;
+        this.changeJournal = new ChangeJournal(saveManager);
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(Saveable.class, new AbstractSaveableAdapter());
         //gsonBuilder.registerTypeAdapter(Saveable[].class, new AbstractSaveableArrayAdapter());
@@ -109,7 +113,7 @@ public class SaveServer implements Runnable {
             ServerSocket serverSocket = new ServerSocket(port, 100, bindAddress);
             while (running) {
                 Socket socket = serverSocket.accept();
-                SaveServerRequestProcessor saveServerRequestProcessor = new SaveServerRequestProcessor(socket, secureRandom, gson, userManager, saveManager);
+                SaveServerRequestProcessor saveServerRequestProcessor = new SaveServerRequestProcessor(socket, secureRandom, gson, userManager, saveManager, changeJournal);
                 new Thread(saveServerRequestProcessor).start();
             }
         } catch (IOException ex) {
@@ -130,13 +134,15 @@ class SaveServerRequestProcessor implements Runnable {
     private Gson gson;
     private UserManager userManager;
     private SaveManager saveManager;
+    private ChangeJournal changeJournal;
 
-    public SaveServerRequestProcessor(Socket socket, SecureRandom secureRandom, Gson gson, UserManager userManager, SaveManager saveManager) {
+    public SaveServerRequestProcessor(Socket socket, SecureRandom secureRandom, Gson gson, UserManager userManager, SaveManager saveManager, ChangeJournal changeJournal) {
         this.socket = socket;
         this.secureRandom = secureRandom;
         this.gson = gson;
         this.userManager = userManager;
         this.saveManager = saveManager;
+        this.changeJournal = changeJournal;
     }
 
     @Override
@@ -194,7 +200,7 @@ class SaveServerRequestProcessor implements Runnable {
                     case "RELEASE":
                         response = processRELEASE(username, requestParts);
                         break;
-                }
+                 }
                 try {
                     //Reuse salt for this conversation
                     byte[] salt = secureMessage.getSalt();//cryptoUtils.getSalt(secureRandom);
@@ -336,6 +342,10 @@ class SaveServerRequestProcessor implements Runnable {
         if (userManager.userHasAccessRight(user, saveable.getSaveableModuleName(), ACTION.PUT)) {
             if (!saveManager.isLockedForUser(user, saveable.getSaveableModuleName(), saveable.getUniqueId())) {
                 saveManager.persistSaveable(type, user, saveable);
+                ChangeRecord change = new ChangeRecord();
+                change.setType(type);
+                change.setObjectId(saveable.getUniqueId());
+                changeJournal.recordChange(change);
                 Logger.getLogger("SaveServer").log(Level.INFO, "PUT from {0}", new Object[]{user});
                 return "201";
             } else {

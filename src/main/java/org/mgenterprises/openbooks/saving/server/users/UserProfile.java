@@ -26,7 +26,6 @@ package org.mgenterprises.openbooks.saving.server.users;
 
 import java.util.ArrayList;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.saving.server.access.ACTION;

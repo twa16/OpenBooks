@@ -24,28 +24,33 @@
 
 package org.mgenterprises.openbooks.saving.server.journal;
 
+import java.io.Serializable;
+import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import org.mgenterprises.openbooks.saving.Saveable;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class Change extends Saveable{
-    @Id
+@Entity
+@Table(name="ChangeRecord")
+public class ChangeRecord extends Saveable{
     private long changeId;
     private String type;
     private String objectId;
 
-    public Change() {
+    public ChangeRecord() {
     }
     
-    public Change(long chjangeId, String type, String objectId) {
-        this.changeId = chjangeId;
+    public ChangeRecord(long changeId, String type, String objectId) {
+        this.changeId = changeId;
         this.type = type;
         this.objectId = objectId;
     }
 
+    @Id
     public long getChangeId() {
         return changeId;
     }

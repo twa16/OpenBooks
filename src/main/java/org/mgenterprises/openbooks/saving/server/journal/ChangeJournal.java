@@ -38,36 +38,53 @@ import org.mgenterprises.openbooks.saving.server.SaveManager;
  * @author Manuel Gauto
  */
 public class ChangeJournal {
-    String type = new Change().getSaveableModuleName();
+    String type = new ChangeRecord().getSaveableModuleName();
     private SaveManager saveManager;
     private int cacheCount=100;
-    private long changeID = 0;
+    private long changeId = 0;
     private long cacheStartId;
-    private HashMap<Long, Change> changeMap = new HashMap<Long, Change>();
+    private HashMap<Long, ChangeRecord> changeMap = new HashMap<Long, ChangeRecord>();
 
     public ChangeJournal(SaveManager saveManager) {
         this.saveManager = saveManager;
+        
+        //Get current size of journal
         long curSize = saveManager.getSaveableCount(type);
+        //Get the last Id used
+        changeId = curSize-1;
+        //Lets grab that last 100 entries and cache them
         String[] keys = {"changeId"};
         EqualityOperation[] operations = {EqualityOperation.GREATER_EQUALS};
         long startIndex = curSize-cacheCount;
         String[] values = {String.valueOf(startIndex)};
         String[] conjunctions = {""};
-        Logger.getLogger("SaveServer").info("Caching last "+cacheCount+" changes");
+        Logger.getLogger("SaveServer").info("Caching last "+cacheCount+" ChangeRecords");
         Saveable[] saveables = saveManager.getWhere(type, keys, operations, values, conjunctions);
-        Logger.getLogger("SaveServer").info("Changes retrieved");
-        Change[] changes = (Change[]) saveables;
-        for(Change change : changes) {
-            this.changeMap.put(change.getChangeId(), change);
-            cacheStartId=change.getChangeId();
+        
+        //If there are some entries lets cast them
+        if(saveables.length>0) {
+            Logger.getLogger("SaveServer").info("ChangeRecords retrieved");
+            
+            for(Saveable saveable : saveables) {
+                ChangeRecord changeRecord = (ChangeRecord) saveable;
+                changeMap.put(changeRecord.getChangeId(), changeRecord);
+            }
+            Logger.getLogger("SaveServer").info("ChangeRecords stored");
+        } else {
+            Logger.getLogger("SaveServer").info("Journal Empty");
         }
-        Logger.getLogger("SaveServer").info("Changes stored");
     }
     
-    public Change[] getChangesSince(long id) {
+    /**
+     * Retrieves all ChangeRecords that are logged since the id indicated
+     * 
+     * @param id Id to start search at
+     * @return Requested ChangeRecords
+     */
+    public ChangeRecord[] getChangesSince(long id) {
         if(id>=cacheStartId) {
             int responseSize = changeMap.size()-((int)id-(int)cacheStartId);
-            Change[] response = new Change[responseSize];
+            ChangeRecord[] response = new ChangeRecord[responseSize];
             for(int i = 0; i < responseSize; i++) {
                 response[i] = changeMap.get(0);
             }
@@ -78,21 +95,35 @@ public class ChangeJournal {
             String[] values = {String.valueOf(id)};
             String[] conjunctions = {""};
             Saveable[] saveables = saveManager.getWhere(type, keys, operations, values, conjunctions);
-            Change[] changes = (Change[]) saveables;
+            ChangeRecord[] changes = (ChangeRecord[]) saveables;
             
             return changes;
         }
     }
     
-    public Change getChange(long id) {
-        Change change = changeMap.get(id);
+    /**
+     * Get a ChangeRecord by ID
+     * 
+     * @param id Id to search for
+     * @return Requested ChangeRecord
+     */
+    public ChangeRecord getChange(long id) {
+        ChangeRecord change = changeMap.get(id);
         if(change==null) {
-            change = (Change) saveManager.getSaveable(type, String.valueOf(id));
+            change = (ChangeRecord) saveManager.getSaveable(type, String.valueOf(id));
+            saveManager.removeLock(type, String.valueOf(id));
         }
         return change;
     }
     
-    public synchronized void recordChange(Change change) {
+    /**
+     * Save ChangeRecord to Journal
+     * 
+     * @param change ChangeRecord to save
+     */
+    public synchronized void recordChange(ChangeRecord change) {
+        changeId++;
+        change.setChangeId(changeId);
         saveManager.persistSaveable(type, "SERVER", change);
         this.changeMap.put(change.getChangeId(), change);
     }
