@@ -117,14 +117,24 @@ public class ChangeJournal {
     }
     
     /**
+     * Returns the latest change id recorded in the journal
+     * 
+     * @return Latest change id 
+     */
+    public long getLatestChangeId() {
+        return this.changeId;
+    }
+    
+    /**
      * Save ChangeRecord to Journal
      * 
      * @param change ChangeRecord to save
      */
-    public synchronized void recordChange(ChangeRecord change) {
+    public synchronized long recordChange(ChangeRecord change) {
         changeId++;
         change.setChangeId(changeId);
         saveManager.persistSaveable(type, "SERVER", change);
         this.changeMap.put(change.getChangeId(), change);
+        return changeId;
     }
 }

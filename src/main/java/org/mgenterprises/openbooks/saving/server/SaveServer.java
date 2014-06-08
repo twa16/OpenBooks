@@ -348,16 +348,16 @@ class SaveServerRequestProcessor implements Runnable {
                 ChangeRecord change = new ChangeRecord();
                 change.setType(type);
                 change.setObjectId(saveable.getUniqueId());
-                changeJournal.recordChange(change);
+                long changeID = changeJournal.recordChange(change);
                 Logger.getLogger("SaveServer").log(Level.INFO, "PUT from {0}", new Object[]{user});
-                return "201";
+                return String.valueOf(changeID);
             } else {
                 Logger.getLogger("SaveServer").log(Level.INFO, "Denied PUT from {0}-Locked", new Object[]{user});
-                return "503";
+                return "-1";
             }
         } else {
             Logger.getLogger("SaveServer").log(Level.INFO, "Denied PUT from {0}", new Object[]{user});
-            return "401";
+            return "-1";
         }
     }
 
@@ -416,6 +416,9 @@ class SaveServerRequestProcessor implements Runnable {
     private String processREADJOURNAL(String user, String[] requestParts) {
         String startIdString = requestParts[1];
         try {
+            if(startIdString.equalsIgnoreCase("SIZE")) {
+                return String.valueOf(changeJournal.getLatestChangeId());
+            }
             long startId = Long.parseLong(startIdString);
             ChangeRecord[] changes = changeJournal.getChangesSince(startId);
             return gson.toJson(changes);
