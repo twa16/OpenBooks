@@ -26,22 +26,29 @@ package org.mgenterprises.openbooks.views.panel;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 import org.mgenterprises.openbooks.configuration.ConfigurationManager;
 import org.mgenterprises.openbooks.customer.Customer;
 import org.mgenterprises.openbooks.customer.CustomerManager;
 import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
+import org.mgenterprises.openbooks.invoicing.item.Item;
+import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class InvoiceCenterPanel extends javax.swing.JPanel {
+public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
 
     private final ConfigurationManager configurationManager;
     private final InvoiceManager invoiceManager;
@@ -289,4 +296,22 @@ public class InvoiceCenterPanel extends javax.swing.JPanel {
     private javax.swing.JLabel totalUnpaidLabel;
     private javax.swing.JCheckBox unpaidCheckbox;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void onSwitchTo() {
+        SwingWorker switchFromWorker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                loadInitialInvoiceList();
+                return null;
+            }
+            
+        };
+        switchFromWorker.execute();
+    }
+
+    @Override
+    public void onSwitchFrom() {
+    }
 }

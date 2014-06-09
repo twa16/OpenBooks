@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -45,9 +46,12 @@ import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import org.mgenterprises.openbooks.OpenbooksCore;
 import org.mgenterprises.openbooks.configuration.ConfigurationManager;
 import org.mgenterprises.openbooks.customer.Customer;
 import org.mgenterprises.openbooks.customer.CustomerManager;
@@ -55,6 +59,8 @@ import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceItem;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.openbooks.invoicing.item.Item;
+import org.mgenterprises.openbooks.invoicing.item.ItemManager;
+import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.actionlistener.TableCellListener;
 
@@ -62,34 +68,34 @@ import org.mgenterprises.openbooks.views.actionlistener.TableCellListener;
  *
  * @author Manuel Gauto
  */
-public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyListener {
+public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
     private Invoice loadedInvoice;
+    private OpenbooksCore openbooksCore;
     private ConfigurationManager configurationManager;
     private InvoiceManager invoiceManager;
     private CustomerManager customerManager;
+    private ItemManager itemManager;
     private SimpleDateFormat dateFormat;
     private Item[] allPossibleItems;
-    /**
-     * Creates new form InvoiceUpdatePanel
-     */
-    public InvoiceUpdatePanel(ConfigurationManager configurationManager, CustomerManager customerManager, InvoiceManager invoiceManager, Item[] allPossibleInvoiceItems, Invoice invoice) {
-        this.configurationManager = configurationManager;
-        this.customerManager = customerManager;
-        this.invoiceManager = invoiceManager;
-        initComponents();
+
+    public InvoiceUpdatePanel(OpenbooksCore openbooksCore, Item[] allPossibleInvoiceItems) {
+        this.openbooksCore = openbooksCore;
+        this.configurationManager = openbooksCore.getConfigurationManager();
+        this.customerManager = openbooksCore.getCustomerManager();
+        this.invoiceManager = openbooksCore.getInvoiceManager();
+        this.itemManager = openbooksCore.getItemManager();
         this.allPossibleItems = allPossibleInvoiceItems;
         this.dateFormat = new SimpleDateFormat(configurationManager.getValue("dateFormatString"));
+        initComponents();
         setupTableView();
-        loadInvoiceData(invoice);
     }
-    
-    public InvoiceUpdatePanel(ConfigurationManager configurationManager, CustomerManager customerManager, InvoiceManager invoiceManager, Item[] allPossibleInvoiceItems) {
-        this.configurationManager = configurationManager;
-        this.customerManager = customerManager;
-        initComponents();
-        this.invoiceManager = invoiceManager;
+
+    public InvoiceUpdatePanel(OpenbooksCore openbooksCore, Item[] allPossibleInvoiceItems, Invoice loadedInvoice) {
+        this.loadedInvoice = loadedInvoice;
+        this.openbooksCore = openbooksCore;
         this.allPossibleItems = allPossibleInvoiceItems;
         this.dateFormat = new SimpleDateFormat(configurationManager.getValue("dateFormatString"));
+        initComponents();
         setupTableView();
     }
     
@@ -637,14 +643,44 @@ public class InvoiceUpdatePanel extends javax.swing.JPanel implements HierarchyL
     // End of variables declaration//GEN-END:variables
    
     @Override
-    public void hierarchyChanged(HierarchyEvent e) {
-        if(e.getChangeFlags() == HierarchyEvent.DISPLAYABILITY_CHANGED)
-        {       
-            try {
+    public void onSwitchTo() {
+        SwingWorker switchFromWorker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    ArrayList<Item> itemsList = itemManager.values();
+                    Item[] items = new Item[itemsList.size()];
+                    allPossibleItems = itemsList.toArray(items);
+                    JComboBox itemComboBox = new JComboBox(allPossibleItems);
+                    invoiceItemTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(itemComboBox));
+                    
+                    customerCombobox.setModel(new javax.swing.DefaultComboBoxModel(customerManager.getCustomers()));
+                } catch (IOException ex) {
+                    Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return null;
+            }
+            
+        };
+        switchFromWorker.execute();
+    }
+
+    @Override
+    public void onSwitchFrom() {
+        SwingWorker switchFromWorker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
                     invoiceManager.releaseAllLocks();
                 } catch (IOException ex) {
                     Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                return null;
             }
+            
+        };
+        switchFromWorker.execute();
     }
 }

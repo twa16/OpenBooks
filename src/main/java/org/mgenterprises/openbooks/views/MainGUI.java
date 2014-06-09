@@ -36,6 +36,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.mgenterprises.openbooks.OpenbooksCore;
 import org.mgenterprises.openbooks.accounting.account.AccountManager;
 import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
 import org.mgenterprises.openbooks.configuration.ConfigurationManager;
@@ -55,7 +56,7 @@ import org.mgenterprises.openbooks.views.panel.ItemManagementPanel;
  *
  * @author Manuel Gauto
  */
-public class MainGUI extends javax.swing.JFrame implements WindowListener{
+public class MainGUI extends javax.swing.JFrame implements WindowListener, OpenbooksCore{
     private ConfigurationManager configurationManager = new ConfigurationManager();
     private CustomerManager customerManager;
     private ItemManager itemManager;
@@ -94,16 +95,17 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
     }
     
     public void loadCards() {
-        mainPanelArea.add(new HomepagePanel(), "HomepagePanel");
-        mainPanelArea.add(new InvoiceCenterPanel(configurationManager, invoiceManager, customerManager), "InvoiceCenterPanel");
-        mainPanelArea.add(new CustomerUpdatePanel(customerManager, invoiceManager), "CustomerUpdatePanel");
+        OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
+        cl.add(mainPanelArea, new HomepagePanel(), "HomepagePanel");
+        cl.add(mainPanelArea, new InvoiceCenterPanel(configurationManager, invoiceManager, customerManager), "InvoiceCenterPanel");
+        cl.add(mainPanelArea, new CustomerUpdatePanel(customerManager, invoiceManager), "CustomerUpdatePanel");
         try {
-            mainPanelArea.add(new InvoiceUpdatePanel(configurationManager, customerManager, invoiceManager, itemManager.getItems()), "InvoiceUpdatePanel");
+            cl.add(mainPanelArea, new InvoiceUpdatePanel(this, itemManager.getItems()), "InvoiceUpdatePanel");
         } catch (IOException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
-        mainPanelArea.add(new ItemManagementPanel(itemManager), "ItemManagementPanel");
+        cl.add(mainPanelArea, new ItemManagementPanel(itemManager), "ItemManagementPanel");
     }
 
     /**
@@ -128,11 +130,10 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("OpenBill");
         setMinimumSize(new java.awt.Dimension(700, 750));
-        setPreferredSize(new java.awt.Dimension(700, 750));
-        getContentPane().setLayout(new java.awt.CardLayout());
+        getContentPane().setLayout(new org.mgenterprises.openbooks.views.OBCardLayout());
 
-        mainPanelArea.setLayout(new java.awt.CardLayout());
-        getContentPane().add(mainPanelArea, "card2");
+        mainPanelArea.setLayout(new org.mgenterprises.openbooks.views.OBCardLayout());
+        getContentPane().add(mainPanelArea);
 
         jMenu1.setText("File");
         jMenuBar1.add(jMenu1);
@@ -183,24 +184,24 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
     }// </editor-fold>//GEN-END:initComponents
 
     private void customerCenterMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customerCenterMenuItemActionPerformed
-        CardLayout cl = (CardLayout)(mainPanelArea.getLayout());
-         cl.show(mainPanelArea, "CustomerUpdatePanel");
+        OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
+        cl.show(mainPanelArea, "CustomerUpdatePanel");
     }//GEN-LAST:event_customerCenterMenuItemActionPerformed
 
     private void invoiceCenterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_invoiceCenterButtonActionPerformed
         //changePanel(new InvoiceCenterPanel(configurationManager, invoiceManager, customerManager));
-         CardLayout cl = (CardLayout)(mainPanelArea.getLayout());
+         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
          cl.show(mainPanelArea, "InvoiceCenterPanel");
     }//GEN-LAST:event_invoiceCenterButtonActionPerformed
 
     private void createInvoiceMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createInvoiceMenuItemActionPerformed
-        CardLayout cl = (CardLayout)(mainPanelArea.getLayout());
+        OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
         cl.show(mainPanelArea, "InvoiceUpdatePanel");
     }//GEN-LAST:event_createInvoiceMenuItemActionPerformed
 
     private void itemManagerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemManagerMenuItemActionPerformed
-        CardLayout cl = (CardLayout)(mainPanelArea.getLayout());
-         cl.show(mainPanelArea, "ItemManagementPanel");
+        OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
+        cl.show(mainPanelArea, "ItemManagementPanel");
     }//GEN-LAST:event_itemManagerMenuItemActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -249,5 +250,35 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener{
     @Override
     public void windowDeactivated(WindowEvent we) {
         
+    }
+
+    @Override
+    public ConfigurationManager getConfigurationManager() {
+        return configurationManager;
+    }
+
+    @Override
+    public CustomerManager getCustomerManager() {
+        return customerManager;
+    }
+
+    @Override
+    public ItemManager getItemManager() {
+        return itemManager;
+    }
+
+    @Override
+    public InvoiceManager getInvoiceManager() {
+        return invoiceManager;
+    }
+
+    @Override
+    public TransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
+    @Override
+    public AccountManager getAccountManager() {
+        return accountManager;
     }
 }

@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.mgenterprises.openbooks.views.panel;
 
 import java.awt.Font;
@@ -35,8 +34,10 @@ import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 import org.mgenterprises.openbooks.customer.Customer;
 import org.mgenterprises.openbooks.customer.CustomerManager;
@@ -44,16 +45,18 @@ import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.openbooks.util.InvoiceUtils;
 import org.mgenterprises.openbooks.util.State;
+import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class CustomerUpdatePanel extends javax.swing.JPanel implements HierarchyListener{
+public class CustomerUpdatePanel extends JPanel implements ViewChangeListener{
 
     private CustomerManager customerManager;
     private InvoiceManager invoiceManager;
+
     /**
      * Creates new form CustomerUpdatePanel
      */
@@ -61,30 +64,28 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
         this.customerManager = customerManager;
         this.invoiceManager = invoiceManager;
         initComponents();
-        this.addHierarchyListener(this);
         processData();
         stateCombo.setModel(new DefaultComboBoxModel<>(State.values()));
     }
-    
-    public void processData(){
+
+    public void processData() {
         try {
             DefaultTableModel tableModel = (DefaultTableModel) customerTable.getModel();
             tableModel.setRowCount(0);
-            for(Customer customer : customerManager.getCustomers()) {
+            for (Customer customer : customerManager.getCustomers()) {
                 Object[] data = new Object[4];
-                data[0]=customer.getCustomerNumber();
-                data[1]=customer.getCompanyName();
-                data[2]=customer.getState().toString();
+                data[0] = customer.getCustomerNumber();
+                data[1] = customer.getCompanyName();
+                data[2] = customer.getState().toString();
                 Invoice[] invoiceItems = invoiceManager.getCustomerInvoices(customer);
                 data[3] = new InvoiceUtils().getInvoiceSetTotal(invoiceItems);
                 tableModel.addRow(data);
             }
             customerTable.setModel(tableModel);
             customerTable.repaint();
-        }
-        catch(IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+            JOptionPane.showConfirmDialog(null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }
 
@@ -358,11 +359,11 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
             this.idField.setText(String.valueOf(customerManager.getHighestId()));
         } catch (IOException ex) {
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+            JOptionPane.showConfirmDialog(null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }//GEN-LAST:event_newCustomerButtonActionPerformed
 
-    private void clearFields(){
+    private void clearFields() {
         this.idField.setText("");
         this.companyNameField.setText("");
         this.contactFirstField.setText("");
@@ -373,10 +374,12 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
         this.cityField.setText("");
         this.stateCombo.setSelectedIndex(0);
     }
-    
+
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         try {
-            if(this.idField.getText().equals("000000")) return;
+            if (this.idField.getText().equals("000000")) {
+                return;
+            }
             Customer customer = new Customer();
             customer.setCustomerNumber(Integer.parseInt(this.idField.getText()));
             customer.setCompanyName(this.companyNameField.getText());
@@ -385,13 +388,12 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
             customer.setPhoneNumber(this.phoneNumberField.getText());
             customer.setStreetAddress(this.streetAddressField.getText());
             customer.setCityName(this.cityField.getText());
-            customer.setState((State)this.stateCombo.getSelectedItem());
+            customer.setState((State) this.stateCombo.getSelectedItem());
             customer.setEmailAddress(this.emailField.getText());
 
-            if(customerManager.exists(customer.getCustomerNumber())){
+            if (customerManager.exists(customer.getCustomerNumber())) {
                 customerManager.updateCustomer(customer);
-            }
-            else {
+            } else {
                 customerManager.addCustomer(customer);
             }
             customerManager.releaseLock(new Customer().getSaveableModuleName(), idField.getText());
@@ -399,16 +401,17 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
             this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
             clearFields();
             processData();
-        }
-        catch(IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+            JOptionPane.showConfirmDialog(null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void customerTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_customerTableMouseClicked
         int selected = customerTable.getSelectedRow();
-        if(selected!=-1) setFields(selected);
+        if (selected != -1) {
+            setFields(selected);
+        }
     }//GEN-LAST:event_customerTableMouseClicked
 
     private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
@@ -424,10 +427,11 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
         }
 
         int rowindex = customerTable.getSelectedRow();
-        if (rowindex < 0)
+        if (rowindex < 0) {
             return;
-        if (evt.isPopupTrigger() && evt.getComponent() instanceof JTable ) {
-            int cusID = (int)customerTable.getValueAt(rowindex, 0);
+        }
+        if (evt.isPopupTrigger() && evt.getComponent() instanceof JTable) {
+            int cusID = (int) customerTable.getValueAt(rowindex, 0);
             JPopupMenu popup = new JPopupMenu();
             JMenuItem deleteCustomerMenuItem = new JMenuItem("Delete");
             deleteCustomerMenuItem.addActionListener(new DeleteCustomerActionListener(customerManager, invoiceManager, cusID));
@@ -466,13 +470,13 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
     }//GEN-LAST:event_stateComboActionPerformed
 
     private void onModify() {
-        if(!saveButton.getText().contains("(Locked)")) {
+        if (!saveButton.getText().contains("(Locked)")) {
             this.saveButton.setText("Save *");
             this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
         }
     }
-    
-    public void setFields(int row){
+
+    public void setFields(int row) {
         try {
             //Get Customer ID from Table
             int cusId = (int) customerTable.getValueAt(row, 0);
@@ -488,18 +492,16 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
             this.cityField.setText(customer.getCityName());
             this.stateCombo.setSelectedItem(customer.getState());
 
-            if(!customerManager.exists(cusId)){
+            if (!customerManager.exists(cusId)) {
                 this.saveButton.setText("Save (Locked)");
                 this.saveButton.setEnabled(false);
-            }
-            else {
+            } else {
                 this.saveButton.setText("Save");
                 this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
             }
-        }
-        catch(IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+            JOptionPane.showConfirmDialog(null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }
 
@@ -530,18 +532,25 @@ public class CustomerUpdatePanel extends javax.swing.JPanel implements Hierarchy
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void hierarchyChanged(HierarchyEvent e) {
-        if(e.getChangeFlags() == HierarchyEvent.DISPLAYABILITY_CHANGED)
-        {       
-             //do the required action upon close
-            if(!this.isDisplayable()){           
-                try {
-                    customerManager.releaseAllLocks();
-                } catch (IOException ex) {
-                    Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
+    public void onSwitchTo() {
+        SwingWorker swingWorker = new SwingWorker<Void, Void>() {
 
+            @Override
+            protected Void doInBackground() throws Exception {
+                processData();
+                return null;
+            }
+            
+        };
+        swingWorker.execute();
+    }
+
+    @Override
+    public void onSwitchFrom() {
+        try {
+            customerManager.releaseAllLocks();
+        } catch (IOException ex) {
+            Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

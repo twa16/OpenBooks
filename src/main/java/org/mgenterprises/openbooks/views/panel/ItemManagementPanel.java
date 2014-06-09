@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.mgenterprises.openbooks.views.panel;
 
 import java.awt.Font;
@@ -32,11 +31,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 import org.mgenterprises.openbooks.invoicing.item.Item;
 import org.mgenterprises.openbooks.invoicing.item.ItemManager;
+import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteItemActionListener;
 
@@ -44,31 +46,30 @@ import org.mgenterprises.openbooks.views.actionlistener.DeleteItemActionListener
  *
  * @author Manuel Gauto
  */
-public class ItemManagementPanel extends javax.swing.JPanel implements HierarchyListener{
+public class ItemManagementPanel extends JPanel implements ViewChangeListener{
+
     private ItemManager itemManager;
 
     public ItemManagementPanel(ItemManager itemManager) {
         this.itemManager = itemManager;
         initComponents();
-        this.addHierarchyListener(this);
         loadItems();
     }
-    
-    private void loadItems(){
+
+    private void loadItems() {
         try {
             DefaultTableModel defaultTableModel = (DefaultTableModel) itemTable.getModel();
             defaultTableModel.setRowCount(0);
-            for(Item item : itemManager.getItems()){
+            for (Item item : itemManager.getItems()) {
                 Object[] data = new Object[3];
-                data[0]=item.getName();
-                data[1]=item.getDescription();
-                data[2]=item.getBasePrice();
+                data[0] = item.getName();
+                data[1] = item.getDescription();
+                data[2] = item.getBasePrice();
                 defaultTableModel.addRow(data);
             }
-        }
-        catch(IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+            JOptionPane.showConfirmDialog(null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }
 
@@ -235,7 +236,7 @@ public class ItemManagementPanel extends javax.swing.JPanel implements Hierarchy
         this.itemNameField.setText("");
         this.descriptionField.setText("");
         this.basePriceField.setText("");
-        oldItemName="";
+        oldItemName = "";
     }//GEN-LAST:event_newButtonActionPerformed
 
     private String oldItemName = "";
@@ -243,7 +244,9 @@ public class ItemManagementPanel extends javax.swing.JPanel implements Hierarchy
         try {
             int row = itemTable.getSelectedRow();
             //Make sure a selection was made
-            if(row==-1) clearFields();
+            if (row == -1) {
+                clearFields();
+            }
 
             //Populate fields
             String itemName = (String) itemTable.getValueAt(row, 0);
@@ -253,27 +256,25 @@ public class ItemManagementPanel extends javax.swing.JPanel implements Hierarchy
             Item item = itemManager.getItem(itemName);
             this.descriptionField.setText(item.getDescription());
             this.basePriceField.setText(String.valueOf(item.getBasePrice()));
-            if(!itemManager.existsAndAllowed(item.getName())){
+            if (!itemManager.existsAndAllowed(item.getName())) {
                 this.saveButton.setText("Save (Locked)");
                 this.saveButton.setEnabled(false);
-            }
-            else {
+            } else {
                 this.saveButton.setText("Save");
                 this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
             }
-        }
-        catch(IOException ex){
+        } catch (IOException ex) {
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+            JOptionPane.showConfirmDialog(null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }//GEN-LAST:event_itemTableMouseClicked
 
-    private void clearFields(){
+    private void clearFields() {
         this.itemNameField.setText("");
         this.descriptionField.setText("");
         this.basePriceField.setText("");
     }
-    
+
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         try {
             String name = itemNameField.getText();
@@ -283,18 +284,17 @@ public class ItemManagementPanel extends javax.swing.JPanel implements Hierarchy
             item.setName(name);
             item.setDescription(description);
             item.setBasePrice(basePrice);
-            if(oldItemName.equals(itemNameField.getText())){
+            if (oldItemName.equals(itemNameField.getText())) {
                 itemManager.updateItem(item);
-            } else{
+            } else {
                 itemManager.renameItem(oldItemName, item);
             }
             this.saveButton.setText("Save");
             this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
             loadItems();
-        }
-        catch(IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+            JOptionPane.showConfirmDialog(null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }//GEN-LAST:event_saveButtonActionPerformed
 
@@ -307,10 +307,11 @@ public class ItemManagementPanel extends javax.swing.JPanel implements Hierarchy
         }
 
         int rowindex = itemTable.getSelectedRow();
-        if (rowindex < 0)
+        if (rowindex < 0) {
             return;
-        if (evt.isPopupTrigger() && evt.getComponent() instanceof JTable ) {
-            String itemName = (String)itemTable.getValueAt(rowindex, 0);
+        }
+        if (evt.isPopupTrigger() && evt.getComponent() instanceof JTable) {
+            String itemName = (String) itemTable.getValueAt(rowindex, 0);
             JPopupMenu popup = new JPopupMenu();
             JMenuItem deleteCustomerMenuItem = new JMenuItem("Delete");
             deleteCustomerMenuItem.addActionListener(new DeleteItemActionListener(itemManager, itemName));
@@ -336,14 +337,34 @@ public class ItemManagementPanel extends javax.swing.JPanel implements Hierarchy
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void hierarchyChanged(HierarchyEvent he) {
-        if(he.getChangeFlags() == HierarchyEvent.DISPLAYABILITY_CHANGED)
-        {           
-            try {
-                itemManager.releaseAllLocks();
-            } catch (IOException ex) {
-                Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+    public void onSwitchTo() {
+        SwingWorker swingWorker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                loadItems();
+                return null;
             }
-        }
+            
+        };
+        swingWorker.execute();
+    }
+
+    @Override
+    public void onSwitchFrom() {
+        SwingWorker switchFromWorker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    itemManager.releaseAllLocks();
+                } catch (IOException ex) {
+                    Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                return null;
+            }
+
+        };
+        switchFromWorker.execute();
     }
 }

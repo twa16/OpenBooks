@@ -81,12 +81,15 @@ public class ChangeJournal {
      * @param id Id to start search at
      * @return Requested ChangeRecords
      */
-    public ChangeRecord[] getChangesSince(long id) {
+    public synchronized ChangeRecord[] getChangesSince(long id) {
+        if(changeMap.size()==0) {
+            return new ChangeRecord[0];
+        }
         if(id>=cacheStartId) {
             int responseSize = changeMap.size()-((int)id-(int)cacheStartId);
             ChangeRecord[] response = new ChangeRecord[responseSize];
             for(int i = 0; i < responseSize; i++) {
-                response[i] = changeMap.get(0);
+                response[i] = changeMap.get(new Long(i));
             }
             return response;
         } else {
@@ -107,7 +110,7 @@ public class ChangeJournal {
      * @param id Id to search for
      * @return Requested ChangeRecord
      */
-    public ChangeRecord getChange(long id) {
+    public synchronized ChangeRecord getChange(long id) {
         ChangeRecord change = changeMap.get(id);
         if(change==null) {
             change = (ChangeRecord) saveManager.getSaveable(type, String.valueOf(id));
@@ -121,7 +124,7 @@ public class ChangeJournal {
      * 
      * @return Latest change id 
      */
-    public long getLatestChangeId() {
+    public synchronized long getLatestChangeId() {
         return this.changeId;
     }
     

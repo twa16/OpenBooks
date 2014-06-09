@@ -24,9 +24,6 @@
 
 package org.mgenterprises.openbooks.saving;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
-import com.google.common.hash.Hashing;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -247,7 +244,7 @@ public class ServerBackedMap<V extends Saveable> {
      * @throws IOException Thrown if there is a problem connecting to the server 
      */
     public ArrayList<V> values() throws IOException {
-        if(cache.size()==0) {
+        if(cache.isEmpty()) {
             this.lastJournalId = this.getLatestChangeRecordId();
             for(V v : primeCache()) {
                 cache.put(v.getUniqueId(), v);
@@ -489,8 +486,8 @@ public class ServerBackedMap<V extends Saveable> {
                 return null;
             }
             System.out.println(json);
-            Saveable[] saveables = gson.fromJson(json, Saveable[].class);
-            return (ChangeRecord[]) saveables;
+            ChangeRecord[] changes = gson.fromJson(json, ChangeRecord[].class);
+            return changes;
         } catch (InvalidKeySpecException ex) {
             Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchAlgorithmException ex) {

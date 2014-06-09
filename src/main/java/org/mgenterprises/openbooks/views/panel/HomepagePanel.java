@@ -24,11 +24,14 @@
 
 package org.mgenterprises.openbooks.views.panel;
 
+import javax.swing.JPanel;
+import org.mgenterprises.openbooks.views.ViewChangeListener;
+
 /**
  *
  * @author Manuel Gauto
  */
-public class HomepagePanel extends javax.swing.JPanel {
+public class HomepagePanel extends JPanel implements ViewChangeListener{
 
     
     /**
@@ -93,4 +96,12 @@ public class HomepagePanel extends javax.swing.JPanel {
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void onSwitchTo() {
+    }
+
+    @Override
+    public void onSwitchFrom() {
+    }
 }
