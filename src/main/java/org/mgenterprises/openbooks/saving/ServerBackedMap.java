@@ -127,7 +127,12 @@ public class ServerBackedMap<V extends Saveable> {
             SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
             String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
             
-            return Long.parseLong(json);
+            long lastID = Long.parseLong(json);
+            if((lastID+1)==this.lastJournalId) {
+                lastJournalId = lastID;
+                cache.put(value.getUniqueId(), value);
+            }
+            return lastID;
         } catch (InvalidKeySpecException ex) {
             Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchAlgorithmException ex) {
@@ -274,7 +279,6 @@ public class ServerBackedMap<V extends Saveable> {
             if(json.equals("NO")) {
                 return null;
             }
-            System.out.println(json);
             Saveable[] saveables = gson.fromJson(json, Saveable[].class);
             ArrayList<V> saveablesList = new ArrayList<V>(saveables.length);
             for(Saveable saveable : saveables) {
@@ -459,7 +463,7 @@ public class ServerBackedMap<V extends Saveable> {
     private void applyChanges() throws IOException {
         ChangeRecord[] changes = getChangeRecordsSince(lastJournalId);
         for(ChangeRecord change : changes) {
-            if(change.getObjectId().equals(v.getSaveableModuleName())) {
+            if(change.getType().equals(v.getSaveableModuleName())) {
                 V changed = this.get(change.getObjectId());
                 this.cache.put(changed.getUniqueId(), changed);
             }
