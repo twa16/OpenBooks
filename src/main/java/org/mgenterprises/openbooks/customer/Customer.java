@@ -24,6 +24,7 @@
 
 package org.mgenterprises.openbooks.customer;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -140,6 +141,8 @@ public class Customer extends Saveable{
         return this.getClass().getName();
     }
 
+    
+    @Column(unique=true)
     @Override
     public String getUniqueId() {
         return String.valueOf(getCustomerNumber());

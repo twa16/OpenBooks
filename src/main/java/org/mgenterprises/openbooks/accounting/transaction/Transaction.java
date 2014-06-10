@@ -25,6 +25,7 @@
 package org.mgenterprises.openbooks.accounting.transaction;
 
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Temporal;
@@ -89,6 +90,7 @@ public class Transaction extends Saveable{
         return this.getClass().getName();
     }
 
+    @Column(unique=true)
     @Override
     public String getUniqueId() {
         return transactionID;

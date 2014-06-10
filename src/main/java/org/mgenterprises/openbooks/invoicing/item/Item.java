@@ -24,6 +24,7 @@
 
 package org.mgenterprises.openbooks.invoicing.item;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -97,6 +98,7 @@ public class Item extends Saveable{
         return this.getClass().getName();
     }
 
+    @Column(unique=true)
     @Override
     public String getUniqueId() {
         return name;

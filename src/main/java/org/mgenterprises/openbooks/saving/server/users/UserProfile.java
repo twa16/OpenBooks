@@ -25,6 +25,7 @@
 package org.mgenterprises.openbooks.saving.server.users;
 
 import java.util.ArrayList;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import org.mgenterprises.openbooks.saving.Saveable;
@@ -93,6 +94,7 @@ public class UserProfile extends Saveable{
         return this.getClass().getName();
     }
 
+    @Column(unique=true)
     @Override
     public String getUniqueId() {
         return username;

@@ -24,6 +24,7 @@
 
 package org.mgenterprises.openbooks.printing;
 
+import javax.persistence.Column;
 import org.mgenterprises.openbooks.saving.Saveable;
 
 /**
@@ -77,6 +78,7 @@ public class InvoiceTemplate extends Saveable{
         return this.getClass().getName();
     }
 
+    @Column(unique=true)
     @Override
     public String getUniqueId() {
         return String.valueOf(templateID);

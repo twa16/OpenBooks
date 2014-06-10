@@ -25,6 +25,7 @@
 package org.mgenterprises.openbooks.saving.server.journal;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -80,6 +81,7 @@ public class ChangeRecord extends Saveable{
         return this.getClass().getName();
     }
 
+    @Column(unique=true)
     @Override
     public String getUniqueId() {
         return String.valueOf(this.changeId);

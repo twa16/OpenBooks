@@ -24,8 +24,6 @@
 
 package org.mgenterprises.openbooks.saving;
 
-import javax.persistence.Transient;
-
 
 /**
  *

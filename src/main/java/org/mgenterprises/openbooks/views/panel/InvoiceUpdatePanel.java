@@ -69,7 +69,7 @@ import org.mgenterprises.openbooks.views.actionlistener.TableCellListener;
  * @author Manuel Gauto
  */
 public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
-    private Invoice loadedInvoice;
+    private Invoice loadedInvoice = new Invoice();
     private OpenbooksCore openbooksCore;
     private ConfigurationManager configurationManager;
     private InvoiceManager invoiceManager;

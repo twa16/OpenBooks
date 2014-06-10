@@ -53,13 +53,11 @@ public class ItemManagementPanel extends JPanel implements ViewChangeListener{
     public ItemManagementPanel(ItemManager itemManager) {
         this.itemManager = itemManager;
         initComponents();
-        loadItems();
     }
 
     private void loadItems() {
         try {
             DefaultTableModel defaultTableModel = (DefaultTableModel) itemTable.getModel();
-            defaultTableModel.setRowCount(0);
             for (Item item : itemManager.getItems()) {
                 Object[] data = new Object[3];
                 data[0] = item.getName();
@@ -67,6 +65,7 @@ public class ItemManagementPanel extends JPanel implements ViewChangeListener{
                 data[2] = item.getBasePrice();
                 defaultTableModel.addRow(data);
             }
+            defaultTableModel.fireTableDataChanged();
         } catch (IOException ex) {
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showConfirmDialog(null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);

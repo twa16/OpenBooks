@@ -25,6 +25,7 @@
 package org.mgenterprises.openbooks.accounting.account;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import org.mgenterprises.openbooks.saving.Saveable;
@@ -96,6 +97,7 @@ public class Account extends Saveable implements Serializable{
         return this.getClass().getName();
     }
 
+    @Column(unique=true)
     @Override
     public String getUniqueId() {
         return String.valueOf(accountID);

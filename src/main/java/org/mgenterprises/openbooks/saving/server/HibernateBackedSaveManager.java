@@ -91,7 +91,7 @@ public class HibernateBackedSaveManager implements SaveManager{
         Session session = sessionFactory.openSession();
         session.beginTransaction();
         session.beginTransaction();
-        Query query = session.createQuery("delete from "+getClassFromType(type)+" where id=:id");
+        Query query = session.createQuery("delete from "+getClassFromType(type)+" where uniqueId=:id");
         query.setString("id", id);
         session.getTransaction().commit();
     }
@@ -138,7 +138,7 @@ public class HibernateBackedSaveManager implements SaveManager{
     public Saveable getSaveable(String type, String id) {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
-        Query query = session.createQuery("From "+getClassFromType(type)+" where id=:id");
+        Query query = session.createQuery("From "+getClassFromType(type)+" where uniqueId=:id");
         query.setString("id", id);
         Saveable saveable = (Saveable) query.uniqueResult();
         session.getTransaction().commit();

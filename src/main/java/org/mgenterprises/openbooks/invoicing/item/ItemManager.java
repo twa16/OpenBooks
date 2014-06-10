@@ -54,6 +54,7 @@ public class ItemManager extends ServerBackedMap<Item>{
     }
     
     public void updateItem(Item item) throws IOException {
+        remove(item.getUniqueId());
         addItem(item);
     }
     
