@@ -43,7 +43,6 @@ import org.mgenterprises.openbooks.configuration.ConfigurationManager;
 import org.mgenterprises.openbooks.customer.CustomerManager;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.openbooks.invoicing.item.ItemManager;
-import org.mgenterprises.openbooks.saving.SaveFile;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.panel.CustomerUpdatePanel;
@@ -64,7 +63,6 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     private TransactionManager transactionManager;
     private AccountManager accountManager;
     
-    private SaveFile saveFile;
     /**
      * Creates new form MainGUI
      */
@@ -81,7 +79,6 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this.saveFile = saveFile;
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         customerManager = new CustomerManager(saveServerConnection);
         itemManager = new ItemManager(saveServerConnection);

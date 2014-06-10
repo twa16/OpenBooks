@@ -33,7 +33,6 @@ import org.hibernate.cfg.Configuration;
 import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceItem;
 import org.mgenterprises.openbooks.saving.AbstractSaveableAdapter;
-import org.mgenterprises.openbooks.saving.SaveFile;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.saving.server.FileBackedSaveManager;
