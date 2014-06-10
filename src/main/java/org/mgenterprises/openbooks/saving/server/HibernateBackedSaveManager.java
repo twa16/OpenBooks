@@ -24,6 +24,7 @@
 
 package org.mgenterprises.openbooks.saving.server;
 
+import com.google.gson.Gson;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,6 +33,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Projections;
+import org.hibernate.exception.ConstraintViolationException;
 import org.mgenterprises.openbooks.saving.EqualityOperation;
 import org.mgenterprises.openbooks.saving.Saveable;
 
@@ -59,7 +61,7 @@ public class HibernateBackedSaveManager implements SaveManager{
     
     @Override
     public boolean persistSaveable(String type, String holder, Saveable saveable) {
-        System.out.println("==="+type+"---"+saveable.getSaveableModuleName());
+        System.out.println(new Gson().toJson(saveable));
         String id = saveable.getUniqueId();
         try {
             if(!hasLock(type, id) || getLockHolder(type, id).equals(holder)) {
@@ -69,6 +71,9 @@ public class HibernateBackedSaveManager implements SaveManager{
                 session.getTransaction().commit();
                 return true;
             }
+        } catch(ConstraintViolationException ex) {
+            Logger.getLogger(HibernateBackedSaveManager.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(HibernateBackedSaveManager.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -138,7 +143,8 @@ public class HibernateBackedSaveManager implements SaveManager{
     public Saveable getSaveable(String type, String id) {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
-        Query query = session.createQuery("From "+getClassFromType(type)+" where uniqueId=:id");
+        Query query = session.createQuery("From "+getClassFromType(type)+" where saveableModuleName=:type AND uniqueId=:id");
+        query.setString("type", type);
         query.setString("id", id);
         Saveable saveable = (Saveable) query.uniqueResult();
         session.getTransaction().commit();

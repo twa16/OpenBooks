@@ -98,7 +98,10 @@ public class ChangeJournal {
             String[] values = {String.valueOf(id)};
             String[] conjunctions = {""};
             Saveable[] saveables = saveManager.getWhere(type, keys, operations, values, conjunctions);
-            ChangeRecord[] changes = (ChangeRecord[]) saveables;
+            ChangeRecord[] changes = new ChangeRecord[saveables.length];
+            for(int i =0;i < saveables.length; i++) {
+                changes[i] = (ChangeRecord) saveables[i];
+            }
             
             return changes;
         }

@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
@@ -300,6 +301,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         }
 
         saveButton.setText("Save");
+        saveButton.setEnabled(false);
         saveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveButtonActionPerformed(evt);
@@ -550,6 +552,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
             invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), this.invoiceNumberField.getText());
             this.saveButton.setText("Save");
             this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
+            this.saveButton.setEnabled(false);
         } catch (ParseException ex) {
             Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
         } catch(NullPointerException npe) {
@@ -568,9 +571,10 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
             
             long nextInvoiceID = invoiceManager.getHighestID();
             this.invoiceNumberField.setText(String.valueOf(nextInvoiceID));
-            while(invoiceManager.tryLock(new Invoice().getSaveableModuleName(), invoiceNumberField.getText())){
+            while(!invoiceManager.tryLock(new Invoice().getSaveableModuleName(), invoiceNumberField.getText())){
                 this.invoiceNumberField.setText(String.valueOf(nextInvoiceID));
             }
+            loadedInvoice.setLocked(false);
         } catch (IOException ex) {
             Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -609,6 +613,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         if(!loadedInvoice.isLocked()){
             this.saveButton.setText("Save *");
             this.saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD));
+            this.saveButton.setEnabled(true);
         }
         else {
             this.saveButton.setText("Save (Locked)");
@@ -654,8 +659,8 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
                     allPossibleItems = itemsList.toArray(items);
                     JComboBox itemComboBox = new JComboBox(allPossibleItems);
                     invoiceItemTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(itemComboBox));
-                    
-                    customerCombobox.setModel(new javax.swing.DefaultComboBoxModel(customerManager.getCustomers()));
+                   
+                    ((DefaultTableModel) invoiceItemTable.getModel()).fireTableStructureChanged();
                 } catch (IOException ex) {
                     Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }

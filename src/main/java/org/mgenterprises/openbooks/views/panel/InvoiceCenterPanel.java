@@ -61,13 +61,14 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
         this.customerManager = customerManager;
         simpleDateFormat  = new SimpleDateFormat(configurationManager.getValue("dateFormatString"));
         initComponents();
-        loadInitialInvoiceList();
+        loadInvoiceList();
     }
     
-    private void loadInitialInvoiceList() {
+    private void loadInvoiceList() {
         try {
         Invoice[] invoices = invoiceManager.getInvoices();
         
+        ((DefaultTableModel)invoiceTable.getModel()).setRowCount(0);
         double total = 0.0;
         double paid = 0.0;
         DefaultTableModel defaultTableModel = (DefaultTableModel) invoiceTable.getModel();
@@ -93,6 +94,7 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
+        ((DefaultTableModel)invoiceTable.getModel()).fireTableDataChanged();
     }
 
     /**
@@ -303,7 +305,7 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
 
             @Override
             protected Void doInBackground() throws Exception {
-                loadInitialInvoiceList();
+                loadInvoiceList();
                 return null;
             }
             

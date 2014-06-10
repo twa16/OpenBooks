@@ -94,7 +94,7 @@ public class UserProfile extends Saveable{
         return this.getClass().getName();
     }
 
-    @Column(unique=true)
+    
     @Override
     public String getUniqueId() {
         return username;

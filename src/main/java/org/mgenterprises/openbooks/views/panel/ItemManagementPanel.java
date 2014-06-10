@@ -57,6 +57,7 @@ public class ItemManagementPanel extends JPanel implements ViewChangeListener{
 
     private void loadItems() {
         try {
+            ((DefaultTableModel)itemTable.getModel()).setRowCount(0);
             DefaultTableModel defaultTableModel = (DefaultTableModel) itemTable.getModel();
             for (Item item : itemManager.getItems()) {
                 Object[] data = new Object[3];
@@ -290,6 +291,7 @@ public class ItemManagementPanel extends JPanel implements ViewChangeListener{
             }
             this.saveButton.setText("Save");
             this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
+            this.newButtonActionPerformed(evt);
             loadItems();
         } catch (IOException ex) {
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);

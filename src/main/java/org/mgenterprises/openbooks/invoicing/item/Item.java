@@ -98,7 +98,6 @@ public class Item extends Saveable{
         return this.getClass().getName();
     }
 
-    @Column(unique=true)
     @Override
     public String getUniqueId() {
         return name;

@@ -81,7 +81,7 @@ public class ChangeRecord extends Saveable{
         return this.getClass().getName();
     }
 
-    @Column(unique=true)
+    
     @Override
     public String getUniqueId() {
         return String.valueOf(this.changeId);

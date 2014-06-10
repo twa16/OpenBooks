@@ -155,7 +155,7 @@ public class Invoice extends Saveable implements Serializable {
         return this.getClass().getName();
     }
 
-    @Column(unique=true)
+    
     @Override
     public String getUniqueId() {
         return String.valueOf(getInvoiceNumber());

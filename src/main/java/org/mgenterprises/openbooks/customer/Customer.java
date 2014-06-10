@@ -142,7 +142,7 @@ public class Customer extends Saveable{
     }
 
     
-    @Column(unique=true)
+    
     @Override
     public String getUniqueId() {
         return String.valueOf(getCustomerNumber());

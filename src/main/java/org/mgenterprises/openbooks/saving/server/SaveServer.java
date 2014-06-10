@@ -400,7 +400,7 @@ class SaveServerRequestProcessor implements Runnable {
         String id = requestParts[2];
 
         String lockHolder = saveManager.getLockHolder(type, id);
-        if (lockHolder == null) {
+        if (lockHolder.equals("")) {
             saveManager.createLock(user, type, id);
             Logger.getLogger("SaveServer").log(Level.INFO, "LOCK from {0} for {1} {2}", new Object[]{user, type, id});
             return "200";
