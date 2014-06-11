@@ -656,11 +656,10 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
                 try {
                     ArrayList<Item> itemsList = itemManager.values();
                     Item[] items = new Item[itemsList.size()];
-                    allPossibleItems = itemsList.toArray(items);
+                    allPossibleItems = itemsList.toArray(items);                    
                     JComboBox itemComboBox = new JComboBox(allPossibleItems);
                     invoiceItemTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(itemComboBox));
                    
-                    ((DefaultTableModel) invoiceItemTable.getModel()).fireTableStructureChanged();
                 } catch (IOException ex) {
                     Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
