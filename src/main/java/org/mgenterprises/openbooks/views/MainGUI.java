@@ -39,6 +39,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.mgenterprises.openbooks.OpenbooksCore;
 import org.mgenterprises.openbooks.accounting.account.AccountManager;
 import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
+import org.mgenterprises.openbooks.company.CompanyProfile;
 import org.mgenterprises.openbooks.configuration.ConfigurationManager;
 import org.mgenterprises.openbooks.customer.CustomerManager;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
@@ -62,11 +63,11 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     private InvoiceManager invoiceManager;
     private TransactionManager transactionManager;
     private AccountManager accountManager;
-    
+    private CompanyProfile companyProfile;
     /**
      * Creates new form MainGUI
      */
-    public MainGUI(SaveServerConnection saveServerConnection) {
+    public MainGUI(SaveServerConnection saveServerConnection, CompanyProfile companyProfile) {
         try {
             UIManager.setLookAndFeel(
                     UIManager.getSystemLookAndFeelClassName());
@@ -86,6 +87,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         configurationManager.loadDefaultConfiguration();
         transactionManager = new TransactionManager(saveServerConnection);
         accountManager = new AccountManager(saveServerConnection);
+        this.companyProfile = companyProfile;
         initComponents();
         addWindowListener(this);
         loadCards();
@@ -277,5 +279,10 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     @Override
     public AccountManager getAccountManager() {
         return accountManager;
+    }
+
+    @Override
+    public CompanyProfile getCompanyProfile() {
+        return companyProfile;
     }
 }

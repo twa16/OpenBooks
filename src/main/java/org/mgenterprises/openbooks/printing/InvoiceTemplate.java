@@ -24,6 +24,7 @@
 
 package org.mgenterprises.openbooks.printing;
 
+import java.net.URL;
 import javax.persistence.Column;
 import org.mgenterprises.openbooks.saving.Saveable;
 
@@ -32,7 +33,7 @@ import org.mgenterprises.openbooks.saving.Saveable;
  * @author Manuel Gauto
  */
 public class InvoiceTemplate extends Saveable{
-    public static final String TABLE_KEY="{{TABLE}}";
+    public static final String TABLE_KEY="{{TABLE_DATA}}";
     public static final String TABLE_ROW_START="{{TABLE_ROW_START}}";
     public static final String TABLE_ROW_END="{{TABLE_ROW_END}}";
     public static final String LOGO_KEY="{{LOGO}}";
@@ -46,15 +47,19 @@ public class InvoiceTemplate extends Saveable{
     public static final String TOTAL="{{TOTAL}}";
     
     private int templateID;
+    private URL url;
     private String contentHTML;
 
     public InvoiceTemplate(){
         
     }
-    
-    public InvoiceTemplate(int templateID, String contentHTML) {
-        this.templateID = templateID;
-        this.contentHTML = contentHTML;
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
     }
 
     public int getTemplateID() {

@@ -35,6 +35,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.mgenterprises.openbooks.OpenbooksCore;
+import org.mgenterprises.openbooks.company.CompanyProfile;
+import org.mgenterprises.openbooks.customer.Customer;
 import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceItem;
 import org.xhtmlrenderer.pdf.ITextRenderer;
@@ -44,20 +47,66 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
  * @author Manuel Gauto
  */
 public class InvoiceRenderer {
-
+    private OpenbooksCore openbooksCore;
     private Invoice invoice;
     private InvoiceTemplate invoiceTemplate;
 
-    public InvoiceRenderer(Invoice invoice, InvoiceTemplate invoiceTemplate) {
+    public InvoiceRenderer(OpenbooksCore openbooksCore, Invoice invoice, InvoiceTemplate invoiceTemplate) {
+        this.openbooksCore = openbooksCore;
         this.invoice = invoice;
         this.invoiceTemplate = invoiceTemplate;
     }
 
-    private String invoiceToHTML() {
+    private String invoiceToHTML() throws IOException {
+        //Get template
+        String result = invoiceTemplate.getContentHTML();
+
+        //Add company info
+        result = result.replace(InvoiceTemplate.COMPANY_INFO_KEY, openbooksCore.getCompanyProfile().toString());
+        result = result.replace(InvoiceTemplate.COMPANY_NAME_KEY, openbooksCore.getCompanyProfile().getCompanyName());
+        
+        //Add customer
+        Customer customer = openbooksCore.getCustomerManager().getCustomer(invoice.getCustomerID());
+        String customerData = getCustomerDescription(customer);
+        result = result.replace(InvoiceTemplate.CLIENT_INFO, customerData);
+        result = result.replace(InvoiceTemplate.CLIENT_NAME, customer.getCompanyName());
+        
+        //Add invoice items
         String invoiceItems = processInvoiceItems();
-        return "";
+        result = result.replace(InvoiceTemplate.TABLE_KEY, invoiceItems);
+        
+        return result;
     }
 
+    public String getCustomerDescription(Customer customer) {
+        StringBuilder customerInfo = new StringBuilder();
+        if(customer.getCompanyName().length()>0) {
+            customerInfo.append(customer.getCompanyName());
+            customerInfo.append("\n");
+        }
+        if(customer.getContactFirst().length()>0 || customer.getContactLast().length()>0) {
+            customerInfo.append(customer.getContactFirst());
+            customerInfo.append(" ");
+            customerInfo.append(customer.getContactLast());
+            customerInfo.append("\n");
+        }
+        if(customer.getStreetAddress().length()>0) {
+            customerInfo.append(customer.getStreetAddress());
+            customerInfo.append("\n");
+            customerInfo.append(customer.getCityName());
+            customerInfo.append("\n");
+            customerInfo.append(customer.getState());
+            customerInfo.append("\n");
+        }
+        if(customer.getPhoneNumber().length()>0) {
+            customerInfo.append(customer.getPhoneNumber());
+            customerInfo.append("\n");
+        }
+        if(customer.getEmailAddress().length()>0) {
+            customerInfo.append(customer.getEmailAddress());
+        }
+        return customerInfo.toString();
+    }
     private String processInvoiceItems() {
         String regexForTableRow = InvoiceTemplate.TABLE_ROW_START + "(.+)" + InvoiceTemplate.TABLE_ROW_END;
         Pattern pattern = Pattern.compile(regexForTableRow);
@@ -80,7 +129,7 @@ public class InvoiceRenderer {
         return tableRowBuilder.toString();
     }
 
-    public String getField(InvoiceItem invoiceItem, String fieldName) {
+    private String getField(InvoiceItem invoiceItem, String fieldName) {
         try {
             Class clazz = invoiceItem != null ? invoiceItem.getClass() : null;
             if (clazz == null) {
@@ -105,28 +154,11 @@ public class InvoiceRenderer {
         return "ERROR";
     }
 
-    public File renderAsPDF() throws DocumentException, IOException {
-        String inputFile = "samples/firstdoc.xhtml";
-        String url = new File(inputFile).toURI().toURL().toString();
-        File outputFile = File.createTempFile("invoicerender", invoice.getUniqueId());
-        FileOutputStream os = new FileOutputStream(outputFile);
-
-        ITextRenderer renderer = new ITextRenderer();
-        renderer.setDocument(url);
-        renderer.layout();
-        renderer.createPDF(os);
-
-        os.close();
-        return outputFile;
-    }
-
     public File renderAsPDF(File outputFile) throws DocumentException, IOException {
-        String inputFile = "samples/firstdoc.xhtml";
-        String url = new File(inputFile).toURI().toURL().toString();
         FileOutputStream os = new FileOutputStream(outputFile);
 
         ITextRenderer renderer = new ITextRenderer();
-        renderer.setDocument(url);
+        renderer.setDocumentFromString(this.invoiceToHTML());
         renderer.layout();
         renderer.createPDF(os);
 

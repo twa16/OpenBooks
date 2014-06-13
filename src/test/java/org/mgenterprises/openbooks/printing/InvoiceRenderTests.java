@@ -22,33 +22,12 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.openbooks;
-
-import org.mgenterprises.openbooks.accounting.account.AccountManager;
-import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
-import org.mgenterprises.openbooks.company.CompanyProfile;
-import org.mgenterprises.openbooks.configuration.ConfigurationManager;
-import org.mgenterprises.openbooks.customer.CustomerManager;
-import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
-import org.mgenterprises.openbooks.invoicing.item.ItemManager;
+package org.mgenterprises.openbooks.printing;
 
 /**
  *
  * @author Manuel Gauto
  */
-public interface OpenbooksCore {
-
-    public ConfigurationManager getConfigurationManager();
-
-    public CustomerManager getCustomerManager();
-
-    public ItemManager getItemManager();
-
-    public InvoiceManager getInvoiceManager();
-
-    public TransactionManager getTransactionManager();
-
-    public AccountManager getAccountManager();
+public class InvoiceRenderTests {
     
-    public CompanyProfile getCompanyProfile();
 }
