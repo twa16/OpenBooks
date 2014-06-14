@@ -25,11 +25,14 @@
 package org.mgenterprises.openbooks.views.panel;
 
 import com.google.gson.Gson;
+import com.lowagie.text.DocumentException;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -46,8 +49,11 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.MenuElement;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
@@ -61,6 +67,8 @@ import org.mgenterprises.openbooks.invoicing.invoice.InvoiceItem;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.openbooks.invoicing.item.Item;
 import org.mgenterprises.openbooks.invoicing.item.ItemManager;
+import org.mgenterprises.openbooks.printing.InvoiceRenderer;
+import org.mgenterprises.openbooks.printing.InvoiceTemplate;
 import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.actionlistener.TableCellListener;
@@ -654,6 +662,27 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
             @Override
             protected Void doInBackground() throws Exception {
                 try {
+                    //Add Print option to file
+                    JMenuItem printMenuItem = new JMenuItem();
+                    printMenuItem.setText("Print Invoice");
+                    printMenuItem.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                            InvoiceTemplate template = new InvoiceTemplate();
+                            try {
+                                URL templateURL = this.getClass().getResource("/templates/basic_invoice.html");
+                                template.load(templateURL);
+                                InvoiceRenderer invoiceRenderer = new InvoiceRenderer(openbooksCore, loadedInvoice, template);
+                                invoiceRenderer.renderAsPDF(new File("out.pdf"));
+                            } catch (IOException ex) {
+                                Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (DocumentException ex) {
+                                Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    });
+                    openbooksCore.getMainmenuBar().getMenu(0).add(printMenuItem);
+                    
+                    //Update Item choices
                     ArrayList<Item> itemsList = itemManager.values();
                     Item[] items = new Item[itemsList.size()];
                     allPossibleItems = itemsList.toArray(items);                    
@@ -677,6 +706,14 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
             @Override
             protected Void doInBackground() throws Exception {
                 try {
+                    //Remove print item
+                    for(int i = 0; i < openbooksCore.getMainmenuBar().getMenu(0).getItemCount(); i++) {
+                        JMenuItem e = openbooksCore.getMainmenuBar().getMenu(0).getItem(i);
+                        if(e.getText().equals("Print Invoice")) {
+                            openbooksCore.getMainmenuBar().getMenu(0).remove(e);
+                        }
+                    }
+                    //Release locks
                     invoiceManager.releaseAllLocks();
                 } catch (IOException ex) {
                     Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);

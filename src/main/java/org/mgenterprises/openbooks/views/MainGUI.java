@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -117,8 +118,8 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     private void initComponents() {
 
         mainPanelArea = new javax.swing.JPanel();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
+        mainMenuBar = new javax.swing.JMenuBar();
+        fileMenu = new javax.swing.JMenu();
         customerMenu = new javax.swing.JMenu();
         customerCenterMenuItem = new javax.swing.JMenuItem();
         invoiceMenu = new javax.swing.JMenu();
@@ -127,15 +128,15 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         itemManagerMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("OpenBill");
+        setTitle("Openbooks");
         setMinimumSize(new java.awt.Dimension(700, 750));
         getContentPane().setLayout(new org.mgenterprises.openbooks.views.OBCardLayout());
 
         mainPanelArea.setLayout(new org.mgenterprises.openbooks.views.OBCardLayout());
         getContentPane().add(mainPanelArea);
 
-        jMenu1.setText("File");
-        jMenuBar1.add(jMenu1);
+        fileMenu.setText("File");
+        mainMenuBar.add(fileMenu);
 
         customerMenu.setText("Customer");
 
@@ -147,7 +148,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         });
         customerMenu.add(customerCenterMenuItem);
 
-        jMenuBar1.add(customerMenu);
+        mainMenuBar.add(customerMenu);
 
         invoiceMenu.setText("Invoice");
 
@@ -175,9 +176,9 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         });
         invoiceMenu.add(itemManagerMenuItem);
 
-        jMenuBar1.add(invoiceMenu);
+        mainMenuBar.add(invoiceMenu);
 
-        setJMenuBar(jMenuBar1);
+        setJMenuBar(mainMenuBar);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -207,11 +208,11 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     private javax.swing.JMenuItem createInvoiceMenuItem;
     private javax.swing.JMenuItem customerCenterMenuItem;
     private javax.swing.JMenu customerMenu;
+    private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem invoiceCenterButton;
     private javax.swing.JMenu invoiceMenu;
     private javax.swing.JMenuItem itemManagerMenuItem;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JPanel mainPanelArea;
     // End of variables declaration//GEN-END:variables
 
@@ -284,5 +285,10 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     @Override
     public CompanyProfile getCompanyProfile() {
         return companyProfile;
+    }
+
+    @Override
+    public JMenuBar getMainmenuBar() {
+        return mainMenuBar;
     }
 }

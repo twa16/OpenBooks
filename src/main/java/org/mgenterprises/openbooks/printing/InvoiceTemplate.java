@@ -24,6 +24,9 @@
 
 package org.mgenterprises.openbooks.printing;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import javax.persistence.Column;
 import org.mgenterprises.openbooks.saving.Saveable;
@@ -33,25 +36,38 @@ import org.mgenterprises.openbooks.saving.Saveable;
  * @author Manuel Gauto
  */
 public class InvoiceTemplate extends Saveable{
-    public static final String TABLE_KEY="{{TABLE_DATA}}";
-    public static final String TABLE_ROW_START="{{TABLE_ROW_START}}";
-    public static final String TABLE_ROW_END="{{TABLE_ROW_END}}";
-    public static final String LOGO_KEY="{{LOGO}}";
-    public static final String COMPANY_NAME_KEY="{{COMPANY_NAME}}";
-    public static final String COMPANY_INFO_KEY="{{COMPANY_INFO}}";
-    public static final String CLIENT_NAME="{{CLIENT_NAME}}";
-    public static final String CLIENT_INFO="{{CLIENT_INFO}}";
-    public static final String INVOICE_NUMBER="{{INVOICE_NUMBER}}";
-    public static final String SUBTOTAL="{{SUBTOTAL}}";
-    public static final String TAX="{{TAX}}";
-    public static final String TOTAL="{{TOTAL}}";
+    public static final String TABLE_KEY="<<TABLE_DATA>>";
+    public static final String TABLE_ROW_START="<<TABLE_ROW_START>>";
+    public static final String TABLE_ROW_END="<<TABLE_ROW_END>>";
+    public static final String LOGO_KEY="<<LOGO>>";
+    public static final String COMPANY_NAME_KEY="<<COMPANY_NAME>>";
+    public static final String COMPANY_INFO_KEY="<<COMPANY_INFO>>";
+    public static final String CLIENT_NAME="<<CLIENT_NAME>>";
+    public static final String CLIENT_INFO="<<CLIENT_INFO>>";
+    public static final String SUBTOTAL="<<SUBTOTAL>>";
+    public static final String TAX="<<TAX>>";
+    public static final String TOTAL="<<TOTAL>>";
     
     private int templateID;
     private URL url;
     private String contentHTML;
 
     public InvoiceTemplate(){
-        
+    }
+    
+    public void load(URL url) throws IOException {
+        setUrl(url);
+        StringBuilder sb = new StringBuilder();
+        BufferedReader in = new BufferedReader(
+        new InputStreamReader(url.openStream()));
+
+        String inputLine;
+        while ((inputLine = in.readLine()) != null) {
+            sb.append(inputLine);
+            sb.append("\n");
+        }
+        in.close();
+        this.contentHTML = sb.toString();
     }
 
     public URL getUrl() {

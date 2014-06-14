@@ -33,6 +33,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import org.mgenterprises.openbooks.invoicing.item.Item;
 
 /**
@@ -74,6 +75,10 @@ public class InvoiceItem extends Item implements Serializable{
         this.quantity = quantity;
     }
     
+    @Transient
+    public double getTotal() {
+        return price*quantity;
+    }
     @Override
     public String toString(){
         return getName();

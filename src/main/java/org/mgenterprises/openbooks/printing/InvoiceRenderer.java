@@ -62,19 +62,24 @@ public class InvoiceRenderer {
         String result = invoiceTemplate.getContentHTML();
 
         //Add company info
-        result = result.replace(InvoiceTemplate.COMPANY_INFO_KEY, openbooksCore.getCompanyProfile().toString());
-        result = result.replace(InvoiceTemplate.COMPANY_NAME_KEY, openbooksCore.getCompanyProfile().getCompanyName());
+        result = processCompanyData(result);
         
         //Add customer
         Customer customer = openbooksCore.getCustomerManager().getCustomer(invoice.getCustomerID());
         String customerData = getCustomerDescription(customer);
         result = result.replace(InvoiceTemplate.CLIENT_INFO, customerData);
         result = result.replace(InvoiceTemplate.CLIENT_NAME, customer.getCompanyName());
+        result = processClientData(result, customer);
+        
+        //Invoice
+        result = processInvoiceData(result);
         
         //Add invoice items
         String invoiceItems = processInvoiceItems();
         result = result.replace(InvoiceTemplate.TABLE_KEY, invoiceItems);
+        result = result.replace(getInvoiceItemRowTemplate(0), "");
         
+        result = result.replaceAll("<<(.+)>>", "");
         return result;
     }
 
@@ -107,37 +112,85 @@ public class InvoiceRenderer {
         }
         return customerInfo.toString();
     }
-    private String processInvoiceItems() {
-        String regexForTableRow = InvoiceTemplate.TABLE_ROW_START + "(.+)" + InvoiceTemplate.TABLE_ROW_END;
-        Pattern pattern = Pattern.compile(regexForTableRow);
+    
+    private String getInvoiceItemRowTemplate(int group) {
+        String regexForTableRow = InvoiceTemplate.TABLE_ROW_START + "(.+?)" + InvoiceTemplate.TABLE_ROW_END;
+        Pattern pattern = Pattern.compile("(?s)"+regexForTableRow);
         Matcher matcher = pattern.matcher(invoiceTemplate.getContentHTML());
-        String tableRowTemplate = matcher.group(1);
-
-        pattern = Pattern.compile("{{InvoiceItem_(.+)}}");
+        matcher.find();
+        return matcher.group(group);
+    }
+    
+    private String processInvoiceItems() {
+        String tableRowTemplate = getInvoiceItemRowTemplate(1);
+        
+        Pattern pattern = Pattern.compile("<InvoiceItem_([^>]+)>");
         StringBuilder tableRowBuilder = new StringBuilder();
         for (InvoiceItem invoiceItem : invoice.getInvoiceItems()) {
             String row = tableRowTemplate;
-            matcher = pattern.matcher(row);
+            Matcher matcher = pattern.matcher(row);
             while(matcher.find()) {
-                String fieldName = matcher.group();
+                String fieldName = matcher.group(1);
                 String value = getField(invoiceItem, fieldName);
-                row.replace("{{InvoiceItem_"+fieldName+"}}", value);
+                row = row.replace("<<InvoiceItem_"+fieldName+">>", value);
             }
             tableRowBuilder.append(row);
             tableRowBuilder.append("\n");
         }
         return tableRowBuilder.toString();
     }
+    
+    private String processInvoiceData(String curState) {
+        
+        Pattern pattern = Pattern.compile("<Invoice_([^>]+)>");
 
-    private String getField(InvoiceItem invoiceItem, String fieldName) {
+        Matcher matcher = pattern.matcher(curState);
+        while(matcher.find()) {
+            String fieldName = matcher.group(1);
+            String value = getField(invoice, fieldName);
+            curState = curState.replace("<<Invoice_"+fieldName+">>", value);
+        }
+
+        return curState;
+    }
+    
+    private String processCompanyData(String curState) {
+        
+        Pattern pattern = Pattern.compile("<Company_([^>]+)>");
+
+        Matcher matcher = pattern.matcher(curState);
+        while(matcher.find()) {
+            String fieldName = matcher.group(1);
+            String value = getField(openbooksCore.getCompanyProfile(), fieldName);
+            curState = curState.replace("<<Company_"+fieldName+">>", value);
+        }
+
+        return curState;
+    }
+    
+    private String processClientData(String curState, Customer customer) {
+        
+        Pattern pattern = Pattern.compile("<Client_([^>]+)>");
+
+        Matcher matcher = pattern.matcher(curState);
+        while(matcher.find()) {
+            String fieldName = matcher.group(1);
+            String value = getField(customer, fieldName);
+            curState = curState.replace("<<Client_"+fieldName+">>", value);
+        }
+
+        return curState;
+    }
+
+    private String getField(Object obj, String fieldName) {
         try {
-            Class clazz = invoiceItem != null ? invoiceItem.getClass() : null;
+            Class clazz = obj != null ? obj.getClass() : null;
             if (clazz == null) {
                 return null;
             }
             String getterName = "get" + fieldName;
             Method method = clazz.getMethod(getterName);
-            Object valueObject = method.invoke(invoiceItem, (Object[]) null);
+            Object valueObject = method.invoke(obj, (Object[]) null);
             return valueObject != null ? valueObject.toString() : "";
         } catch (NoSuchMethodException ex) {
             Logger.getLogger(InvoiceRenderer.class.getName()).log(Level.SEVERE, null, ex);
