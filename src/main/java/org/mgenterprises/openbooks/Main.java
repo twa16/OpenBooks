@@ -62,6 +62,9 @@ public class Main {
         CompanyProfile companyProfile = new CompanyProfile();
         companyProfile.setCompanyName("My Test Company");
         companyProfile.setEmailAddress("me@mytestcompany.com");
+        companyProfile.setStreetAddress("1234 Test Street");
+        companyProfile.setCityName("Test City");
+        companyProfile.setState("TestState");
         SaveServerConnection saveServerConnection = new SaveServerConnection("127.0.0.1", port, "admin", "$2a$10$vhtSFeYrU1OX3pIvuno7u.8MQHI7LRJTJ9ucUt/ww1P4CnOYOwIH.");
         mainGUI = new MainGUI(saveServerConnection, companyProfile);
         mainGUI.setVisible(true);

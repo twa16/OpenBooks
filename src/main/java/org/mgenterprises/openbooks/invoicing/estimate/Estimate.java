@@ -33,8 +33,12 @@ import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
  */
 public class Estimate extends Invoice{
     
-    public Estimate(int invoiceNumber, Customer customer) {
-        super(invoiceNumber, customer);
+    public Estimate() {
+        super();
+    }
+    
+    public Estimate(int estimateNumber, Customer customer) {
+        super(estimateNumber, customer);
     }
     
 }

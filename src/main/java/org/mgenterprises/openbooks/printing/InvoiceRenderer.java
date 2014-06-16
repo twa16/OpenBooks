@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 import org.mgenterprises.openbooks.OpenbooksCore;
 import org.mgenterprises.openbooks.company.CompanyProfile;
 import org.mgenterprises.openbooks.customer.Customer;
+import org.mgenterprises.openbooks.invoicing.estimate.Estimate;
 import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceItem;
 import org.xhtmlrenderer.pdf.ITextRenderer;
@@ -49,9 +50,9 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 public class InvoiceRenderer {
     private OpenbooksCore openbooksCore;
     private Invoice invoice;
-    private InvoiceTemplate invoiceTemplate;
+    private RenderTemplate invoiceTemplate;
 
-    public InvoiceRenderer(OpenbooksCore openbooksCore, Invoice invoice, InvoiceTemplate invoiceTemplate) {
+    public InvoiceRenderer(OpenbooksCore openbooksCore, Invoice invoice, RenderTemplate invoiceTemplate) {
         this.openbooksCore = openbooksCore;
         this.invoice = invoice;
         this.invoiceTemplate = invoiceTemplate;
@@ -61,14 +62,21 @@ public class InvoiceRenderer {
         //Get template
         String result = invoiceTemplate.getContentHTML();
 
+        //Set form name
+        if(invoice instanceof Estimate) {
+            result = result.replace("<<FORM_NAME>>", "Estimate");
+        } else {
+            result = result.replace("<<FORM_NAME>>", "Invoice");
+        }
+        
         //Add company info
         result = processCompanyData(result);
         
         //Add customer
         Customer customer = openbooksCore.getCustomerManager().getCustomer(invoice.getCustomerID());
         String customerData = getCustomerDescription(customer);
-        result = result.replace(InvoiceTemplate.CLIENT_INFO, customerData);
-        result = result.replace(InvoiceTemplate.CLIENT_NAME, customer.getCompanyName());
+        result = result.replace(RenderTemplate.CLIENT_INFO, customerData);
+        result = result.replace(RenderTemplate.CLIENT_NAME, customer.getCompanyName());
         result = processClientData(result, customer);
         
         //Invoice
@@ -76,10 +84,11 @@ public class InvoiceRenderer {
         
         //Add invoice items
         String invoiceItems = processInvoiceItems();
-        result = result.replace(InvoiceTemplate.TABLE_KEY, invoiceItems);
+        result = result.replace(RenderTemplate.TABLE_KEY, invoiceItems);
         result = result.replace(getInvoiceItemRowTemplate(0), "");
         
         result = result.replaceAll("<<(.+)>>", "");
+        
         return result;
     }
 
@@ -114,7 +123,7 @@ public class InvoiceRenderer {
     }
     
     private String getInvoiceItemRowTemplate(int group) {
-        String regexForTableRow = InvoiceTemplate.TABLE_ROW_START + "(.+?)" + InvoiceTemplate.TABLE_ROW_END;
+        String regexForTableRow = RenderTemplate.TABLE_ROW_START + "(.+?)" + RenderTemplate.TABLE_ROW_END;
         Pattern pattern = Pattern.compile("(?s)"+regexForTableRow);
         Matcher matcher = pattern.matcher(invoiceTemplate.getContentHTML());
         matcher.find();

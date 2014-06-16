@@ -27,6 +27,7 @@ package org.mgenterprises.openbooks.company;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import org.mgenterprises.openbooks.util.State;
 
 /**
@@ -36,11 +37,16 @@ import org.mgenterprises.openbooks.util.State;
 public class CompanyProfile {
     private String logoBase64;
     private String companyName;
-    private String emailAddress;
-    private String phoneNumber;
-    private String streetAddress;
-    private String cityName;
-    private String state;
+    private String motto;
+    private String contactFirst=null;
+    private String contactLast=null;
+    private String emailAddress=null;
+    private String phoneNumber=null;
+    private String faxNumber=null;
+    private String streetAddress=null;
+    private String cityName=null;
+    private String state=null;
+    private String website=null;
 
     public CompanyProfile() {
     }
@@ -61,6 +67,30 @@ public class CompanyProfile {
         this.companyName = companyName;
     }
 
+    public String getMotto() {
+        return motto;
+    }
+
+    public void setMotto(String motto) {
+        this.motto = motto;
+    }
+
+    public String getContactFirst() {
+        return contactFirst;
+    }
+
+    public void setContactFirst(String contactFirst) {
+        this.contactFirst = contactFirst;
+    }
+
+    public String getContactLast() {
+        return contactLast;
+    }
+
+    public void setContactLast(String contactLast) {
+        this.contactLast = contactLast;
+    }
+    
     public String getEmailAddress() {
         return emailAddress;
     }
@@ -77,6 +107,14 @@ public class CompanyProfile {
         this.phoneNumber = phoneNumber;
     }
 
+    public String getFaxNumber() {
+        return faxNumber;
+    }
+
+    public void setFaxNumber(String faxNumber) {
+        this.faxNumber = faxNumber;
+    }
+    
     public String getStreetAddress() {
         return streetAddress;
     }
@@ -101,6 +139,19 @@ public class CompanyProfile {
         this.state = state;
     }
 
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    @Transient
+    public String getString() {
+        return toString().replace("\n", "<br/>");
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -108,8 +159,10 @@ public class CompanyProfile {
         sb.append(streetAddress==null?"":"\n"+streetAddress);
         sb.append(cityName==null?"":"\n"+cityName);
         sb.append(state==null?"":"\n"+state);
+        sb.append(faxNumber==null?"":"\n"+faxNumber);
         sb.append(phoneNumber==null?"":"\n"+phoneNumber);
         sb.append(emailAddress==null?"":"\n"+emailAddress);
+        sb.append(website==null?"":"\n"+website);
         return sb.toString();
     }
     

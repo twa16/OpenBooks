@@ -68,7 +68,7 @@ import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.openbooks.invoicing.item.Item;
 import org.mgenterprises.openbooks.invoicing.item.ItemManager;
 import org.mgenterprises.openbooks.printing.InvoiceRenderer;
-import org.mgenterprises.openbooks.printing.InvoiceTemplate;
+import org.mgenterprises.openbooks.printing.RenderTemplate;
 import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.actionlistener.TableCellListener;
@@ -667,7 +667,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
                     printMenuItem.setText("Print Invoice");
                     printMenuItem.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent evt) {
-                            InvoiceTemplate template = new InvoiceTemplate();
+                            RenderTemplate template = new RenderTemplate();
                             try {
                                 URL templateURL = this.getClass().getResource("/templates/basic_invoice.html");
                                 template.load(templateURL);

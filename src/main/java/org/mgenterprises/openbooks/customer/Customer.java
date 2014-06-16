@@ -28,6 +28,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.util.State;
 import org.mgenterprises.openbooks.views.RowView;
@@ -44,6 +45,7 @@ public class Customer extends Saveable{
     private String contactLast;
     private String emailAddress;
     private String phoneNumber;
+    private String faxNumber;
     private String streetAddress;
     private String cityName;
     private State state;
@@ -100,6 +102,14 @@ public class Customer extends Saveable{
         this.phoneNumber = phoneNumber;
     }
 
+    public String getFaxNumber() {
+        return faxNumber;
+    }
+
+    public void setFaxNumber(String faxNumber) {
+        this.faxNumber = faxNumber;
+    }
+    
     public String getStreetAddress() {
         return streetAddress;
     }
@@ -123,9 +133,7 @@ public class Customer extends Saveable{
     public void setState(State state) {
         this.state = state;
     }
-
-    
-
+        
     @Override
     public String toString() {
         if(companyName.length()>0){

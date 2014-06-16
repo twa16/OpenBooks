@@ -35,7 +35,7 @@ import org.mgenterprises.openbooks.saving.Saveable;
  *
  * @author Manuel Gauto
  */
-public class InvoiceTemplate extends Saveable{
+public class RenderTemplate extends Saveable{
     public static final String TABLE_KEY="<<TABLE_DATA>>";
     public static final String TABLE_ROW_START="<<TABLE_ROW_START>>";
     public static final String TABLE_ROW_END="<<TABLE_ROW_END>>";
@@ -52,7 +52,7 @@ public class InvoiceTemplate extends Saveable{
     private URL url;
     private String contentHTML;
 
-    public InvoiceTemplate(){
+    public RenderTemplate(){
     }
     
     public void load(URL url) throws IOException {

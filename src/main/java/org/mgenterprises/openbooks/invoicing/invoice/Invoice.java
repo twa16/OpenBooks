@@ -53,6 +53,8 @@ public class Invoice extends Saveable implements Serializable {
     private long invoiceNumber;
     private Date dateCreated;
     private double amountPaid;
+    private double taxRate;
+    private String currencySymbol = "$";
     private Date datePaid = new Date(0);
     private Date dateDue = new Date(System.currentTimeMillis() + (86400000 * 30));
     private int purchaseOrderNumber;
@@ -77,6 +79,11 @@ public class Invoice extends Saveable implements Serializable {
         this.invoiceNumber = invoiceNumber;
     }
 
+    @Transient
+    public String getDateCreatedString() {
+        return new SimpleDateFormat("MM/dd/yyyy").format(dateCreated);
+    }
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     public Date getDateCreated() {
         return dateCreated;
@@ -94,6 +101,22 @@ public class Invoice extends Saveable implements Serializable {
         this.amountPaid = amountPaid;
     }
 
+    public double getTaxRate() {
+        return taxRate;
+    }
+
+    public void setTaxRate(double taxRate) {
+        this.taxRate = taxRate;
+    }
+
+    public String getCurrencySymbol() {
+        return currencySymbol;
+    }
+
+    public void setCurrencySymbol(String currencySymbol) {
+        this.currencySymbol = currencySymbol;
+    }
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     public Date getDatePaid() {
         return datePaid;
@@ -132,6 +155,11 @@ public class Invoice extends Saveable implements Serializable {
         this.invoiceItems = invoiceItems;
     }
 
+    @Transient
+    public String getDateDueString() {
+        return new SimpleDateFormat("MM/dd/yyyy").format(dateDue);
+    }
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     public Date getDateDue() {
         return dateDue;
@@ -142,12 +170,22 @@ public class Invoice extends Saveable implements Serializable {
     }
 
     @Transient
-    public double getTotal() {
+    public double getSubTotal() {
         double total = 0;
         for (InvoiceItem invoiceItems : getInvoiceItems()) {
             total += invoiceItems.getPrice();
         }
         return total;
+    }
+    
+    @Transient
+    public double getTax() {
+        return (getSubTotal()*taxRate);
+    }
+    
+    @Transient
+    public double getTotal() {
+        return getTax()+getSubTotal();
     }
 
     @Override
