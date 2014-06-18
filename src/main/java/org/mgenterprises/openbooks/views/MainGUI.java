@@ -43,6 +43,7 @@ import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
 import org.mgenterprises.openbooks.company.CompanyProfile;
 import org.mgenterprises.openbooks.configuration.ConfigurationManager;
 import org.mgenterprises.openbooks.customer.CustomerManager;
+import org.mgenterprises.openbooks.invoicing.estimate.EstimateManager;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.openbooks.invoicing.item.ItemManager;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
@@ -62,6 +63,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     private CustomerManager customerManager;
     private ItemManager itemManager;
     private InvoiceManager invoiceManager;
+    private EstimateManager estimateManager;
     private TransactionManager transactionManager;
     private AccountManager accountManager;
     private CompanyProfile companyProfile;
@@ -85,6 +87,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         customerManager = new CustomerManager(saveServerConnection);
         itemManager = new ItemManager(saveServerConnection);
         invoiceManager = new InvoiceManager(saveServerConnection);
+        estimateManager = new EstimateManager(saveServerConnection);
         configurationManager.loadDefaultConfiguration();
         transactionManager = new TransactionManager(saveServerConnection);
         accountManager = new AccountManager(saveServerConnection);
@@ -290,5 +293,10 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     @Override
     public JMenuBar getMainmenuBar() {
         return mainMenuBar;
+    }
+
+    @Override
+    public EstimateManager getEstimateManager() {
+        return estimateManager;
     }
 }

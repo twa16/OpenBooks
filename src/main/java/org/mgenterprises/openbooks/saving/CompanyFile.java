@@ -22,39 +22,25 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.openbooks;
+package org.mgenterprises.openbooks.saving;
 
-import javax.swing.JMenuBar;
-import org.mgenterprises.openbooks.accounting.account.AccountManager;
-import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
+import java.util.HashMap;
 import org.mgenterprises.openbooks.company.CompanyProfile;
-import org.mgenterprises.openbooks.configuration.ConfigurationManager;
-import org.mgenterprises.openbooks.customer.CustomerManager;
-import org.mgenterprises.openbooks.invoicing.estimate.EstimateManager;
-import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
-import org.mgenterprises.openbooks.invoicing.item.ItemManager;
 
 /**
  *
  * @author Manuel Gauto
  */
-public interface OpenbooksCore {
-
-    public ConfigurationManager getConfigurationManager();
-
-    public CustomerManager getCustomerManager();
-
-    public ItemManager getItemManager();
-
-    public InvoiceManager getInvoiceManager();
+public class CompanyFile {
+    public final long version=1;
+    private HashMap<String, Saveable> companyFileComponents = new HashMap<String, Saveable>();
     
-    public EstimateManager getEstimateManager();
-
-    public TransactionManager getTransactionManager();
-
-    public AccountManager getAccountManager();
-    
-    public CompanyProfile getCompanyProfile();
-    
-    public JMenuBar getMainmenuBar();
+    public CompanyProfile getCompanyProfile() {
+        Saveable saveable = companyFileComponents.get("companyProfile");
+        if(saveable==null) {
+            CompanyProfile companyProfile = new CompanyProfile();
+            //this.companyFileComponents.put("companyProfile", companyProfile);
+        }
+        return null;
+    }
 }

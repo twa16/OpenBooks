@@ -22,26 +22,57 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.openbooks.invoicing.estimate;
+package org.mgenterprises.openbooks.views.panel.email;
 
-import org.mgenterprises.openbooks.customer.Customer;
-import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
+import java.net.PasswordAuthentication;
+import java.util.Properties;
+import javax.mail.Authenticator;
+import javax.mail.Session;
+import org.hibernate.cfg.NotYetImplementedException;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class Estimate extends Invoice{
-    
-    public Estimate() {
-        super();
+public class SMTPEmailServerConfiguration {
+    private String serverAddress;
+    private Properties props = new Properties();
+    private String username;
+    private String password;
+
+    public SMTPEmailServerConfiguration(String serverAddress) {
+        this.serverAddress = serverAddress;
     }
     
-    public Estimate(int estimateNumber, Customer customer) {
-        super(estimateNumber, customer);
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+        props.put("mail.user", username);
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+        props.put("mail.password", password);
     }
     
-    public long getEstimateNumber() {
-        return super.getInvoiceNumber();
+    public void startAuth() {
+        props.put("mail.smtp.auth", "true");
     }
+    
+    public void setTLS() {
+        props.put("mail.smtp.starttls.enable", "true");
+    }
+    
+    public Session getSession() {
+        throw new NotYetImplementedException("Not yet implemented!");
+
+    }
+
 }

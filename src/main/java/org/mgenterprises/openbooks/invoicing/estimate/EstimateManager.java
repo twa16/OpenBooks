@@ -22,39 +22,30 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.openbooks;
+package org.mgenterprises.openbooks.invoicing.estimate;
 
-import javax.swing.JMenuBar;
-import org.mgenterprises.openbooks.accounting.account.AccountManager;
-import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
-import org.mgenterprises.openbooks.company.CompanyProfile;
-import org.mgenterprises.openbooks.configuration.ConfigurationManager;
-import org.mgenterprises.openbooks.customer.CustomerManager;
-import org.mgenterprises.openbooks.invoicing.estimate.EstimateManager;
-import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
-import org.mgenterprises.openbooks.invoicing.item.ItemManager;
+import java.io.IOException;
+import java.util.ArrayList;
+import org.mgenterprises.openbooks.saving.SaveServerConnection;
+import org.mgenterprises.openbooks.saving.ServerBackedMap;
 
 /**
  *
  * @author Manuel Gauto
  */
-public interface OpenbooksCore {
+public class EstimateManager extends ServerBackedMap<Estimate>{
 
-    public ConfigurationManager getConfigurationManager();
-
-    public CustomerManager getCustomerManager();
-
-    public ItemManager getItemManager();
-
-    public InvoiceManager getInvoiceManager();
+    public EstimateManager(SaveServerConnection saveServerConnection) {
+        super(new Estimate(), saveServerConnection);
+    }
     
-    public EstimateManager getEstimateManager();
-
-    public TransactionManager getTransactionManager();
-
-    public AccountManager getAccountManager();
+    public Estimate getEstimate(long id) throws IOException {
+        return get(String.valueOf(id));
+    }
     
-    public CompanyProfile getCompanyProfile();
-    
-    public JMenuBar getMainmenuBar();
+    public Estimate[] getEstimates() throws IOException {
+        ArrayList<Estimate> estimatesList = super.values();
+        Estimate[] estimates = new Estimate[estimatesList.size()];
+        return estimatesList.toArray(estimates);
+    }
 }
