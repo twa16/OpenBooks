@@ -24,7 +24,11 @@
 
 package org.mgenterprises.openbooks.views.panel.email;
 
+import java.io.File;
+import java.io.IOException;
+import javax.swing.DefaultComboBoxModel;
 import org.mgenterprises.openbooks.OpenbooksCore;
+import org.mgenterprises.openbooks.customer.Customer;
 
 /**
  *
@@ -32,14 +36,28 @@ import org.mgenterprises.openbooks.OpenbooksCore;
  */
 public class EmailFrame extends javax.swing.JFrame {
     private OpenbooksCore openbooksCore;
+    private Customer customer;
+    private File attachment;
+    
     /**
      * Creates new form EmailFrame
      */
-    public EmailFrame(OpenbooksCore openbooksCore) {
+    public EmailFrame(OpenbooksCore openbooksCore, Customer customer, File attachment) throws IOException {
         this.openbooksCore = openbooksCore;
+        this.customer = customer;
+        this.attachment = attachment;
         initComponents();
+        initializeFields();
     }
 
+    private void initializeFields() throws IOException {
+        Customer[] customers = openbooksCore.getCustomerManager().getCustomers();
+        this.customerComboBox.setModel(new DefaultComboBoxModel(customers));
+        this.attachmentField.setText(attachment.getName());
+        this.customerComboBox.setSelectedItem(customer);
+        this.emailAddressField.setText(customer.getEmailAddress());
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -50,34 +68,34 @@ public class EmailFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         emailAddressField = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        emailLabel = new javax.swing.JLabel();
+        customerLabel = new javax.swing.JLabel();
         customerComboBox = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        messageContent = new javax.swing.JTextArea();
         jButton1 = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        attachmentLabel = new javax.swing.JLabel();
+        attachmentField = new javax.swing.JTextField();
         statusProgressBar = new javax.swing.JProgressBar();
         statusLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jLabel1.setText("Email Address:");
+        emailLabel.setText("Email Address:");
 
-        jLabel2.setText("Customer:");
+        customerLabel.setText("Customer:");
 
         customerComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        messageContent.setColumns(20);
+        messageContent.setRows(5);
+        jScrollPane1.setViewportView(messageContent);
 
         jButton1.setText("Send");
 
-        jLabel3.setText("Document Attached:");
+        attachmentLabel.setText("Document Attached:");
 
-        jTextField1.setEditable(false);
+        attachmentField.setEditable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -88,16 +106,16 @@ public class EmailFrame extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel1))
+                            .addComponent(attachmentLabel)
+                            .addComponent(customerLabel)
+                            .addComponent(emailLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(emailAddressField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(customerComboBox, 0, 200, Short.MAX_VALUE)
-                                    .addComponent(jTextField1))
+                                    .addComponent(attachmentField))
                                 .addGap(150, 150, 150)))
                         .addGap(0, 27, Short.MAX_VALUE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -114,15 +132,15 @@ public class EmailFrame extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(attachmentLabel)
+                    .addComponent(attachmentField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
+                    .addComponent(customerLabel)
                     .addComponent(customerComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+                    .addComponent(emailLabel)
                     .addComponent(emailAddressField, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
@@ -142,15 +160,15 @@ public class EmailFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField attachmentField;
+    private javax.swing.JLabel attachmentLabel;
     private javax.swing.JComboBox customerComboBox;
+    private javax.swing.JLabel customerLabel;
     private javax.swing.JTextField emailAddressField;
+    private javax.swing.JLabel emailLabel;
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextArea messageContent;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JProgressBar statusProgressBar;
     // End of variables declaration//GEN-END:variables
