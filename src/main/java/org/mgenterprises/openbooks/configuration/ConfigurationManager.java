@@ -34,7 +34,7 @@ import org.mgenterprises.openbooks.saving.Saveable;
  * @author Manuel Gauto
  */
 public class ConfigurationManager {
-    HashMap<String, String> configuration = new HashMap<String, String>();
+    private HashMap<String, String> configuration = new HashMap<String, String>();
 
     public void loadDefaultConfiguration(){
         insertIfNotSet("dateFormatString", "MM/dd/yyyy");
@@ -53,6 +53,10 @@ public class ConfigurationManager {
     
     public String getValue(String key) {
         return configuration.get(key);
+    }
+    
+    public void put(String key, String value) {
+        configuration.put(key, value);
     }
     
 }
