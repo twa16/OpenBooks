@@ -26,6 +26,7 @@ package org.mgenterprises.openbooks.saving;
 
 import java.util.HashMap;
 import org.mgenterprises.openbooks.company.CompanyProfile;
+import org.mgenterprises.openbooks.configuration.ConfigurationManager;
 
 /**
  *
@@ -35,12 +36,31 @@ public class CompanyFile {
     public final long version=1;
     private HashMap<String, Saveable> companyFileComponents = new HashMap<String, Saveable>();
     
+    public void updateConfigurationManager(ConfigurationManager configurationManager) {
+        this.companyFileComponents.put("configurationManager", configurationManager);
+    }
+    
+    public void updateCompanyProfile(CompanyProfile companyProfile) {
+        this.companyFileComponents.put("companyProfile", companyProfile);
+    }
+    
+    public ConfigurationManager getConfigurationManager() {
+        Saveable saveable = companyFileComponents.get("configurationManager");
+        if(saveable==null) {
+            ConfigurationManager configurationManager = new ConfigurationManager();
+            this.companyFileComponents.put("configurationManager", configurationManager);
+            saveable = configurationManager;
+        }
+        return (ConfigurationManager) saveable;
+    }
+    
     public CompanyProfile getCompanyProfile() {
         Saveable saveable = companyFileComponents.get("companyProfile");
         if(saveable==null) {
             CompanyProfile companyProfile = new CompanyProfile();
-            //this.companyFileComponents.put("companyProfile", companyProfile);
+            this.companyFileComponents.put("companyProfile", companyProfile);
+            saveable = companyProfile;
         }
-        return null;
+        return (CompanyProfile) saveable;
     }
 }

@@ -46,8 +46,10 @@ import org.mgenterprises.openbooks.customer.CustomerManager;
 import org.mgenterprises.openbooks.invoicing.estimate.EstimateManager;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.openbooks.invoicing.item.ItemManager;
+import org.mgenterprises.openbooks.saving.CompanyFile;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
+import org.mgenterprises.openbooks.views.configuration.ConfigurationPanel;
 import org.mgenterprises.openbooks.views.panel.CustomerUpdatePanel;
 import org.mgenterprises.openbooks.views.panel.HomepagePanel;
 import org.mgenterprises.openbooks.views.panel.InvoiceCenterPanel;
@@ -59,7 +61,7 @@ import org.mgenterprises.openbooks.views.panel.ItemManagementPanel;
  * @author Manuel Gauto
  */
 public class MainGUI extends javax.swing.JFrame implements WindowListener, OpenbooksCore{
-    private ConfigurationManager configurationManager = new ConfigurationManager();
+    private ConfigurationManager configurationManager;
     private CustomerManager customerManager;
     private ItemManager itemManager;
     private InvoiceManager invoiceManager;
@@ -70,7 +72,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     /**
      * Creates new form MainGUI
      */
-    public MainGUI(SaveServerConnection saveServerConnection, CompanyProfile companyProfile) {
+    public MainGUI(SaveServerConnection saveServerConnection, CompanyFile companyFile) {
         try {
             UIManager.setLookAndFeel(
                     UIManager.getSystemLookAndFeelClassName());
@@ -88,10 +90,11 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         itemManager = new ItemManager(saveServerConnection);
         invoiceManager = new InvoiceManager(saveServerConnection);
         estimateManager = new EstimateManager(saveServerConnection);
+        configurationManager = companyFile.getConfigurationManager();
         configurationManager.loadDefaultConfiguration();
         transactionManager = new TransactionManager(saveServerConnection);
         accountManager = new AccountManager(saveServerConnection);
-        this.companyProfile = companyProfile;
+        this.companyProfile = companyFile.getCompanyProfile();
         initComponents();
         addWindowListener(this);
         loadCards();
@@ -109,6 +112,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
             JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
         cl.add(mainPanelArea, new ItemManagementPanel(itemManager), "ItemManagementPanel");
+        cl.add(mainPanelArea, new ConfigurationPanel(configurationManager), "ConfigurationPanel");
     }
 
     /**
@@ -123,6 +127,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         mainPanelArea = new javax.swing.JPanel();
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
+        configurationMenuItem = new javax.swing.JMenuItem();
         customerMenu = new javax.swing.JMenu();
         customerCenterMenuItem = new javax.swing.JMenuItem();
         invoiceMenu = new javax.swing.JMenu();
@@ -139,6 +144,15 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         getContentPane().add(mainPanelArea);
 
         fileMenu.setText("File");
+
+        configurationMenuItem.setText("Configuration");
+        configurationMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configurationMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(configurationMenuItem);
+
         mainMenuBar.add(fileMenu);
 
         customerMenu.setText("Customer");
@@ -207,7 +221,13 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         cl.show(mainPanelArea, "ItemManagementPanel");
     }//GEN-LAST:event_itemManagerMenuItemActionPerformed
 
+    private void configurationMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurationMenuItemActionPerformed
+        OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
+        cl.show(mainPanelArea, "ConfigurationPanel");
+    }//GEN-LAST:event_configurationMenuItemActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem configurationMenuItem;
     private javax.swing.JMenuItem createInvoiceMenuItem;
     private javax.swing.JMenuItem customerCenterMenuItem;
     private javax.swing.JMenu customerMenu;

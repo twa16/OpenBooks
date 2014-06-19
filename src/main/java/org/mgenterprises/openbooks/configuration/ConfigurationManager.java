@@ -33,7 +33,7 @@ import org.mgenterprises.openbooks.saving.Saveable;
  *
  * @author Manuel Gauto
  */
-public class ConfigurationManager {
+public class ConfigurationManager extends Saveable{
     private HashMap<String, String> configuration = new HashMap<String, String>();
 
     public void loadDefaultConfiguration(){
@@ -57,6 +57,21 @@ public class ConfigurationManager {
     
     public void put(String key, String value) {
         configuration.put(key, value);
+    }
+
+    @Override
+    public String getSaveableModuleName() {
+        return this.getClass().getName();
+    }
+
+    @Override
+    public String getUniqueId() {
+        return "ConfigManager";
+    }
+
+    @Override
+    public void setUniqueId(String id) {
+        return;
     }
     
 }

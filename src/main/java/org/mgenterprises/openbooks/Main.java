@@ -31,9 +31,11 @@ import java.net.UnknownHostException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.mgenterprises.openbooks.company.CompanyProfile;
+import org.mgenterprises.openbooks.configuration.ConfigurationManager;
 import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceItem;
 import org.mgenterprises.openbooks.saving.AbstractSaveableAdapter;
+import org.mgenterprises.openbooks.saving.CompanyFile;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.saving.server.FileBackedSaveManager;
@@ -66,7 +68,10 @@ public class Main {
         companyProfile.setCityName("Test City");
         companyProfile.setState("TestState");
         SaveServerConnection saveServerConnection = new SaveServerConnection("127.0.0.1", port, "admin", "$2a$10$vhtSFeYrU1OX3pIvuno7u.8MQHI7LRJTJ9ucUt/ww1P4CnOYOwIH.");
-        mainGUI = new MainGUI(saveServerConnection, companyProfile);
+        CompanyFile companyFile = new CompanyFile();
+        companyFile.updateCompanyProfile(companyProfile);
+        companyFile.updateConfigurationManager(new ConfigurationManager());
+        mainGUI = new MainGUI(saveServerConnection, companyFile);
         mainGUI.setVisible(true);
         
     }

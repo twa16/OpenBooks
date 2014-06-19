@@ -24,13 +24,22 @@
 
 package org.mgenterprises.openbooks.views.configuration;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JTextField;
+import org.mgenterprises.openbooks.OpenbooksCore;
 import org.mgenterprises.openbooks.configuration.ConfigurationManager;
+import org.mgenterprises.openbooks.printing.InvoiceRenderer;
+import org.mgenterprises.openbooks.views.ViewChangeListener;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class ConfigurationPanel extends javax.swing.JPanel {
+public class ConfigurationPanel extends javax.swing.JPanel implements ViewChangeListener{
     private ConfigurationManager configurationManager;
 
     /**
@@ -39,6 +48,24 @@ public class ConfigurationPanel extends javax.swing.JPanel {
     public ConfigurationPanel(ConfigurationManager configurationManager) {
         this.configurationManager = configurationManager;
         initComponents();
+        loadCurrentData();
+    }
+    
+    private void loadCurrentData() {
+        Class clazz = this.getClass();
+        Field[] fields = clazz.getFields();
+        for(Field field: fields) {
+            if(field.getClass().getName().equals(JTextField.class.getName())) {
+                try {
+                    JTextField textField = (JTextField) field.get(this);
+                    textField.setText(configurationManager.getValue(field.getName().replace("Field", "")));
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(ConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(ConfigurationPanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
     }
     
     /**
@@ -218,4 +245,13 @@ public class ConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JTextField smtpUsernameField;
     private javax.swing.JLabel smtpUsernameLabel;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void onSwitchTo() {
+        loadCurrentData();
+    }
+
+    @Override
+    public void onSwitchFrom() {
+    }
 }
