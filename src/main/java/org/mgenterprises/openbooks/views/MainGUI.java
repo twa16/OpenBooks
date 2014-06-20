@@ -46,7 +46,7 @@ import org.mgenterprises.openbooks.customer.CustomerManager;
 import org.mgenterprises.openbooks.invoicing.estimate.EstimateManager;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.openbooks.invoicing.item.ItemManager;
-import org.mgenterprises.openbooks.saving.CompanyFile;
+import org.mgenterprises.openbooks.saving.companyfile.CompanyFile;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.configuration.ConfigurationPanel;

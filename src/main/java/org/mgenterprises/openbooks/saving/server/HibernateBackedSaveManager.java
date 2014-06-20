@@ -42,26 +42,15 @@ import org.mgenterprises.openbooks.saving.Saveable;
  * @author Manuel Gauto
  */
 public class HibernateBackedSaveManager implements SaveManager{
-    private final SessionFactory sessionFactory = buildSessionFactory();
+    private final SessionFactory sessionFactory;
 
-    public HibernateBackedSaveManager() {
-        buildSessionFactory();
-    }
-    
-    private SessionFactory buildSessionFactory() {
-            try {
-                    // Use hibernate.cfg.xml to get a SessionFactory
-                    return new Configuration().configure().buildSessionFactory();
-            } catch (Throwable ex) {
-                    System.err.println("SessionFactory creation failed." + ex);
-                    throw new ExceptionInInitializerError(ex);
-            }
+    public HibernateBackedSaveManager(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     
     @Override
     public boolean persistSaveable(String type, String holder, Saveable saveable) {
-        System.out.println(new Gson().toJson(saveable));
         String id = saveable.getUniqueId();
         try {
             if(!hasLock(type, id) || getLockHolder(type, id).equals(holder)) {

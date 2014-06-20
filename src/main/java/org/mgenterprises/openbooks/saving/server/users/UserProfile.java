@@ -25,9 +25,12 @@
 package org.mgenterprises.openbooks.saving.server.users;
 
 import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
 import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.saving.server.access.ACTION;
 import org.mgenterprises.openbooks.saving.server.access.AccessRight;
@@ -40,7 +43,7 @@ import org.mgenterprises.openbooks.saving.server.access.AccessRight;
 public class UserProfile extends Saveable{
     private String username;
     private String passwordHash;
-    private ArrayList<AccessRight> accessRights = new ArrayList<AccessRight>();
+    private List<AccessRight> accessRights = new ArrayList<AccessRight>();
 
     public UserProfile() {
     }
@@ -67,11 +70,12 @@ public class UserProfile extends Saveable{
         this.passwordHash = passwordHash;
     }
 
-    public ArrayList<AccessRight> getAccessRights() {
+    @OneToMany
+    public List<AccessRight> getAccessRights() {
         return accessRights;
     }
 
-    public void setAccessRights(ArrayList<AccessRight> accessRights) {
+    public void setAccessRights(List<AccessRight> accessRights) {
         this.accessRights = accessRights;
     }
     

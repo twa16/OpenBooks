@@ -22,11 +22,12 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.openbooks.saving;
+package org.mgenterprises.openbooks.saving.companyfile;
 
 import java.util.HashMap;
 import org.mgenterprises.openbooks.company.CompanyProfile;
 import org.mgenterprises.openbooks.configuration.ConfigurationManager;
+import org.mgenterprises.openbooks.saving.Saveable;
 
 /**
  *
