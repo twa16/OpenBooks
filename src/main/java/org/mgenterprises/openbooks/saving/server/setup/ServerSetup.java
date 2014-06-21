@@ -25,7 +25,14 @@
 package org.mgenterprises.openbooks.saving.server.setup;
 
 import com.lowagie.text.pdf.codec.Base64;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.mgenterprises.openbooks.company.CompanyProfile;
 import org.mgenterprises.openbooks.saving.companyfile.CompanyFilePack;
 
@@ -37,6 +44,7 @@ public class ServerSetup extends javax.swing.JPanel {
     private CompanyFilePack companyFilePack;
     private CompanyProfile companyProfile;
     private Properties hibernateProperties;
+    private File databaseFile;
     /**
      * Creates new form ServerSetup
      */
@@ -59,7 +67,33 @@ public class ServerSetup extends javax.swing.JPanel {
     }
     
     private void createDatabaseConfiguration() {
-        
+        if(databaseTypeComboBox.getSelectedIndex()==0) {
+            try {
+                //So we want a sqlite backing
+                
+                //Load our driver
+                Class.forName("org.sqlite.JDBC");
+                //If the company name is defined lets use that if not just use 'new company'
+                databaseFile = File.createTempFile("dbFile", companyProfile.getCompanyName()==null?"newCompany":companyProfile.getCompanyName());
+                //Create database file
+                Connection connection = DriverManager.getConnection("jdbc:sqlite:"+databaseFile.getAbsolutePath());
+                connection.close();
+            
+                //Set some hibernate properties so that it uses this db
+                //Set the dialect
+                hibernateProperties.setProperty("hibernate.dialect", "");
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        } else {
+            
+        }
+
     }
     /**
      * This method is called from within the constructor to initialize the form.
