@@ -130,15 +130,22 @@ public class CompanyFilePack {
                 }
 
                 fos.close();
+
+                //Default to client only pack
                 if(newFile.getName().contains(".ob")) {
-                    this.companyPackType = CompanyPackType.CLIENT;
+                    //load our company file
                     this.companyFileLocation = newFile;
-                } else if(newFile.getName().contains(".sqlite")) {
-                    this.companyPackType = CompanyPackType.COMBINED;
+                } else if(newFile.getName().contains(".obdb")) {
+                    //get our db file
                     this.dbFileLocation = newFile;
-                } else if(newFile.getName().contains(".xml")) {
-                    this.companyPackType = CompanyPackType.SERVER;
+                } else if(newFile.getName().contains(".obdb.conf")) {
+                    //Get hibernate config
                     this.hibernateConfigLocation = newFile;
+                }  else if(newFile.getName().equals("MANIFEST")) {
+                    //Get type from manifest
+                    FileReader fileReader = new FileReader(newFile);
+                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+                    this.companyPackType = CompanyPackType.valueOf(bufferedReader.readLine());
                 }
                 ze = zis.getNextEntry();
             }
@@ -147,12 +154,13 @@ public class CompanyFilePack {
             zis.close();
     }
     
-    public void pack(CompanyFile companyFile, File dbFile, File hibernateFile) throws FileNotFoundException, IOException {
+    public void pack(CompanyFile companyFile, File dbFile, File hibernateFile, CompanyPackType companyPackType) throws FileNotFoundException, IOException {
         packFile.createNewFile();
         FileOutputStream fileOutputStream = new FileOutputStream(packFile);
         ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
         
         //Put in the company file
+        //Replace spaces with dashes
         ZipEntry ze = new ZipEntry(companyFile.getCompanyProfile().getCompanyName().replace(" ", "-")+".ob");
         zipOutputStream.putNextEntry(ze);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(zipOutputStream));
@@ -162,7 +170,9 @@ public class CompanyFilePack {
         //Put in DB file
         if(dbFile!=null) {
             byte[] buffer = new byte[1024];
-            ze = new ZipEntry(dbFile.getName());
+            //Set our db name
+            //Replace spaces with dashes
+            ze = new ZipEntry(companyFile.getCompanyProfile().getCompanyName().replace(" ", "-")+".obdb");
             zipOutputStream.putNextEntry(ze);
             
             FileInputStream in = new FileInputStream(dbFile);
@@ -177,7 +187,9 @@ public class CompanyFilePack {
         //Put in hibernate file
         if(hibernateFile!=null) {
             byte[] buffer = new byte[1024];
-            ze = new ZipEntry(hibernateFile.getName());
+            //Set hibernate config name
+            //Replace spaces with dashes
+            ze = new ZipEntry(companyFile.getCompanyProfile().getCompanyName().replace(" ", "-")+".obdb.conf");
             zipOutputStream.putNextEntry(ze);
             
             FileInputStream in = new FileInputStream(hibernateFile);
@@ -188,7 +200,17 @@ public class CompanyFilePack {
             in.close();
             zipOutputStream.closeEntry();
         }
-        
+
+        //Manifest time
+        //Set manifest name
+        ze = new ZipEntry("MANIFEST");
+        zipOutputStream.putNextEntry(ze);
+        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(zipOutputStream);
+        //Write type
+        outputStreamWriter.append(companyPackType.toString());
+        //Line return
+        outputStreamWriter.append("\n");
+        zipOutputStream.closeEntry();
         //remember close it
         zipOutputStream.close();
     }
