@@ -37,9 +37,12 @@ public class ConfigurationManager extends Saveable{
     private HashMap<String, String> configuration = new HashMap<String, String>();
 
     public void loadDefaultConfiguration(){
+        //Set our date format
         insertIfNotSet("dateFormatString", "MM/dd/yyyy");
-        
+        //Default term for documents
         insertIfNotSet("defaultDueDateDelay", "30");
+        //Default Body for emails
+        insertIfNotSet("emailBody", "Test Email Body");
     }
     
     public boolean insertIfNotSet(String key, String configurationValue) {

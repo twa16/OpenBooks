@@ -26,9 +26,7 @@ package org.mgenterprises.openbooks.views.panel.email;
 
 import javax.mail.PasswordAuthentication;
 import java.util.Properties;
-import javax.mail.Authenticator;
 import javax.mail.Session;
-import org.hibernate.cfg.NotYetImplementedException;
 
 /**
  *
