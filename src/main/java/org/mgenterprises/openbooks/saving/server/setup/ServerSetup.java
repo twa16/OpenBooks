@@ -48,6 +48,7 @@ import org.mgenterprises.openbooks.saving.server.users.UserProfile;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import org.mgenterprises.openbooks.views.MainGUI;
 
 /**
  *
@@ -68,6 +69,18 @@ public class ServerSetup extends javax.swing.JFrame {
     }
 
     public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(
+                    UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+        }
         new ServerSetup().setVisible(true);
     }
     
@@ -236,7 +249,8 @@ public class ServerSetup extends javax.swing.JFrame {
 
         jLabel1.setText("jLabel1");
 
-        setMinimumSize(new java.awt.Dimension(685, 333));
+        setMinimumSize(new java.awt.Dimension(700, 333));
+        setPreferredSize(new java.awt.Dimension(700, 333));
 
         companyNameLabel.setText("Company Name");
 
@@ -283,7 +297,7 @@ public class ServerSetup extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(logoLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(logoPathField, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+                        .addComponent(logoPathField, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(findButton))
                     .addGroup(jPanel3Layout.createSequentialGroup()
@@ -437,7 +451,7 @@ public class ServerSetup extends javax.swing.JFrame {
                                 .addComponent(databaseNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(loadCompanyFileButton)
                             .addComponent(loadCompanyFileLabel))
-                        .addGap(0, 70, Short.MAX_VALUE)))
+                        .addGap(0, 105, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -541,7 +555,7 @@ public class ServerSetup extends javax.swing.JFrame {
                         .addComponent(adminPasswordLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addContainerGap(101, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

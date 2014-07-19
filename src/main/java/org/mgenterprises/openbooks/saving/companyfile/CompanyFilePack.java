@@ -101,7 +101,7 @@ public class CompanyFilePack {
     
     private void unZip(String outputFolder) throws FileNotFoundException, IOException {
 
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[8192];
             //create output directory is not exists
             File folder = new File(outputFolder);
             if (!folder.exists()) {
@@ -165,11 +165,13 @@ public class CompanyFilePack {
         zipOutputStream.putNextEntry(ze);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(zipOutputStream));
         gson.toJson(companyFile, bw);
+        //This next line was a killer, I didn't flush before and the ob file just didn't end up right. This fixed it.
+        bw.flush();
         zipOutputStream.closeEntry();
         
         //Put in DB file
         if(dbFile!=null) {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[8192];
             //Set our db name
             //Replace spaces with dashes
             ze = new ZipEntry(companyFile.getCompanyProfile().getCompanyName().replace(" ", "-")+".obdb");
@@ -186,7 +188,7 @@ public class CompanyFilePack {
         
         //Put in hibernate file
         if(hibernateFile!=null) {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[8192];
             //Set hibernate config name
             //Replace spaces with dashes
             ze = new ZipEntry(companyFile.getCompanyProfile().getCompanyName().replace(" ", "-")+".obdb.conf");
@@ -210,6 +212,7 @@ public class CompanyFilePack {
         outputStreamWriter.append(companyPackType.toString());
         //Line return
         outputStreamWriter.append("\n");
+        outputStreamWriter.flush();
         zipOutputStream.closeEntry();
         //remember close it
         zipOutputStream.close();

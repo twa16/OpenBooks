@@ -82,7 +82,9 @@ public class Main {
         mainGUI.setVisible(true);
         
     }
-    
+    public static void startup() {
+        
+    }
     public static MainGUI getInstance(){
         return mainGUI;
     }
