@@ -68,6 +68,10 @@ public class CustomerUpdatePanel extends JPanel implements ViewChangeListener{
         stateCombo.setModel(new DefaultComboBoxModel<>(State.values()));
     }
 
+    /**
+     * Get data from CustomerManager and load into table model and
+     * use model for table.
+     */
     public void processData() {
         try {
             DefaultTableModel tableModel = (DefaultTableModel) customerTable.getModel();
@@ -363,6 +367,9 @@ public class CustomerUpdatePanel extends JPanel implements ViewChangeListener{
         }
     }//GEN-LAST:event_newCustomerButtonActionPerformed
 
+    /**
+     * Clears all the fields on the form
+     */
     private void clearFields() {
         this.idField.setText("");
         this.companyNameField.setText("");
@@ -469,6 +476,9 @@ public class CustomerUpdatePanel extends JPanel implements ViewChangeListener{
         onModify();
     }//GEN-LAST:event_stateComboActionPerformed
 
+    /**
+     * Called when a field is modified.
+     */
     private void onModify() {
         if (!saveButton.getText().contains("(Locked)")) {
             this.saveButton.setText("Save *");
@@ -476,6 +486,12 @@ public class CustomerUpdatePanel extends JPanel implements ViewChangeListener{
         }
     }
 
+    /**
+     * Set the values of the fields using the data of a customer
+     * from the selected row.
+     * 
+     * @param row Row to get data from
+     */
     public void setFields(int row) {
         try {
             //Get Customer ID from Table

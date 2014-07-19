@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 MG Enterprises Consulting LLC.
+ * Copyright 2014 mgauto.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,121 +24,56 @@
 
 package org.mgenterprises.openbooks.views.panel.accounting;
 
-import com.google.common.collect.Lists;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
-import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
+import javax.swing.tree.MutableTreeNode;
+import org.mgenterprises.openbooks.OpenbooksCore;
 import org.mgenterprises.openbooks.accounting.account.Account;
 import org.mgenterprises.openbooks.accounting.account.AccountManager;
-import org.netbeans.swing.outline.DefaultOutlineModel;
-import org.netbeans.swing.outline.OutlineModel;
+import org.mgenterprises.openbooks.views.ViewChangeListener;
 
 /**
  *
- * @author Manuel Gauto
+ * @author mgauto
  */
-public class AccountListPanel extends javax.swing.JPanel {
-    private AccountManager accountManager;
-
+public class AccountListPanel extends javax.swing.JPanel implements ViewChangeListener{
+    private OpenbooksCore openbooksCore;
     /**
      * Creates new form AccountListPanel
      */
-    public AccountListPanel(AccountManager accountManager) {
-        this.accountManager = accountManager;
+    public AccountListPanel(OpenbooksCore openbooksCore) {
+        this.openbooksCore = openbooksCore;
+        try {
+            //Call the methods the populates our fields
+            loadAccounts();
+        } catch (IOException ex) {
+            Logger.getLogger(AccountListPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
         initComponents();
     }
 
-    private void loadAccounts() {
-        SwingWorker accountLoadWorker = new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                ArrayList<Account> accountsList = accountManager.values();
-                
-                Account rootAccount = new Account();
-                rootAccount.setAccountID(-1);
-                rootAccount.setAccountName("Accounts");
-                rootAccount.setAccountDescription("");
-                rootAccount.setAccountBalance(0);
-                DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode(rootAccount);
-                DefaultTreeModel defaultTreeModel = new DefaultTreeModel(rootTreeNode);
-                
-                //Start filling the TreeModel
-                for(Account account : accountsList) { 
-                    DefaultMutableTreeNode newTreeNode = new DefaultMutableTreeNode(account);
-                    int rootChildCount = defaultTreeModel.getChildCount(rootTreeNode);
-                    //If it has not parent just add it at the root
-                    if(account.getParentAccount()==-1) {
-                        defaultTreeModel.insertNodeInto(newTreeNode, rootTreeNode, rootChildCount);
-                    }
-                    else {
-                        boolean hasBeenInsert = false;
-                        //Loop through inserted nodes looking for the parent
-                        for(int rooti = 0; rooti<rootChildCount; rooti ++) {
-                            //Lets get the parent ID
-                            int parentID = account.getParentAccount();
-                            //Get the node
-                            DefaultMutableTreeNode posParentNode = (DefaultMutableTreeNode) defaultTreeModel.getChild(rootAccount, rooti);
-                            //Get the associated account
-                            Account posParent = (Account) posParentNode.getUserObject();
-                            //Lets see if the account id matches that of the parent
-                            if(posParent.getAccountID()==parentID) {
-                                //Get the childcount for the index
-                                int childCount = defaultTreeModel.getChildCount(posParent);
-                                //Insert the new node
-                                defaultTreeModel.insertNodeInto(newTreeNode, posParentNode, childCount);
-                                //Lets not add the parent again
-                                hasBeenInsert = true;
-                            }
-                        }
-                        //We didn't find the parent, lets add it
-                        if(!hasBeenInsert) {
-                            //I hate concurrentmodification
-                            ArrayList<Account> temp = new ArrayList(accountsList);
-                            //Iterate through loaded accounts
-                            for(Account posParent : temp) {
-                                int parentID = account.getParentAccount();
-                                //Lets see if the account id matches that of the parent
-                                if(posParent.getAccountID()==parentID) {
-                                    //Create a node
-                                    DefaultMutableTreeNode posParentNode = new DefaultMutableTreeNode(posParent);
-                                    //Add the child
-                                    posParentNode.add(newTreeNode);
-                                    //Insert!
-                                    defaultTreeModel.insertNodeInto(newTreeNode, rootTreeNode, rootChildCount);
-                                }
-                            }
-                        }
-                    }
-                } //Done filling the TreeModel
-                
-                OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(defaultTreeModel, new AccountRowModel());
-                accountsOutline.setRootVisible(false);
-                accountsOutline.setRenderDataProvider(new AccountRenderDataProvider());
-                accountsOutline.setModel(outlineModel);
-                return null;
-            }
-        };
-        accountLoadWorker.execute();
+    /**
+     * Gets all accounts and loads the JTree
+     * @throws IOException 
+     */
+    private void loadAccounts() throws IOException {
+        //Get the account manager
+        AccountManager accountManager = openbooksCore.getAccountManager();
+        //Get all accounts from the account manager
+        ArrayList<Account> accounts = accountManager.values();
+        //Create the root node
+        MutableTreeNode mutableTreeNode = new DefaultMutableTreeNode();
+        //Set the root node's title
+        mutableTreeNode.setUserObject("Accounts");
+        //Create the model for the Accounts tree
+        DefaultTreeModel accountTreeModel = new DefaultTreeModel(mutableTreeNode);
         
     }
     
-    private List<String> getColumnNames() {
-        ArrayList<String> columnNames = new ArrayList<String>(3);
-        columnNames.add("Account Name");
-        columnNames.add("Account Description");
-        columnNames.add("Account Balance");
-        return columnNames;
-    }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -149,12 +84,11 @@ public class AccountListPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        accountsOutline = new org.netbeans.swing.outline.Outline();
+        accountsList = new javax.swing.JTree();
 
-        setMinimumSize(new java.awt.Dimension(650, 650));
-        setPreferredSize(new java.awt.Dimension(650, 650));
+        setMinimumSize(new java.awt.Dimension(850, 650));
 
-        jScrollPane1.setViewportView(accountsOutline);
+        jScrollPane1.setViewportView(accountsList);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -162,21 +96,31 @@ public class AccountListPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 838, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.swing.outline.Outline accountsOutline;
+    private javax.swing.JTree accountsList;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void onSwitchTo() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void onSwitchFrom() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

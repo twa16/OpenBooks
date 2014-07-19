@@ -31,6 +31,13 @@ import javax.swing.JPanel;
  * @author Manuel Gauto
  */
 public interface ViewChangeListener{
+    /**
+     * This method is called by the MainGUI when a new panel is loaded
+     */
     public void onSwitchTo();
+    /**
+     * This method is called by the MainGUI when a loaded panel is no
+     * longer visible such as when another panel is loaded.
+     */
     public void onSwitchFrom();
 }
