@@ -66,12 +66,23 @@ public class AccountListPanel extends javax.swing.JPanel implements ViewChangeLi
         //Get all accounts from the account manager
         ArrayList<Account> accounts = accountManager.values();
         //Create the root node
-        MutableTreeNode mutableTreeNode = new DefaultMutableTreeNode();
+        MutableTreeNode accountRootNode = new DefaultMutableTreeNode();
         //Set the root node's title
-        mutableTreeNode.setUserObject("Accounts");
+        accountRootNode.setUserObject("Accounts");
         //Create the model for the Accounts tree
-        DefaultTreeModel accountTreeModel = new DefaultTreeModel(mutableTreeNode);
-        
+        DefaultTreeModel accountTreeModel = new DefaultTreeModel(accountRootNode);
+        for(Account account : accounts) {
+            //TreeNode for this account
+            MutableTreeNode accountNode = new DefaultMutableTreeNode();
+            //String representation of the account
+            String accountData = account.getAccountName()+" "+account.getAccountBalance()+" "+account.getAccountDescription();
+            //Set data on accountNode
+            accountNode.setUserObject(accountData);
+            //Add the node to our JTree
+            accountTreeModel.insertNodeInto(accountNode, accountRootNode, accountTreeModel.getChildCount(accountRootNode));
+        }
+        //Set the model on the JTree
+        this.accountsList.setModel(accountTreeModel);
     }
     
     /**
