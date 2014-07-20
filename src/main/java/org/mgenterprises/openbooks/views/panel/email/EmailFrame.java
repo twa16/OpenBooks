@@ -21,23 +21,74 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.mgenterprises.openbooks.views.panel.email;
 
+import java.io.File;
+import java.io.IOException;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.swing.DefaultComboBoxModel;
 import org.mgenterprises.openbooks.OpenbooksCore;
+import org.mgenterprises.openbooks.configuration.ConfigurationManager;
+import org.mgenterprises.openbooks.customer.Customer;
 
 /**
  *
  * @author Manuel Gauto
  */
 public class EmailFrame extends javax.swing.JFrame {
+
     private OpenbooksCore openbooksCore;
+    private Customer customer;
+    private File attachment;
+
     /**
      * Creates new form EmailFrame
      */
-    public EmailFrame(OpenbooksCore openbooksCore) {
+    public EmailFrame(OpenbooksCore openbooksCore, Customer customer, File attachment) throws IOException {
         this.openbooksCore = openbooksCore;
+        this.customer = customer;
+        this.attachment = attachment;
         initComponents();
+        initializeFields();
+    }
+
+    private SMTPEmailServerConfiguration getSMTPConfiguration() {
+        //Get our config manager reference so we don't have to call getConfigurationManager a bunch of times
+        ConfigurationManager configurationManager = openbooksCore.getConfigurationManager();
+        //Get the address of our smtpServer
+        String smtpServer = configurationManager.getValue("smtpServer");
+        //Start our config
+        SMTPEmailServerConfiguration serverConfiguration = new SMTPEmailServerConfiguration(smtpServer);
+        //Get username
+        serverConfiguration.setUsername(configurationManager.getValue("smtpUsername"));
+        //Get password
+        serverConfiguration.setPassword(configurationManager.getValue("smtpPassword"));
+        //Do we want to use TLS
+        if (Boolean.parseBoolean(configurationManager.getValue("smtpTLS"))) {
+            serverConfiguration.setTLS();
+        }
+        return serverConfiguration;
+    }
+
+    private void initializeFields() throws IOException {
+        Customer[] customers = openbooksCore.getCustomerManager().getCustomers();
+        this.customerComboBox.setModel(new DefaultComboBoxModel(customers));
+        this.attachmentField.setText(attachment.getName());
+        this.customerComboBox.setSelectedItem(customer);
+        this.emailAddressField.setText(customer.getEmailAddress());
+        this.messageContent.setText(openbooksCore.getConfigurationManager().getValue("emailBody"));
     }
 
     /**
@@ -50,34 +101,39 @@ public class EmailFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         emailAddressField = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        emailLabel = new javax.swing.JLabel();
+        customerLabel = new javax.swing.JLabel();
         customerComboBox = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jButton1 = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        messageContent = new javax.swing.JTextArea();
+        sendButton = new javax.swing.JButton();
+        attachmentLabel = new javax.swing.JLabel();
+        attachmentField = new javax.swing.JTextField();
         statusProgressBar = new javax.swing.JProgressBar();
         statusLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jLabel1.setText("Email Address:");
+        emailLabel.setText("Email Address:");
 
-        jLabel2.setText("Customer:");
+        customerLabel.setText("Customer:");
 
         customerComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        messageContent.setColumns(20);
+        messageContent.setRows(5);
+        jScrollPane1.setViewportView(messageContent);
 
-        jButton1.setText("Send");
+        sendButton.setText("Send");
+        sendButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendButtonActionPerformed(evt);
+            }
+        });
 
-        jLabel3.setText("Document Attached:");
+        attachmentLabel.setText("Document Attached:");
 
-        jTextField1.setEditable(false);
+        attachmentField.setEditable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -88,16 +144,16 @@ public class EmailFrame extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel1))
+                            .addComponent(attachmentLabel)
+                            .addComponent(customerLabel)
+                            .addComponent(emailLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(emailAddressField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(customerComboBox, 0, 200, Short.MAX_VALUE)
-                                    .addComponent(jTextField1))
+                                    .addComponent(attachmentField))
                                 .addGap(150, 150, 150)))
                         .addGap(0, 27, Short.MAX_VALUE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -106,7 +162,7 @@ public class EmailFrame extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(statusLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1)))
+                        .addComponent(sendButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -114,22 +170,22 @@ public class EmailFrame extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(attachmentLabel)
+                    .addComponent(attachmentField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
+                    .addComponent(customerLabel)
                     .addComponent(customerComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+                    .addComponent(emailLabel)
                     .addComponent(emailAddressField, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(sendButton)
                         .addGap(23, 23, 23))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -141,16 +197,69 @@ public class EmailFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
+        //Get our config manager reference so we don't have to call getConfigurationManager a bunch of times
+        ConfigurationManager configurationManager = openbooksCore.getConfigurationManager();
+        //Get session 
+        Session session = getSMTPConfiguration().getSession();
+        //Get from address from the configurationManager
+        String from = configurationManager.getValue("smtpFrom");
+        String to = configurationManager.getValue(customer.getEmailAddress());
+        try {
+            // Create a default MimeMessage object.
+            MimeMessage message = new MimeMessage(session);
+
+            // Set From: header field of the header.
+            message.setFrom(new InternetAddress(from));
+
+            // Set To: header field of the header.
+            message.addRecipient(Message.RecipientType.TO,
+                    new InternetAddress(to));
+
+            // Set Subject: header field
+            message.setSubject(configurationManager.getValue("emailSubject"));
+
+            // Create the message part 
+            BodyPart messageBodyPart = new MimeBodyPart();
+
+            // Fill the message
+            messageBodyPart.setText(this.messageContent.getText());
+
+            // Create a multipar message
+            Multipart multipart = new MimeMultipart();
+
+            // Set text message part
+            multipart.addBodyPart(messageBodyPart);
+
+            // Part two is attachment
+            messageBodyPart = new MimeBodyPart();
+            String filename = attachment.getAbsolutePath();
+            DataSource source = new FileDataSource(filename);
+            messageBodyPart.setDataHandler(new DataHandler(source));
+            messageBodyPart.setFileName(filename);
+            multipart.addBodyPart(messageBodyPart);
+
+            // Send the complete message parts
+            message.setContent(multipart);
+
+            // Send message
+            Transport.send(message);
+            System.out.println("Sent message successfully....");
+        } catch (MessagingException mex) {
+            mex.printStackTrace();
+        }
+    }//GEN-LAST:event_sendButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField attachmentField;
+    private javax.swing.JLabel attachmentLabel;
     private javax.swing.JComboBox customerComboBox;
+    private javax.swing.JLabel customerLabel;
     private javax.swing.JTextField emailAddressField;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel emailLabel;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextArea messageContent;
+    private javax.swing.JButton sendButton;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JProgressBar statusProgressBar;
     // End of variables declaration//GEN-END:variables

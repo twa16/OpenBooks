@@ -28,13 +28,14 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.util.State;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class CompanyProfile {
+public class CompanyProfile extends Saveable{
     private String logoBase64;
     private String companyName;
     private String motto;
@@ -164,6 +165,21 @@ public class CompanyProfile {
         sb.append(emailAddress==null?"":"\n"+emailAddress);
         sb.append(website==null?"":"\n"+website);
         return sb.toString();
+    }
+
+    @Override
+    public String getSaveableModuleName() {
+        return this.getClass().getName();
+    }
+
+    @Override
+    public String getUniqueId() {
+        return companyName;
+    }
+
+    @Override
+    public void setUniqueId(String id) {
+        return;
     }
     
 }

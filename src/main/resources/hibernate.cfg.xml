@@ -15,5 +15,6 @@
     <mapping class="org.mgenterprises.openbooks.customer.Customer"/>
     <mapping class="org.mgenterprises.openbooks.saving.server.ResourceLock"/>
     <mapping class="org.mgenterprises.openbooks.saving.server.journal.ChangeRecord"/>
+    <mapping class="org.mgenterprises.openbooks.saving.server.access.AccessRight"/>
   </session-factory>
 </hibernate-configuration>

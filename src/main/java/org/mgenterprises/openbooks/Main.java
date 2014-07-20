@@ -31,15 +31,19 @@ import java.net.UnknownHostException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.mgenterprises.openbooks.company.CompanyProfile;
+import org.mgenterprises.openbooks.configuration.ConfigurationManager;
 import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceItem;
 import org.mgenterprises.openbooks.saving.AbstractSaveableAdapter;
+import org.mgenterprises.openbooks.saving.companyfile.CompanyFile;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.saving.server.FileBackedSaveManager;
 import org.mgenterprises.openbooks.saving.server.HibernateBackedSaveManager;
 import org.mgenterprises.openbooks.saving.server.SaveManager;
 import org.mgenterprises.openbooks.saving.server.SaveServer;
+import org.mgenterprises.openbooks.saving.server.users.FileBackedUserManager;
+import org.mgenterprises.openbooks.saving.server.users.HibernateBackedUserManager;
 import org.mgenterprises.openbooks.saving.server.users.UserManager;
 import org.mgenterprises.openbooks.saving.server.users.UserProfile;
 import org.mgenterprises.openbooks.views.MainGUI;
@@ -53,8 +57,13 @@ public class Main {
     
     public static void main(String[] args) throws UnknownHostException {
         File file = new File("D:\\My Documents\\MGM\\");
-        SaveManager saveManager = new HibernateBackedSaveManager();//FileBackedSaveManager(file);
-        UserManager userManager = new UserManager(new File(file+File.separator+"UserProfile"));
+        SessionFactory sessionFactory = buildSessionFactory();
+        SaveManager saveManager = new HibernateBackedSaveManager(sessionFactory);//FileBackedSaveManager(file);
+        UserManager userManager = new HibernateBackedUserManager(sessionFactory);
+        UserProfile userProfile = new UserProfile();
+        userProfile.setUsername("admin");
+        userProfile.setPasswordHash("$2a$10$vhtSFeYrU1OX3pIvuno7u.8MQHI7LRJTJ9ucUt/ww1P4CnOYOwIH.");
+        userManager.addUser(userProfile);
         short port = 6969;
         SaveServer saveServer = new SaveServer("127.0.0.1", port, userManager, saveManager);
         saveServer.startServer();
@@ -66,12 +75,29 @@ public class Main {
         companyProfile.setCityName("Test City");
         companyProfile.setState("TestState");
         SaveServerConnection saveServerConnection = new SaveServerConnection("127.0.0.1", port, "admin", "$2a$10$vhtSFeYrU1OX3pIvuno7u.8MQHI7LRJTJ9ucUt/ww1P4CnOYOwIH.");
-        mainGUI = new MainGUI(saveServerConnection, companyProfile);
+        CompanyFile companyFile = new CompanyFile();
+        companyFile.updateCompanyProfile(companyProfile);
+        companyFile.updateConfigurationManager(new ConfigurationManager());
+        mainGUI = new MainGUI(saveServerConnection, companyFile);
         mainGUI.setVisible(true);
         
     }
-    
+    public static void startup() {
+        
+    }
     public static MainGUI getInstance(){
         return mainGUI;
+    }
+
+
+
+    private static SessionFactory buildSessionFactory() {
+        try {
+            // Use hibernate.cfg.xml to get a SessionFactory
+            return new Configuration().configure().buildSessionFactory();
+        } catch (Throwable ex) {
+            System.err.println("SessionFactory creation failed." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
     }
 }

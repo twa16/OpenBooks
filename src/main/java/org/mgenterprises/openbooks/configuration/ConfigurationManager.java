@@ -33,13 +33,16 @@ import org.mgenterprises.openbooks.saving.Saveable;
  *
  * @author Manuel Gauto
  */
-public class ConfigurationManager {
-    HashMap<String, String> configuration = new HashMap<String, String>();
+public class ConfigurationManager extends Saveable{
+    private HashMap<String, String> configuration = new HashMap<String, String>();
 
     public void loadDefaultConfiguration(){
+        //Set our date format
         insertIfNotSet("dateFormatString", "MM/dd/yyyy");
-        
+        //Default term for documents
         insertIfNotSet("defaultDueDateDelay", "30");
+        //Default Body for emails
+        insertIfNotSet("emailBody", "Test Email Body");
     }
     
     public boolean insertIfNotSet(String key, String configurationValue) {
@@ -53,6 +56,25 @@ public class ConfigurationManager {
     
     public String getValue(String key) {
         return configuration.get(key);
+    }
+    
+    public void put(String key, String value) {
+        configuration.put(key, value);
+    }
+
+    @Override
+    public String getSaveableModuleName() {
+        return this.getClass().getName();
+    }
+
+    @Override
+    public String getUniqueId() {
+        return "ConfigManager";
+    }
+
+    @Override
+    public void setUniqueId(String id) {
+        return;
     }
     
 }

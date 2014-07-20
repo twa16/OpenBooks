@@ -22,25 +22,14 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.openbooks.saving;
-
-import java.util.HashMap;
-import org.mgenterprises.openbooks.company.CompanyProfile;
+package org.mgenterprises.openbooks.saving.companyfile;
 
 /**
  *
  * @author Manuel Gauto
  */
-public class CompanyFile {
-    public final long version=1;
-    private HashMap<String, Saveable> companyFileComponents = new HashMap<String, Saveable>();
-    
-    public CompanyProfile getCompanyProfile() {
-        Saveable saveable = companyFileComponents.get("companyProfile");
-        if(saveable==null) {
-            CompanyProfile companyProfile = new CompanyProfile();
-            //this.companyFileComponents.put("companyProfile", companyProfile);
-        }
-        return null;
-    }
+public enum CompanyPackType {
+        COMBINED,
+        SERVER,
+        CLIENT;
 }

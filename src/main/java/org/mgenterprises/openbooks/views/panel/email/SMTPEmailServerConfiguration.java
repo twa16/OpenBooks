@@ -24,11 +24,9 @@
 
 package org.mgenterprises.openbooks.views.panel.email;
 
-import java.net.PasswordAuthentication;
+import javax.mail.PasswordAuthentication;
 import java.util.Properties;
-import javax.mail.Authenticator;
 import javax.mail.Session;
-import org.hibernate.cfg.NotYetImplementedException;
 
 /**
  *
@@ -42,6 +40,7 @@ public class SMTPEmailServerConfiguration {
 
     public SMTPEmailServerConfiguration(String serverAddress) {
         this.serverAddress = serverAddress;
+        props.put("mail.smtp.auth", "true");
     }
     
     public String getUsername() {
@@ -62,17 +61,18 @@ public class SMTPEmailServerConfiguration {
         props.put("mail.password", password);
     }
     
-    public void startAuth() {
-        props.put("mail.smtp.auth", "true");
-    }
-    
     public void setTLS() {
         props.put("mail.smtp.starttls.enable", "true");
     }
     
     public Session getSession() {
-        throw new NotYetImplementedException("Not yet implemented!");
-
+        Session session = Session.getDefaultInstance(props,
+			new javax.mail.Authenticator() {
+				protected PasswordAuthentication getPasswordAuthentication() {
+					return new PasswordAuthentication(username, password);
+				}
+			});
+        return session;
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Manuel Gauto.
+ * Copyright 2014 MG Enterprises Consulting LLC.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,51 +22,30 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.openbooks.saving.server.access;
+package org.mgenterprises.openbooks.configuration;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import org.hibernate.cfg.Configuration;
+
+import java.util.Properties;
 
 /**
  *
- * @author mgauto
+ * @author Manuel Gauto
  */
-@Entity
-public class AccessRight {
-    private long id;
-    private String type;
-    private ACTION action;
+public class HibernateConfigurationLoader {
+    private Properties properties;
 
-    public AccessRight(String type, ACTION action) {
-        this.type = type;
-        this.action = action;
+    public HibernateConfigurationLoader(Properties properties) {
+        this.properties = properties;
     }
 
-    public AccessRight() {
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public void setAction(ACTION action) {
-        this.action = action;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public ACTION getAction() {
-        return action;
-    }
-
-    @Id
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
+    public Configuration getConfiguration() {
+        Configuration configuration = new Configuration();
+        configuration.configure();
+        for(Object key : properties.keySet()) {
+            String keyString = (String) key;
+            configuration.setProperty(keyString, properties.getProperty(keyString));
+        }
+        return configuration;
     }
 }

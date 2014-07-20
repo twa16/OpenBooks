@@ -53,89 +53,15 @@ import org.mgenterprises.openbooks.saving.server.security.SecureMessage;
  *
  * @author mgauto
  */
-public class UserManager {
-    private File userprofileDirectory;
-    private LoadingCache<String, UserProfile> userProfiles;
-    private Gson gson = new Gson();
-    private CryptoUtils cryptoUtils = new CryptoUtils();
-
-    public UserManager(final File userprofileDirectory) {
-        this.userprofileDirectory = userprofileDirectory;
-        userProfiles = CacheBuilder.newBuilder()
-            .concurrencyLevel(4)
-            .maximumSize(10000)
-            .expireAfterWrite(60, TimeUnit.MINUTES)
-            .build(
-                new CacheLoader<String, UserProfile>() {
-                  public UserProfile load(String key) throws FileNotFoundException, IOException {
-                      File userProfileFile = new File(userprofileDirectory+File.separator+key);
-                      BufferedReader bufferedReader = new BufferedReader(new FileReader(userProfileFile));
-                      String json = bufferedReader.readLine();
-                      return gson.fromJson(json, UserProfile.class);
-                  }
-                });
-    }
+public abstract class UserManager {
     
-    public String decryptMessage(SecureMessage secureMessage) throws InvalidKeySpecException {
-        try {
-            UserProfile userProfile = userProfiles.get(secureMessage.getUsername());
-            String passHash = userProfile.getPasswordHash();
-            return cryptoUtils.decrypt(secureMessage, passHash);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(UserManager.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(UserManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
+    public abstract String decryptMessage(SecureMessage secureMessage) throws InvalidKeySpecException ;
     
-    public boolean checkAuth(UserAuth userAuth) {
-        try {
-            String username = userAuth.getUsername();
-            String salt = userAuth.getSalt();
-            String hashAttempt = userAuth.getHashAttempt();
-            long timestamp = userAuth.getTimestamp();
-            
-            UserProfile userProfile = getUserProfile(username);
-            if(userProfile != null) {
-                String correctHash = BCrypt.hashpw(userProfile.getPasswordHash()+timestamp, salt);
-                return hashAttempt.equals(correctHash);
-            }
-        } catch (ExecutionException ex) {
-            Logger.getLogger(UserManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return false;
-    }
+    public abstract boolean checkAuth(UserAuth userAuth) ;
     
-    public UserProfile getUserProfile(String username) throws ExecutionException {
-        return userProfiles.get(username);
-    }
+    public abstract UserProfile getUserProfile(String username) throws ExecutionException ;
     
-    public boolean userHasAccessRight(String username, String accessRight, ACTION action) {
-        if(username.equals("admin")) {
-            return true;
-        }
-        try {
-            UserProfile userProfile = userProfiles.get(username);
-            return userProfile.hasAccessRight(accessRight, action);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(UserManager.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        }
-    }
+    public abstract boolean userHasAccessRight(String username, String accessRight, ACTION action);
     
-    public void addUser(UserProfile userProfile) {
-        File userProfileFile = new File(userprofileDirectory+File.separator+userProfile.getUsername());
-        try {
-            FileUtils.deleteQuietly(userProfileFile);
-            BufferedWriter bw = new BufferedWriter(new FileWriter(userProfileFile));
-            String json = gson.toJson(userProfile);
-            bw.write(json);
-            bw.newLine();
-            bw.flush();
-            bw.close();
-        } catch (IOException ex) {
-            Logger.getLogger(UserManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+    public abstract void addUser(UserProfile userProfile);
 }
