@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import org.mgenterprises.openbooks.company.CompanyProfile;
 
 /**
  *
@@ -84,7 +85,7 @@ public class CompanyFilePack {
         BufferedReader br = new BufferedReader(new FileReader(location));
         return (T) gson.fromJson(br, type);
     }
-
+    
     public void unPack(String unpackDir) throws FileNotFoundException, IOException{
         try {
             unZip(unpackDir);
@@ -164,7 +165,8 @@ public class CompanyFilePack {
         ZipEntry ze = new ZipEntry(companyFile.getCompanyProfile().getCompanyName().replace(" ", "-")+".ob");
         zipOutputStream.putNextEntry(ze);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(zipOutputStream));
-        gson.toJson(companyFile, bw);
+        String json = gson.toJson(companyFile);
+        bw.write(json);
         //This next line was a killer, I didn't flush before and the ob file just didn't end up right. This fixed it.
         bw.flush();
         zipOutputStream.closeEntry();

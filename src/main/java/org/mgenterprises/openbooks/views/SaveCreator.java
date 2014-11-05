@@ -31,7 +31,7 @@ import org.mgenterprises.openbooks.saving.server.security.BCrypt;
 import org.mgenterprises.openbooks.saving.server.users.UserProfile;
 
 /**
- *
+ * @deprecated
  * @author mgauto
  */
 public class SaveCreator extends javax.swing.JFrame {

@@ -55,7 +55,19 @@ import org.mgenterprises.openbooks.views.MainGUI;
 public class Main {
     private static MainGUI mainGUI;
     
-    public static void main(String[] args) throws UnknownHostException {
+    public static void main(String[] args) {
+        Gson gson = new Gson();
+        //CompanyFile company = gson.fromJson("{\"version\":1,\"companyFileComponents\":{\"companyProfile\":{\"companyName\":\"MG Enterprises Consulting LLC\",\"motto\":\"Bringing enterprise level services to small businesses\",\"emailAddress\":\"wetert#fgfg/com\",\"phoneNumber\":\"3254535356\",\"faxNumber\":\"56456456456\",\"streetAddress\":\"3500 Courtland Drive\",\"cityName\":\"Falls Church\",\"state\":\"Item 2\",\"website\":\"sffgdfgsdfgsfdg\",\"locked\":false}}}", CompanyFile.class);
+        CompanyProfile companyProfile = new CompanyProfile();
+        companyProfile.setCompanyName("My Test Company");
+        companyProfile.setEmailAddress("me@mytestcompany.com");
+        companyProfile.setStreetAddress("1234 Test Street");
+        companyProfile.setCityName("Test City");
+        companyProfile.setState("TestState");
+        System.out.println(gson.toJson(companyProfile));
+    }   
+    
+    public static void main2(String[] args) throws UnknownHostException {
         File file = new File("D:\\My Documents\\MGM\\");
         SessionFactory sessionFactory = buildSessionFactory();
         SaveManager saveManager = new HibernateBackedSaveManager(sessionFactory);//FileBackedSaveManager(file);
@@ -83,6 +95,9 @@ public class Main {
         
     }
     public static void startup() {
+        String home = System.getProperty("user.home");
+        String pathToOBHome = home+File.separator+"openbooks"+File.separator;
+        File homeDirectory = new File(pathToOBHome);
         
     }
     public static MainGUI getInstance(){

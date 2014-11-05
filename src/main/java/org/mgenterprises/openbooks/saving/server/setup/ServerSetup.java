@@ -611,6 +611,7 @@ public class ServerSetup extends javax.swing.JFrame {
                 Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
                 JOptionPane.showConfirmDialog(null, "Failed to save database configuration", "Warning!", JOptionPane.OK_OPTION);
             }
+            JOptionPane.showMessageDialog(this, "Export Complete!");
         }
     }//GEN-LAST:event_exportCombinedButtonActionPerformed
 
@@ -630,6 +631,7 @@ public class ServerSetup extends javax.swing.JFrame {
                 Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
                 JOptionPane.showConfirmDialog(null, "Failed to save database configuration", "Warning!", JOptionPane.OK_OPTION);
             }
+            JOptionPane.showMessageDialog(this, "Export Complete!");
         }
     }//GEN-LAST:event_exportRemoteClientActionPerformed
 
@@ -649,6 +651,7 @@ public class ServerSetup extends javax.swing.JFrame {
                 Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
                 JOptionPane.showConfirmDialog(null, "Failed to save database configuration", "Warning!", JOptionPane.OK_OPTION);
             }
+            JOptionPane.showMessageDialog(this, "Export Complete!");
         }
     }//GEN-LAST:event_exportServerButtonActionPerformed
 
