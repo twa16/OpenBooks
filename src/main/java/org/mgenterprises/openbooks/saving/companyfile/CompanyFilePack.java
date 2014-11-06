@@ -63,7 +63,7 @@ public class CompanyFilePack {
         return parseJson(CompanyFile.class, companyFileLocation);
     }
 
-    public File getDFileBLocation() throws NotYetUnpackedException {
+    public File getDBFileLocation() throws NotYetUnpackedException {
         //Make sure the file has been unpacked
         if(isPacked) throw new NotYetUnpackedException();
         return dbFileLocation;
@@ -165,8 +165,8 @@ public class CompanyFilePack {
         ZipEntry ze = new ZipEntry(companyFile.getCompanyProfile().getCompanyName().replace(" ", "-")+".ob");
         zipOutputStream.putNextEntry(ze);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(zipOutputStream));
-        String json = gson.toJson(companyFile);
-        bw.write(json);
+        
+        gson.toJson(companyFile, bw);
         //This next line was a killer, I didn't flush before and the ob file just didn't end up right. This fixed it.
         bw.flush();
         zipOutputStream.closeEntry();
@@ -217,6 +217,7 @@ public class CompanyFilePack {
         outputStreamWriter.flush();
         zipOutputStream.closeEntry();
         //remember close it
+        fileOutputStream.close();
         zipOutputStream.close();
     }
 }
