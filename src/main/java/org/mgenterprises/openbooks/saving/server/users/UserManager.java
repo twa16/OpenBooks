@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.mgenterprises.openbooks.saving.server.access.ACTION;
+import org.mgenterprises.openbooks.saving.server.authentication.UserLoginAttempt;
 import org.mgenterprises.openbooks.saving.server.packets.UserAuth;
 import org.mgenterprises.openbooks.saving.server.security.BCrypt;
 import org.mgenterprises.openbooks.saving.server.security.CryptoUtils;
@@ -56,6 +57,8 @@ import org.mgenterprises.openbooks.saving.server.security.SecureMessage;
 public abstract class UserManager {
     
     public abstract String decryptMessage(SecureMessage secureMessage) throws InvalidKeySpecException ;
+    
+    public abstract boolean checkUserLoginAttempt(UserLoginAttempt userLoginAttempt);
     
     public abstract boolean checkAuth(UserAuth userAuth) ;
     

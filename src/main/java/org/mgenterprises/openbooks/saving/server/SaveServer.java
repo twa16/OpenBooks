@@ -46,10 +46,14 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 import org.mgenterprises.openbooks.saving.AbstractSaveableAdapter;
 import org.mgenterprises.openbooks.saving.EqualityOperation;
 import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.saving.server.access.ACTION;
+import org.mgenterprises.openbooks.saving.server.authentication.UserLoginAttempt;
 import org.mgenterprises.openbooks.saving.server.journal.ChangeRecord;
 import org.mgenterprises.openbooks.saving.server.journal.ChangeJournal;
 import org.mgenterprises.openbooks.saving.server.security.CryptoUtils;
@@ -110,9 +114,10 @@ public class SaveServer implements Runnable {
     @Override
     public void run() {
         try {
-            ServerSocket serverSocket = new ServerSocket(port, 100, bindAddress);
+            SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+            SSLServerSocket serverSocket=(SSLServerSocket) factory.createServerSocket(1234);
             while (running) {
-                Socket socket = serverSocket.accept();
+                SSLSocket socket = (SSLSocket) serverSocket.accept();
                 SaveServerRequestProcessor saveServerRequestProcessor = new SaveServerRequestProcessor(socket, secureRandom, gson, userManager, saveManager, changeJournal);
                 new Thread(saveServerRequestProcessor).start();
             }
@@ -128,7 +133,7 @@ public class SaveServer implements Runnable {
 
 class SaveServerRequestProcessor implements Runnable {
 
-    private Socket socket;
+    private SSLSocket socket;
     private SecureRandom secureRandom;
     private CryptoUtils cryptoUtils = new CryptoUtils();
     private Gson gson;
@@ -136,7 +141,7 @@ class SaveServerRequestProcessor implements Runnable {
     private SaveManager saveManager;
     private ChangeJournal changeJournal;
 
-    public SaveServerRequestProcessor(Socket socket, SecureRandom secureRandom, Gson gson, UserManager userManager, SaveManager saveManager, ChangeJournal changeJournal) {
+    public SaveServerRequestProcessor(SSLSocket socket, SecureRandom secureRandom, Gson gson, UserManager userManager, SaveManager saveManager, ChangeJournal changeJournal) {
         this.socket = socket;
         this.secureRandom = secureRandom;
         this.gson = gson;
@@ -151,82 +156,54 @@ class SaveServerRequestProcessor implements Runnable {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            //Read SecureMessage(Encrypted Request)
-            String json = br.readLine();
-            //Parse JSON
-            SecureMessage secureMessage = gson.fromJson(json, SecureMessage.class);
-            //Get username of requester
-            String username = secureMessage.getUsername();
-            String request = "";
+            String userLoginAttemptJson = br.readLine();
+            UserLoginAttempt userloginAttempt = gson.fromJson(userLoginAttemptJson, UserLoginAttempt.class);
+            String username = userloginAttempt.getUsername();
+            if(userManager.checkUserLoginAttempt(userloginAttempt)) {
+                //Start the command loop
+                while(true) {
+                    //Wait for command
+                    String request = br.readLine();
+                    //Check to see if it the disconnect command
+                    if(request.equals("DISCONNECT")) break;
 
-            try {
-                //Decrypt message using stored password
-                request = userManager.decryptMessage(secureMessage);
-            } catch (InvalidKeySpecException ex) {
-                //Password was incorrect
-                bw.write("500");
-                bw.newLine();
-                bw.flush();
+                    //Split request string using delimiter
+                    String[] requestParts = request.split(SaveServer.DELIMITER);
+
+                    String verb = requestParts[0];
+                    String response = "500";
+                    switch (verb) {
+                        case "GET":
+                            response = processGET(username, requestParts);
+                            break;
+                        case "QUERY":
+                            response = processQUERY(username, requestParts);
+                            break;
+                        case "PUT":
+                            response = processPUT(username, requestParts);
+                            break;
+                        case "REMOVE":
+                            response = processREMOVE(username, requestParts);
+                            break;
+                        case "SIZE":
+                            response = processSIZE(username, requestParts);
+                            break;
+                        case "LOCK":
+                            response = processLOCK(username, requestParts);
+                            break;
+                        case "RELEASE":
+                            response = processRELEASE(username, requestParts);
+                            break;
+                        case "READJOURNAL":
+                            response = processREADJOURNAL(username, requestParts);
+                            break;
+                    } //Switch End
+                } //Command Loop End
                 bw.close();
                 br.close();
                 socket.close();
             }
-            //Check to make sure message was actually decrypted
-            if (request.length() != 0) {
-                //Split request string using delimiter
-                String[] requestParts = request.split(SaveServer.DELIMITER);
-
-                String verb = requestParts[0];
-                String response = "500";
-                switch (verb) {
-                    case "GET":
-                        response = processGET(username, requestParts);
-                        break;
-                    case "QUERY":
-                        response = processQUERY(username, requestParts);
-                        break;
-                    case "PUT":
-                        response = processPUT(username, requestParts);
-                        break;
-                    case "REMOVE":
-                        response = processREMOVE(username, requestParts);
-                        break;
-                    case "SIZE":
-                        response = processSIZE(username, requestParts);
-                        break;
-                    case "LOCK":
-                        response = processLOCK(username, requestParts);
-                        break;
-                    case "RELEASE":
-                        response = processRELEASE(username, requestParts);
-                        break;
-                    case "READJOURNAL":
-                        response = processREADJOURNAL(username, requestParts);
-                        break;
-                 }
-                try {
-                    //Reuse salt for this conversation
-                    byte[] salt = secureMessage.getSalt();//cryptoUtils.getSalt(secureRandom);
-                    //Get password from userManager
-                    String password = userManager.getUserProfile(username).getPasswordHash();//Hashing.sha256().hashString(userManager.getUserProfile(username).getPasswordHash()+System.currentTimeMillis(), Charsets.UTF_8).toString();
-                    //Encrypt message using user password
-                    secureMessage = cryptoUtils.encrypt(username, response, password, salt, false);
-                    //Write to client
-                    bw.write(gson.toJson(secureMessage));
-                    //close
-                    bw.newLine();
-                    bw.flush();
-                } catch (ExecutionException ex) {
-                    Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (InvalidKeySpecException ex) {
-                    Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (NoSuchAlgorithmException ex) {
-                    Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                bw.close();
-                br.close();
-                socket.close();
-            }
+            
         } catch (IOException ex) {
             Logger.getLogger("SaveServer").log(Level.SEVERE, null, ex);
         }

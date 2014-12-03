@@ -39,6 +39,7 @@ import com.google.gson.Gson;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.mgenterprises.openbooks.saving.server.access.ACTION;
+import org.mgenterprises.openbooks.saving.server.authentication.UserLoginAttempt;
 import org.mgenterprises.openbooks.saving.server.packets.UserAuth;
 import org.mgenterprises.openbooks.saving.server.security.BCrypt;
 import org.mgenterprises.openbooks.saving.server.security.CryptoUtils;
@@ -85,6 +86,22 @@ public class HibernateBackedUserManager extends UserManager{
         return null;
     }
 
+    public boolean checkUserLoginAttempt(UserLoginAttempt userLoginAttempt) {
+        try {
+            String username = userLoginAttempt.getUsername();
+            UserProfile userProfile = getUserProfile(username);
+            
+            if(userProfile != null) {
+                String actualPasswordHash = userProfile.getPasswordHash();
+                return BCrypt.checkpw(userLoginAttempt.getPassword(), actualPasswordHash);
+            }
+            
+        } catch(ExecutionException ex) {
+            Logger.getLogger(UserManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+    
     @Override
     public boolean checkAuth(UserAuth userAuth) {
         try {
