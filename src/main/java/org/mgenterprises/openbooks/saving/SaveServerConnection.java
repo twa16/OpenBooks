@@ -32,13 +32,13 @@ public class SaveServerConnection {
     private String serverAddress; 
     private short serverPort; 
     private String username; 
-    private String passwordHash;
+    private String password;
 
-    public SaveServerConnection(String serverAddress, short serverPort, String username, String passwordHash) {
+    public SaveServerConnection(String serverAddress, short serverPort, String username, String password) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.username = username;
-        this.passwordHash = passwordHash;
+        this.password = password;
     }
 
     public String getServerAddress() {
@@ -53,8 +53,8 @@ public class SaveServerConnection {
         return username;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
     
 }

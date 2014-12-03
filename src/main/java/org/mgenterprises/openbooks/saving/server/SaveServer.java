@@ -160,6 +160,10 @@ class SaveServerRequestProcessor implements Runnable {
             UserLoginAttempt userloginAttempt = gson.fromJson(userLoginAttemptJson, UserLoginAttempt.class);
             String username = userloginAttempt.getUsername();
             if(userManager.checkUserLoginAttempt(userloginAttempt)) {
+                //Inform the client of sucessful login
+                bw.write("OK");
+                bw.newLine();
+                bw.flush();
                 //Start the command loop
                 while(true) {
                     //Wait for command
@@ -198,7 +202,19 @@ class SaveServerRequestProcessor implements Runnable {
                             response = processREADJOURNAL(username, requestParts);
                             break;
                     } //Switch End
+                    //Send the response
+                    bw.write(response);
+                    bw.newLine();
+                    bw.flush();
                 } //Command Loop End
+                bw.close();
+                br.close();
+                socket.close();
+            } else {
+                //Inform the client of failed login
+                bw.write("FAIL");
+                bw.newLine();
+                bw.flush();
                 bw.close();
                 br.close();
                 socket.close();

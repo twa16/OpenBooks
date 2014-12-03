@@ -30,20 +30,25 @@ import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import org.mgenterprises.openbooks.saving.server.SaveManager;
 import org.mgenterprises.openbooks.saving.server.SaveServer;
+import org.mgenterprises.openbooks.saving.server.authentication.SaveServerAuthenticationFailureException;
+import org.mgenterprises.openbooks.saving.server.authentication.UserLoginAttempt;
 import org.mgenterprises.openbooks.saving.server.journal.ChangeRecord;
-import org.mgenterprises.openbooks.saving.server.security.CryptoUtils;
 import org.mgenterprises.openbooks.saving.server.security.SecureMessage;
 
 /**
@@ -57,17 +62,15 @@ import org.mgenterprises.openbooks.saving.server.security.SecureMessage;
  * 
  * @author mgauto
  */
-public class ServerBackedMap<V extends Saveable> {
+public class ServerBackedMap<V extends Saveable> {    
     private V v;
-    private String serverAddress;
-    private short serverPort;
-    private String username;
-    private String passwordHash;
     private Gson gson;
     private byte[] salt;
-    private CryptoUtils cryptoUtils = new CryptoUtils();
     private ArrayList<String> lockedIDs = new ArrayList<String>(); 
     
+    private SSLSocket socket;
+    private BufferedWriter bw;
+    private BufferedReader br;
     private HashMap<String, V> cache = new HashMap<String, V>();
     long lastJournalId = 0;
 
@@ -77,17 +80,44 @@ public class ServerBackedMap<V extends Saveable> {
      * @param v Instance of the type that this map will be managing
      * @param saveServerConnection Connection data for link to server
      */
-    public ServerBackedMap(V v, SaveServerConnection saveServerConnection) {
+    public ServerBackedMap(V v, SaveServerConnection saveServerConnection) throws IOException, SaveServerAuthenticationFailureException {
         this.v = v;
-        this.serverAddress = saveServerConnection.getServerAddress();
-        this.serverPort = saveServerConnection.getServerPort();
-        this.username = saveServerConnection.getUsername();
-        this.passwordHash = saveServerConnection.getPasswordHash();//Hashing.sha256().hashString(saveServerConnection.getPasswordHash()+System.currentTimeMillis(), Charsets.UTF_8).toString();
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(Saveable.class, new AbstractSaveableAdapter());
         //gsonBuilder.registerTypeAdapter(Saveable[].class, new AbstractSaveableArrayAdapter());
         gson = gsonBuilder.create();
-        salt = cryptoUtils.getSalt(new SecureRandom());
+        //Connect to the server
+        connectToServer(saveServerConnection);
+    }
+    
+    public void connectToServer(SaveServerConnection saveServerConnection) throws IOException, SaveServerAuthenticationFailureException {
+        String host = saveServerConnection.getServerAddress();
+        int port = saveServerConnection.getServerPort();
+        //Start the factory
+        SSLSocketFactory factory=(SSLSocketFactory) SSLSocketFactory.getDefault();
+        //Connect
+        SSLSocket sslSocket=(SSLSocket) factory.createSocket(host, port);
+        //Get Streams
+        OutputStream outputStream = sslSocket.getOutputStream();
+        InputStream inputStream = sslSocket.getInputStream();
+        //Create Writers and Readers
+        bw = new BufferedWriter(new OutputStreamWriter(outputStream));
+        br = new BufferedReader(new InputStreamReader(inputStream));
+        //Start authentication
+        String username = saveServerConnection.getUsername();
+        String password = saveServerConnection.getPassword();
+        UserLoginAttempt userLoginAttempt = new UserLoginAttempt(username, password);
+        String userLoginAttemptJson = gson.toJson(userLoginAttempt);
+        bw.write(userLoginAttemptJson);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        if(response.equals("OK")) {
+            this.socket = sslSocket;
+        } else {
+            throw new SaveServerAuthenticationFailureException();
+        }
+        
     }
     
     /**
@@ -112,37 +142,12 @@ public class ServerBackedMap<V extends Saveable> {
      * @throws IOException Thrown if there is a problem connecting to the server
      */
     public long put(V value) throws IOException {
-        Socket socket = new Socket(serverAddress, serverPort);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String request = "PUT"+SaveServer.DELIMITER+gson.toJson(value, Saveable.class);
-        SecureMessage secureMessage;
-        try {
-            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
-            bw.write(gson.toJson(secureMessage));
-            bw.newLine();
-            bw.flush();
-            String ejson = br.readLine();
-            
-            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
-            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
-            
-            long lastID = Long.parseLong(json);
-            if((lastID+1)==this.lastJournalId) {
-                lastJournalId = lastID;
-                cache.put(value.getUniqueId(), value);
-            }
-            return lastID;
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        finally {
-            bw.close();
-            br.close();
-        }
-        return -1;
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        return Long.parseLong(response);
     }
     
     /**
@@ -154,41 +159,23 @@ public class ServerBackedMap<V extends Saveable> {
      * @throws IOException Thrown if there is a problem connecting to the server
      */
     public synchronized V get(String key) throws IOException {
-        Socket socket = new Socket(serverAddress, serverPort);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String request = "GET"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+key;
-        SecureMessage secureMessage;
-        try {
-            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
-            bw.write(gson.toJson(secureMessage));
-            bw.newLine();
-            bw.flush();
-            String ejson = br.readLine();
-            
-            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
-            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
-            if(json.equals("NO")) {
-                return null;
-            }
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        if(response.equals("NO")) {
+            return null;
+        } else {
             try {
-                Saveable saveable = gson.fromJson(json, Saveable.class);
+                Saveable saveable = gson.fromJson(response, Saveable.class);
                 this.lockedIDs.add(v.getSaveableModuleName()+":#:"+key);
                 return (V) saveable;
             }
             catch(JsonSyntaxException ex) {
                 return null;
             }
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
         }
-        finally {
-            bw.close();
-            br.close();
-        }
-        return null;
     }
     
     /**
@@ -206,40 +193,19 @@ public class ServerBackedMap<V extends Saveable> {
      * @throws IOException  Thrown if there is a problem connecting to the server
      */
     public synchronized V[] getWhere(String[] keys, EqualityOperation[] operations, String[] values, String[] conjunctions, boolean tryLockAll) throws IOException {
-        Socket socket = new Socket(serverAddress, serverPort);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String request = "GETWHERE"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+Arrays.toString(keys)+SaveServer.DELIMITER+Arrays.toString(operations)+SaveServer.DELIMITER+Arrays.toString(values)+SaveServer.DELIMITER+Arrays.toString(conjunctions)+SaveServer.DELIMITER+tryLockAll;
-        SecureMessage secureMessage;
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        if(response.equals("NO")) return null;
         try {
-            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
-            bw.write(gson.toJson(secureMessage));
-            bw.newLine();
-            bw.flush();
-            String ejson = br.readLine();
-            
-            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
-            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
-            if(json.equals("NO")) {
-                return null;
-            }
-            try {
-                Saveable[] saveable = gson.fromJson(json, Saveable[].class);
-                return (V[]) saveable;
-            }
-            catch(JsonSyntaxException ex) {
-                return null;
-            }
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+            Saveable[] saveable = gson.fromJson(response, Saveable[].class);
+            return (V[]) saveable;
         }
-        finally {
-            bw.close();
-            br.close();
+        catch(JsonSyntaxException ex) {
+            return null;
         }
-        return null;
     }
     
     /**
@@ -262,39 +228,18 @@ public class ServerBackedMap<V extends Saveable> {
     
     
     private ArrayList<V> primeCache() throws IOException {
-        Socket socket = new Socket(serverAddress, serverPort);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String request = "GET"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+"ALL";
-        SecureMessage secureMessage;
-        try {
-            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
-            bw.write(gson.toJson(secureMessage));
-            bw.newLine();
-            bw.flush();
-            String ejson = br.readLine();
-            
-            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
-            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
-            if(json.equals("NO")) {
-                return null;
-            }
-            Saveable[] saveables = gson.fromJson(json, Saveable[].class);
-            ArrayList<V> saveablesList = new ArrayList<V>(saveables.length);
-            for(Saveable saveable : saveables) {
-                saveablesList.add((V)saveable);
-            }
-            return saveablesList;
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        if(response.equals("NO")) return null;
+        Saveable[] saveables = gson.fromJson(response, Saveable[].class);
+        ArrayList<V> saveablesList = new ArrayList<V>(saveables.length);
+        for(Saveable saveable : saveables) {
+            saveablesList.add((V)saveable);
         }
-        finally {
-            bw.close();
-            br.close();
-        }
-        return null;
+        return saveablesList;
     }
     
     /**
@@ -304,32 +249,12 @@ public class ServerBackedMap<V extends Saveable> {
      * @throws IOException IOException Thrown if there is a problem connecting to the server 
      */
     public long size() throws IOException {
-        Socket socket = new Socket(serverAddress, serverPort);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String request = "SIZE"+SaveServer.DELIMITER+v.getSaveableModuleName();
-        SecureMessage secureMessage;
-        try {
-            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
-            bw.write(gson.toJson(secureMessage));
-            bw.newLine();
-            bw.flush();
-            String ejson = br.readLine();
-            
-            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
-            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
-            
-            return Long.parseLong(json);
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        finally {
-            bw.close();
-            br.close();
-        }
-        return -1;
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        return Long.parseLong(response);
     }
     
     /**
@@ -339,33 +264,12 @@ public class ServerBackedMap<V extends Saveable> {
      * @throws IOException  IOException Thrown if there is a problem connecting to the server 
      */
     public boolean remove(String key) throws IOException {
-        Socket socket = new Socket(serverAddress, serverPort);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String request = "REMOVE"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+key;
-        SecureMessage secureMessage;
-        try {
-            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
-            bw.write(gson.toJson(secureMessage));
-            bw.newLine();
-            bw.flush();
-            String ejson = br.readLine();
-            
-            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
-            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
-            
-            
-            return Boolean.getBoolean(json);
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        finally {
-            bw.close();
-            br.close();
-        }
-        return false;
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        return Boolean.getBoolean(response);
     }
     
     /**
@@ -392,33 +296,14 @@ public class ServerBackedMap<V extends Saveable> {
      * @throws IOException  IOException Thrown if there is a problem connecting to the server 
      */
     public synchronized boolean tryLock(String type, String id) throws IOException {
-        Socket socket = new Socket(serverAddress, serverPort);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String request = "LOCK"+SaveServer.DELIMITER+type+SaveServer.DELIMITER+id;
-        SecureMessage secureMessage;
-        try {
-            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
-            bw.write(gson.toJson(secureMessage));
-            bw.newLine();
-            bw.flush();
-            String ejson = br.readLine();
-            
-            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
-            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
-            
-            if(json.equals("200") || json.equals("302")) {
-                this.lockedIDs.add(type+":#:"+id);
-                return true;
-            }
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        finally {
-            bw.close();
-            br.close();
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        if(response.equals("200") || response.equals("302")) {
+            this.lockedIDs.add(type+":#:"+id);
+            return true;
         }
         return false;
     }
@@ -431,33 +316,13 @@ public class ServerBackedMap<V extends Saveable> {
      * @throws IOException  IOException Thrown if there is a problem connecting to the server 
      */
     public boolean releaseLock(String type, String id) throws IOException {
-        Socket socket = new Socket(serverAddress, serverPort);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String request = "RELEASE"+SaveServer.DELIMITER+type+SaveServer.DELIMITER+id;
-        SecureMessage secureMessage;
-        try {
-            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
-            bw.write(gson.toJson(secureMessage));
-            bw.newLine();
-            bw.flush();
-            String ejson = br.readLine();
-            
-            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
-            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
-            
-            this.lockedIDs.remove(type+":#:"+id);
-            return (json.equals("200"));
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        finally {
-            bw.close();
-            br.close();
-        }
-        return false;
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        this.lockedIDs.remove(type+":#:"+id);
+        return (response.equals("200"));
     }
     
     private void applyChanges() throws IOException {
@@ -472,69 +337,30 @@ public class ServerBackedMap<V extends Saveable> {
     }
     
     private ChangeRecord[] getChangeRecordsSince(long id) throws IOException {
-        Socket socket = new Socket(serverAddress, serverPort);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String request = "READJOURNAL"+SaveServer.DELIMITER+String.valueOf(id);
-        SecureMessage secureMessage;
-        try {
-            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
-            bw.write(gson.toJson(secureMessage));
-            bw.newLine();
-            bw.flush();
-            String ejson = br.readLine();
-            
-            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
-            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
-            if(json.equals("NO")) {
-                return null;
-            }
-            System.out.println(json);
-            ChangeRecord[] changes = gson.fromJson(json, ChangeRecord[].class);
-            return changes;
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        if(response.equals("NO")) {
+            return null;
         }
-        finally {
-            bw.close();
-            br.close();
-        }
-        return null;
+        System.out.println(response);
+        ChangeRecord[] changes = gson.fromJson(response, ChangeRecord[].class);
+        return changes;
     }
     
     private long getLatestChangeRecordId() throws IOException {
-        Socket socket = new Socket(serverAddress, serverPort);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         String request = "READJOURNAL"+SaveServer.DELIMITER+"SIZE";
-        SecureMessage secureMessage;
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
         try {
-            secureMessage = cryptoUtils.encrypt(username, request, passwordHash, salt, false);
-            bw.write(gson.toJson(secureMessage));
-            bw.newLine();
-            bw.flush();
-            String ejson = br.readLine();
-            
-            SecureMessage responseSecureMessage = gson.fromJson(ejson, SecureMessage.class);
-            String json = cryptoUtils.decrypt(responseSecureMessage, passwordHash);
-            
-            try {
-                long size = Long.parseLong(json);
-                return size;
-            } catch(NumberFormatException ex) {
-                return -1;
-            }
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+            long size = Long.parseLong(response);
+            return size;
+        } catch(NumberFormatException ex) {
+            return -1;
         }
-        finally {
-            bw.close();
-            br.close();
-        }
-        return -1;
     }
 }
