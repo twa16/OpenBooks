@@ -28,12 +28,24 @@ import com.lowagie.text.pdf.codec.Base64;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.lang.Void;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.SecureRandom;
+import java.security.SignatureException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.concurrent.ExecutionException;
 
 import org.hibernate.SessionFactory;
 import org.mgenterprises.openbooks.company.CompanyProfile;
@@ -48,6 +60,8 @@ import org.mgenterprises.openbooks.saving.server.users.UserProfile;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import org.bouncycastle.jce.X509Principal;
+import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.mgenterprises.openbooks.views.MainGUI;
 
 /**
@@ -235,6 +249,10 @@ public class ServerSetup extends javax.swing.JFrame {
         databaseNameField = new javax.swing.JTextField();
         loadCompanyFileButton = new javax.swing.JButton();
         loadCompanyFileLabel = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        generationOutput = new javax.swing.JTextArea();
+        startGenerationButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -285,59 +303,59 @@ public class ServerSetup extends javax.swing.JFrame {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSeparator3)
-                    .addComponent(jSeparator2)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(companyNameLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(companyNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(logoLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(logoPathField, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(findButton))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(mottoLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mottoField))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jSeparator3, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(cityLabel)
                             .addComponent(streetAddressLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(streetAddressField)
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addComponent(cityField, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(stateLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(stateComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(emailLabel)
-                            .addComponent(phoneLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(phoneField)
-                            .addComponent(emailField, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(faxLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(faxField, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(websiteLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(websiteField, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(streetAddressField)))
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addComponent(mottoLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(mottoField))
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(emailLabel)
+                                .addComponent(phoneLabel))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(phoneField)
+                                .addComponent(emailField, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))
+                            .addGap(18, 18, 18)
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanel3Layout.createSequentialGroup()
+                                    .addComponent(faxLabel)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(faxField, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(jPanel3Layout.createSequentialGroup()
+                                    .addComponent(websiteLabel)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(websiteField, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addComponent(companyNameLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(companyNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(logoLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(logoPathField, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(findButton))
+                        .addComponent(jSeparator2)))
+                .addGap(78, 78, 78))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -366,8 +384,8 @@ public class ServerSetup extends javax.swing.JFrame {
                     .addComponent(stateLabel)
                     .addComponent(stateComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(phoneLabel)
                     .addComponent(phoneField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -379,7 +397,7 @@ public class ServerSetup extends javax.swing.JFrame {
                     .addComponent(emailField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(websiteLabel)
                     .addComponent(websiteField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(80, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         tabbedPane.addTab("Company Setup", jPanel3);
@@ -494,6 +512,37 @@ public class ServerSetup extends javax.swing.JFrame {
 
         tabbedPane.addTab("Configure Database Connection", jPanel1);
 
+        generationOutput.setColumns(20);
+        generationOutput.setRows(5);
+        jScrollPane1.setViewportView(generationOutput);
+
+        startGenerationButton.setText("Start Generation");
+        startGenerationButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startGenerationButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 906, Short.MAX_VALUE)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addComponent(startGenerationButton)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(startGenerationButton)
+                .addContainerGap())
+        );
+
+        tabbedPane.addTab("Certificate Generation", jPanel4);
+
         jLabel3.setText("Choose this option if you have choosen the FILE option or wish to run the server locally");
 
         jLabel5.setText("Choose this option if you want to get the configuration for a standalone server instance");
@@ -587,11 +636,17 @@ public class ServerSetup extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabbedPane)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tabbedPane)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabbedPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(tabbedPane, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -662,6 +717,64 @@ public class ServerSetup extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_findButtonActionPerformed
 
+    private void startGenerationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startGenerationButtonActionPerformed
+        try {
+            //Let's make a keypair
+            new PrintOutputWorker("Initializing KeyPairGenerator", generationOutput).get();
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            keyPairGenerator.initialize(2048);
+            new PrintOutputWorker("   [DONE]\n", generationOutput).get();
+            new PrintOutputWorker("Generating KeyPair (2048 bits)", generationOutput).get();
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            new PrintOutputWorker("   [DONE]\n", generationOutput).get();
+            
+            //Start the certificate generator
+            new PrintOutputWorker("Start Certificate Generator", generationOutput).get();
+            X509V3CertificateGenerator v3CertGen = new X509V3CertificateGenerator();
+            new PrintOutputWorker("   [DONE]\n", generationOutput).get();
+            
+            //Set certificate data
+            new PrintOutputWorker("Set CertificateData", generationOutput).get();
+            String commonName = "";
+            String organizationalUnit = "";
+            String organization = "";
+            String location = "";
+            String country = "";
+            String principalString = "CN=" + commonName + ", OU="+organizationalUnit+", O="+organization+" L="+location+", C="+country;
+            new PrintOutputWorker(principalString+"\n", generationOutput).get();
+            X509Principal certPrincipal = new X509Principal(principalString);
+            v3CertGen.setSerialNumber(BigInteger.valueOf(new SecureRandom().nextInt()));
+            v3CertGen.setIssuerDN(certPrincipal);
+            v3CertGen.setNotBefore(new Date(System.currentTimeMillis() - 1000L * 60 * 60 * 24 * 30));
+            v3CertGen.setNotAfter(new Date(System.currentTimeMillis() + (1000L * 60 * 60 * 24 * 365*10)));
+            v3CertGen.setSubjectDN(certPrincipal);
+            v3CertGen.setPublicKey(keyPair.getPublic());
+            v3CertGen.setSignatureAlgorithm("SHA224withECDSA"); 
+            new PrintOutputWorker("   [DONE]", generationOutput).get();
+            
+            //Generate Certificate
+            new PrintOutputWorker("Generate the certificate", generationOutput).get();
+            X509Certificate PKCertificate = v3CertGen.generate(keyPair.getPrivate());
+            new PrintOutputWorker("    [DONE]\n", generationOutput).get();
+            
+            
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (CertificateEncodingException ex) {
+            Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalStateException ex) {
+            Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SignatureException ex) {
+            Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_startGenerationButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel adminPasswordLabel;
@@ -683,6 +796,7 @@ public class ServerSetup extends javax.swing.JFrame {
     private javax.swing.JTextField faxField;
     private javax.swing.JLabel faxLabel;
     private javax.swing.JButton findButton;
+    private javax.swing.JTextArea generationOutput;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -690,6 +804,8 @@ public class ServerSetup extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
@@ -712,6 +828,7 @@ public class ServerSetup extends javax.swing.JFrame {
     private javax.swing.JSpinner serverPortSpinner;
     private javax.swing.JTextField serverUsernameField;
     private javax.swing.JLabel serverUsernameLabel;
+    private javax.swing.JButton startGenerationButton;
     private javax.swing.JComboBox stateComboBox;
     private javax.swing.JLabel stateLabel;
     private javax.swing.JTextField streetAddressField;
@@ -720,4 +837,21 @@ public class ServerSetup extends javax.swing.JFrame {
     private javax.swing.JTextField websiteField;
     private javax.swing.JLabel websiteLabel;
     // End of variables declaration//GEN-END:variables
+}
+
+class PrintOutputWorker extends SwingWorker<String, Void> {
+    private String output;
+    private JTextArea outputArea;
+
+    public PrintOutputWorker(String output, JTextArea outputArea) {
+        this.output = output;
+        this.outputArea = outputArea;
+    }
+    
+    @Override
+    protected String doInBackground() throws Exception {
+        outputArea.append(output);
+        return output;
+    }
+    
 }
