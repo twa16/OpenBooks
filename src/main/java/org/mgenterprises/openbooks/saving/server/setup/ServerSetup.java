@@ -253,6 +253,9 @@ public class ServerSetup extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         generationOutput = new javax.swing.JTextArea();
         startGenerationButton = new javax.swing.JButton();
+        keyToolPath = new javax.swing.JTextField();
+        browseButton = new javax.swing.JButton();
+        pathToKeytoolLabel = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -523,6 +526,12 @@ public class ServerSetup extends javax.swing.JFrame {
             }
         });
 
+        keyToolPath.setText("keytool");
+
+        browseButton.setText("Browse");
+
+        pathToKeytoolLabel.setText("Path to Keytool:");
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -531,11 +540,25 @@ public class ServerSetup extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addComponent(startGenerationButton)
                 .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(pathToKeytoolLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(keyToolPath, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(browseButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(keyToolPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseButton)
+                    .addComponent(pathToKeytoolLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(startGenerationButton)
                 .addContainerGap())
@@ -718,7 +741,9 @@ public class ServerSetup extends javax.swing.JFrame {
     }//GEN-LAST:event_findButtonActionPerformed
 
     private void startGenerationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startGenerationButtonActionPerformed
-        try {
+        String pathToKeyTool = this.keyToolPath.getText();
+        
+        /*try {
             //Let's make a keypair
             new PrintOutputWorker("Initializing KeyPairGenerator", generationOutput).get();
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
@@ -772,7 +797,7 @@ public class ServerSetup extends javax.swing.JFrame {
             Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InvalidKeyException ex) {
             Logger.getLogger(ServerSetup.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
     }//GEN-LAST:event_startGenerationButtonActionPerformed
 
 
@@ -780,6 +805,7 @@ public class ServerSetup extends javax.swing.JFrame {
     private javax.swing.JLabel adminPasswordLabel;
     private javax.swing.JTextField adminUserField;
     private javax.swing.JLabel adminUserLabel;
+    private javax.swing.JButton browseButton;
     private javax.swing.JTextField cityField;
     private javax.swing.JLabel cityLabel;
     private javax.swing.JTextField companyNameField;
@@ -809,6 +835,7 @@ public class ServerSetup extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
+    private javax.swing.JTextField keyToolPath;
     private javax.swing.JButton loadCompanyFileButton;
     private javax.swing.JLabel loadCompanyFileLabel;
     private javax.swing.JLabel logoLabel;
@@ -818,6 +845,7 @@ public class ServerSetup extends javax.swing.JFrame {
     private javax.swing.JLabel moveOnLabel;
     private javax.swing.JLabel mysqlSettingsLabel;
     private javax.swing.JPasswordField passwordField;
+    private javax.swing.JLabel pathToKeytoolLabel;
     private javax.swing.JTextField phoneField;
     private javax.swing.JLabel phoneLabel;
     private javax.swing.JTextField serverAddressField;
