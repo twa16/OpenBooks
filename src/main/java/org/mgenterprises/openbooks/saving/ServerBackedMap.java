@@ -29,21 +29,31 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import org.mgenterprises.openbooks.saving.server.SaveManager;
 import org.mgenterprises.openbooks.saving.server.SaveServer;
 import org.mgenterprises.openbooks.saving.server.authentication.SaveServerAuthenticationFailureException;
@@ -93,29 +103,57 @@ public class ServerBackedMap<V extends Saveable> {
     public void connectToServer(SaveServerConnection saveServerConnection) throws IOException, SaveServerAuthenticationFailureException {
         String host = saveServerConnection.getServerAddress();
         int port = saveServerConnection.getServerPort();
-        //Start the factory
-        SSLSocketFactory factory=(SSLSocketFactory) SSLSocketFactory.getDefault();
-        //Connect
-        SSLSocket sslSocket=(SSLSocket) factory.createSocket(host, port);
-        //Get Streams
-        OutputStream outputStream = sslSocket.getOutputStream();
-        InputStream inputStream = sslSocket.getInputStream();
-        //Create Writers and Readers
-        bw = new BufferedWriter(new OutputStreamWriter(outputStream));
-        br = new BufferedReader(new InputStreamReader(inputStream));
-        //Start authentication
-        String username = saveServerConnection.getUsername();
-        String password = saveServerConnection.getPassword();
-        UserLoginAttempt userLoginAttempt = new UserLoginAttempt(username, password);
-        String userLoginAttemptJson = gson.toJson(userLoginAttempt);
-        bw.write(userLoginAttemptJson);
-        bw.newLine();
-        bw.flush();
-        String response = br.readLine();
-        if(response.equals("OK")) {
-            this.socket = sslSocket;
-        } else {
-            throw new SaveServerAuthenticationFailureException();
+        
+        SSLSocket sslSocket = null;
+        try {
+            KeyStore ks = KeyStore.getInstance("JKS");
+            ks.load(new FileInputStream(saveServerConnection.getPathToKeyStore()), saveServerConnection.getKeyStorePassword());
+
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+            kmf.init(ks, saveServerConnection.getKeyStorePassword());
+
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+            tmf.init(ks);
+
+            SSLContext sc = SSLContext.getInstance("TLS");
+            TrustManager[] trustManagers = tmf.getTrustManagers();
+            sc.init(kmf.getKeyManagers(), trustManagers, null);
+            
+            SSLSocketFactory ssf = sc.getSocketFactory();
+            sslSocket = (SSLSocket) ssf.createSocket(host, port);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (CertificateException ex) {
+            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (KeyManagementException ex) {
+            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (KeyStoreException ex) {
+            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnrecoverableKeyException ex) {
+            Logger.getLogger(ServerBackedMap.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if(sslSocket != null) {
+            sslSocket.startHandshake();
+            //Get Streams
+            OutputStream outputStream = sslSocket.getOutputStream();
+            InputStream inputStream = sslSocket.getInputStream();
+            //Create Writers and Readers
+            bw = new BufferedWriter(new OutputStreamWriter(outputStream));
+            br = new BufferedReader(new InputStreamReader(inputStream));
+            //Start authentication
+            String username = saveServerConnection.getUsername();
+            String password = saveServerConnection.getPassword();
+            UserLoginAttempt userLoginAttempt = new UserLoginAttempt(username, password);
+            String userLoginAttemptJson = gson.toJson(userLoginAttempt);
+            bw.write(userLoginAttemptJson);
+            bw.newLine();
+            bw.flush();
+            String response = br.readLine();
+            if(response.equals("OK")) {
+                this.socket = sslSocket;
+            } else {
+                throw new SaveServerAuthenticationFailureException();
+            }
         }
         
     }

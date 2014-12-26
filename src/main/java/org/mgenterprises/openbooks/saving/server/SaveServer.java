@@ -32,6 +32,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -39,16 +40,25 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import org.mgenterprises.openbooks.saving.AbstractSaveableAdapter;
 import org.mgenterprises.openbooks.saving.EqualityOperation;
 import org.mgenterprises.openbooks.saving.Saveable;
@@ -94,12 +104,16 @@ public class SaveServer implements Runnable {
     private ChangeJournal changeJournal;
     private SecureRandom secureRandom = new SecureRandom();
 
-    public SaveServer(String listenAddress, short port, UserManager userManager, SaveManager saveManager) throws UnknownHostException {
+    private String keyStoreLocation;
+    private char[] keyStorePassword;
+    public SaveServer(String listenAddress, short port, UserManager userManager, SaveManager saveManager, String keyStoreLocation, char[] keyStorePassword) throws UnknownHostException {
         this.port = port;
         this.bindAddress = InetAddress.getByName(listenAddress);
         this.userManager = userManager;
         this.saveManager = saveManager;
         this.changeJournal = new ChangeJournal(saveManager);
+        this.keyStoreLocation = keyStoreLocation;
+        this.keyStorePassword = keyStorePassword;
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(Saveable.class, new AbstractSaveableAdapter());
         //gsonBuilder.registerTypeAdapter(Saveable[].class, new AbstractSaveableArrayAdapter());
@@ -114,14 +128,37 @@ public class SaveServer implements Runnable {
     @Override
     public void run() {
         try {
-            SSLServerSocketFactory factory=(SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-            SSLServerSocket serverSocket=(SSLServerSocket) factory.createServerSocket(1234);
+            KeyStore ks = KeyStore.getInstance("JKS");
+            ks.load(new FileInputStream(keyStoreLocation), keyStorePassword);
+            
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+            kmf.init(ks, keyStorePassword);
+            
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+            tmf.init(ks);
+            
+            SSLContext sc = SSLContext.getInstance("TLS");
+            TrustManager[] trustManagers = tmf.getTrustManagers();
+            sc.init(kmf.getKeyManagers(), trustManagers, null);
+            
+            SSLServerSocketFactory factory = sc.getServerSocketFactory();
+            SSLServerSocket serverSocket=(SSLServerSocket) factory.createServerSocket(port);
             while (running) {
                 SSLSocket socket = (SSLSocket) serverSocket.accept();
                 SaveServerRequestProcessor saveServerRequestProcessor = new SaveServerRequestProcessor(socket, secureRandom, gson, userManager, saveManager, changeJournal);
                 new Thread(saveServerRequestProcessor).start();
             }
         } catch (IOException ex) {
+            Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (KeyStoreException ex) {
+            Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (CertificateException ex) {
+            Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnrecoverableKeyException ex) {
+            Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (KeyManagementException ex) {
             Logger.getLogger(SaveServer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
