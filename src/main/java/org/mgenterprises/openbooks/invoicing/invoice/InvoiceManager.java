@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import org.mgenterprises.openbooks.customer.Customer;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.saving.ServerBackedMap;
+import org.mgenterprises.openbooks.saving.server.authentication.SaveServerAuthenticationFailureException;
 
 /**
  *
@@ -36,7 +37,7 @@ import org.mgenterprises.openbooks.saving.ServerBackedMap;
  */
 public class InvoiceManager extends ServerBackedMap<Invoice>{
 
-    public InvoiceManager(SaveServerConnection saveServerConnection) {
+    public InvoiceManager(SaveServerConnection saveServerConnection) throws IOException, SaveServerAuthenticationFailureException {
         super(new Invoice(), saveServerConnection);
     }
     

@@ -31,6 +31,7 @@ import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.saving.ServerBackedMap;
+import org.mgenterprises.openbooks.saving.server.authentication.SaveServerAuthenticationFailureException;
 
 /**
  *
@@ -38,7 +39,7 @@ import org.mgenterprises.openbooks.saving.ServerBackedMap;
  */
 public class CustomerManager extends ServerBackedMap<Customer>{
 
-    public CustomerManager(SaveServerConnection saveServerConnection) {
+    public CustomerManager(SaveServerConnection saveServerConnection) throws IOException, SaveServerAuthenticationFailureException {
         super(new Customer(), saveServerConnection);
     }
     

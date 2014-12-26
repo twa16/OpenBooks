@@ -24,8 +24,10 @@
 
 package org.mgenterprises.openbooks.accounting.account;
 
+import java.io.IOException;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.saving.ServerBackedMap;
+import org.mgenterprises.openbooks.saving.server.authentication.SaveServerAuthenticationFailureException;
 
 /**
  *
@@ -33,7 +35,7 @@ import org.mgenterprises.openbooks.saving.ServerBackedMap;
  */
 public class AccountManager extends ServerBackedMap<Account> {
 
-    public AccountManager(SaveServerConnection saveServerConnection) {
+    public AccountManager(SaveServerConnection saveServerConnection) throws IOException, SaveServerAuthenticationFailureException {
         super(new Account(), saveServerConnection);
     }
     

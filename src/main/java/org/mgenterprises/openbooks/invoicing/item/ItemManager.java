@@ -30,6 +30,7 @@ import java.util.HashMap;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.saving.Saveable;
 import org.mgenterprises.openbooks.saving.ServerBackedMap;
+import org.mgenterprises.openbooks.saving.server.authentication.SaveServerAuthenticationFailureException;
 
 /**
  *
@@ -37,7 +38,7 @@ import org.mgenterprises.openbooks.saving.ServerBackedMap;
  */
 public class ItemManager extends ServerBackedMap<Item>{
 
-    public ItemManager(SaveServerConnection saveServerConnection) {
+    public ItemManager(SaveServerConnection saveServerConnection) throws IOException, SaveServerAuthenticationFailureException {
         super(new Item(), saveServerConnection);
     }
     
