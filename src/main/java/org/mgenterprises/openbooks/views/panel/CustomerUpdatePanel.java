@@ -548,7 +548,7 @@ public class CustomerUpdatePanel extends JPanel implements ViewChangeListener{
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void onSwitchTo() {
+    public void onSwitchTo(Object object) {
         SwingWorker swingWorker = new SwingWorker<Void, Void>() {
 
             @Override

@@ -126,7 +126,7 @@ public class AccountListPanel extends javax.swing.JPanel implements ViewChangeLi
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void onSwitchTo() {
+    public void onSwitchTo(Object object) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

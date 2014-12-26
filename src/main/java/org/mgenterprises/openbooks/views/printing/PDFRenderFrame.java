@@ -24,16 +24,30 @@
 
 package org.mgenterprises.openbooks.views.printing;
 
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.print.PrintService;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import org.apache.commons.io.FileUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+
 /**
  *
  * @author Manuel Gauto
  */
 public class PDFRenderFrame extends javax.swing.JFrame {
-
+    private File pdfFile;
+    
     /**
      * Creates new form PDFRenderFrame
      */
-    public PDFRenderFrame() {
+    public PDFRenderFrame(File pdfFile) {
+        this.pdfFile = pdfFile;
         initComponents();
     }
 
@@ -46,11 +60,28 @@ public class PDFRenderFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        statusLabel = new javax.swing.JLabel();
+        printButton = new javax.swing.JButton();
+        savePDFButton = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Openbooks Printing");
 
-        jLabel1.setText("Rendering to PDF");
+        statusLabel.setText("Please select an option.");
+
+        printButton.setText("Print");
+        printButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                printButtonActionPerformed(evt);
+            }
+        });
+
+        savePDFButton.setText("Save PDF");
+        savePDFButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                savePDFButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -58,56 +89,77 @@ public class PDFRenderFrame extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addContainerGap(306, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(savePDFButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 113, Short.MAX_VALUE)
+                        .addComponent(printButton))
+                    .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addContainerGap(90, Short.MAX_VALUE))
+                .addComponent(statusLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(printButton)
+                    .addComponent(savePDFButton))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
+    private void printButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printButtonActionPerformed
+        PrintService printService = choosePrinter();
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(PDFRenderFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(PDFRenderFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(PDFRenderFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(PDFRenderFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            printPDF(pdfFile.getAbsolutePath(), printService);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "IOException while printing!");
+        } catch (PrinterException ex) {
+            Logger.getLogger(PDFRenderFrame.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Error with printer.\n"+ex.getMessage());
         }
-        //</editor-fold>
+    }//GEN-LAST:event_printButtonActionPerformed
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new PDFRenderFrame().setVisible(true);
+    private void savePDFButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_savePDFButtonActionPerformed
+        JFileChooser jFileChooser = new JFileChooser();
+        
+        if(jFileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            try {
+                FileUtils.copyFile(pdfFile, jFileChooser.getSelectedFile());
+                this.setVisible(false);
+                this.dispose();
+            } catch (IOException ex) {
+                Logger.getLogger(PDFRenderFrame.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(this, "Please choose a place to save your pdf.");
             }
-        });
+        }
+    }//GEN-LAST:event_savePDFButtonActionPerformed
+
+    public PrintService choosePrinter() {
+        PrinterJob printJob = PrinterJob.getPrinterJob();
+        if(printJob.printDialog()) {
+            return printJob.getPrintService();          
+        }
+        else {
+            return null;
+        }
     }
 
+    public void printPDF(String fileName, PrintService printer)
+            throws IOException, PrinterException {
+        PrinterJob job = PrinterJob.getPrinterJob();
+        job.setPrintService(printer);
+        PDDocument doc = PDDocument.load(fileName);
+        doc.silentPrint(job);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton printButton;
+    private javax.swing.JButton savePDFButton;
+    private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
 }

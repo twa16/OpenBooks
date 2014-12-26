@@ -87,6 +87,7 @@ public class HibernateBackedSaveManager implements SaveManager{
         session.beginTransaction();
         Query query = session.createQuery("delete from "+getClassFromType(type)+" where uniqueId=:id");
         query.setString("id", id);
+        query.executeUpdate();
         session.getTransaction().commit();
     }
 

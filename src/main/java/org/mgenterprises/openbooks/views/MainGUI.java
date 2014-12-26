@@ -111,7 +111,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     public void loadCards() {
         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
         cl.add(mainPanelArea, new HomepagePanel(), "HomepagePanel");
-        cl.add(mainPanelArea, new InvoiceCenterPanel(configurationManager, invoiceManager, customerManager), "InvoiceCenterPanel");
+        cl.add(mainPanelArea, new InvoiceCenterPanel(this), "InvoiceCenterPanel");
         cl.add(mainPanelArea, new CustomerUpdatePanel(customerManager, invoiceManager), "CustomerUpdatePanel");
         try {
             cl.add(mainPanelArea, new InvoiceUpdatePanel(this, itemManager.getItems()), "InvoiceUpdatePanel");
@@ -216,22 +216,22 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     private void invoiceCenterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_invoiceCenterButtonActionPerformed
         //changePanel(new InvoiceCenterPanel(configurationManager, invoiceManager, customerManager));
          OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
-         cl.show(mainPanelArea, "InvoiceCenterPanel");
+         cl.show(mainPanelArea, "InvoiceCenterPanel", null);
     }//GEN-LAST:event_invoiceCenterButtonActionPerformed
 
     private void createInvoiceMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createInvoiceMenuItemActionPerformed
         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
-        cl.show(mainPanelArea, "InvoiceUpdatePanel");
+        cl.show(mainPanelArea, "InvoiceUpdatePanel", null);
     }//GEN-LAST:event_createInvoiceMenuItemActionPerformed
 
     private void itemManagerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemManagerMenuItemActionPerformed
         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
-        cl.show(mainPanelArea, "ItemManagementPanel");
+        cl.show(mainPanelArea, "ItemManagementPanel", null);
     }//GEN-LAST:event_itemManagerMenuItemActionPerformed
 
     private void configurationMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurationMenuItemActionPerformed
         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
-        cl.show(mainPanelArea, "ConfigurationPanel");
+        cl.show(mainPanelArea, "ConfigurationPanel", null);
     }//GEN-LAST:event_configurationMenuItemActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -326,5 +326,10 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     @Override
     public EstimateManager getEstimateManager() {
         return estimateManager;
+    }
+
+    @Override
+    public JPanel getMainPanel() {
+        return mainPanelArea;
     }
 }

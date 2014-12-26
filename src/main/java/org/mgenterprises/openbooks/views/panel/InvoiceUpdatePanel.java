@@ -72,6 +72,7 @@ import org.mgenterprises.openbooks.printing.RenderTemplate;
 import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.actionlistener.TableCellListener;
+import org.mgenterprises.openbooks.views.printing.PDFRenderFrame;
 
 /**
  *
@@ -222,6 +223,11 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         }
 
         invoiceNumberField.setText("-1");
+        invoiceNumberField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                invoiceNumberFieldActionPerformed(evt);
+            }
+        });
 
         invoiceNumberLabel.setText("Invoice Number");
 
@@ -296,7 +302,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         if (invoiceItemTable.getColumnModel().getColumnCount() > 0) {
             invoiceItemTable.getColumnModel().getColumn(0).setMinWidth(80);
             invoiceItemTable.getColumnModel().getColumn(0).setPreferredWidth(80);
-            invoiceItemTable.getColumnModel().getColumn(0).setMaxWidth(80);
+            invoiceItemTable.getColumnModel().getColumn(0).setMaxWidth(120);
             invoiceItemTable.getColumnModel().getColumn(2).setMinWidth(80);
             invoiceItemTable.getColumnModel().getColumn(2).setPreferredWidth(80);
             invoiceItemTable.getColumnModel().getColumn(2).setMaxWidth(80);
@@ -600,6 +606,19 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         onModify();
     }//GEN-LAST:event_dateDueFieldActionPerformed
 
+    private void invoiceNumberFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_invoiceNumberFieldActionPerformed
+        try {
+            int next = Integer.parseInt(invoiceNumberField.getText());
+            if(invoiceManager.exists(next)){
+                Invoice invoice = invoiceManager.getInvoice(next);
+                invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), String.valueOf(next));
+                loadInvoiceData(invoice);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_invoiceNumberFieldActionPerformed
+
     private void clearFields() {
         this.customerCombobox.setSelectedIndex(-1);
         this.customerTextArea.setText("");
@@ -656,7 +675,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
     // End of variables declaration//GEN-END:variables
    
     @Override
-    public void onSwitchTo() {
+    public void onSwitchTo(Object object) {
         SwingWorker switchFromWorker = new SwingWorker<Void, Void>() {
 
             @Override
@@ -672,7 +691,10 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
                                 URL templateURL = this.getClass().getResource("/templates/basic_invoice.html");
                                 template.load(templateURL);
                                 InvoiceRenderer invoiceRenderer = new InvoiceRenderer(openbooksCore, loadedInvoice, template);
-                                invoiceRenderer.renderAsPDF(new File("out.pdf"));
+                                File tempPDF = File.createTempFile("openbooks", "pdf-print");
+                                invoiceRenderer.renderAsPDF(tempPDF);
+                                PDFRenderFrame renderFrame = new PDFRenderFrame(tempPDF);
+                                renderFrame.setVisible(true);
                             } catch (IOException ex) {
                                 Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (DocumentException ex) {
@@ -697,6 +719,9 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
             
         };
         switchFromWorker.execute();
+        if(object != null) {
+            loadInvoiceData((Invoice) object);
+        }
     }
 
     @Override

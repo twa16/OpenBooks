@@ -98,7 +98,11 @@
             <artifactId>h2</artifactId>
             <version>1.4.178</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>1.8.8</version>
+        </dependency>
 
     </dependencies>
     <properties>

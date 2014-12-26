@@ -89,7 +89,7 @@ public class Main {
         String keyStorePath = "/Users/mgauto/Work/Code/OpenBooks/test.jks";
         char[] keyStoreStorePassword = {'t', 'e', 's','t','t','e','s','t'};
         char[] keyStoreKeyPassword = {'s', 'e','c','u','r','e','p','a','s','s'};
-        SaveServer saveServer = new SaveServer("127.0.0.1", port, userManager, saveManager, keyStorePath, keyStoreKeyPassword);
+        SaveServer saveServer = new SaveServer("127.0.0.1", port, userManager, saveManager, keyStorePath, keyStoreStorePassword);
         saveServer.startServer();
         
         CompanyProfile companyProfile = new CompanyProfile();
@@ -98,7 +98,7 @@ public class Main {
         companyProfile.setStreetAddress("3500 Courtland Drive");
         companyProfile.setCityName("Falls Church");
         companyProfile.setState("Virginia");
-        SaveServerConnection saveServerConnection = new SaveServerConnection("127.0.0.1", port, "admin", "admin", keyStorePath, keyStoreKeyPassword);
+        SaveServerConnection saveServerConnection = new SaveServerConnection("127.0.0.1", port, "admin", "admin", keyStorePath, keyStoreStorePassword);
         CompanyFile companyFile = new CompanyFile();
         companyFile.updateCompanyProfile(companyProfile);
         companyFile.updateConfigurationManager(new ConfigurationManager());

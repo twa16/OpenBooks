@@ -98,7 +98,7 @@ public class HomepagePanel extends JPanel implements ViewChangeListener{
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void onSwitchTo() {
+    public void onSwitchTo(Object object) {
     }
 
     @Override
