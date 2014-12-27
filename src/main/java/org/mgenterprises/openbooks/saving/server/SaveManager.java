@@ -54,4 +54,6 @@ public interface SaveManager {
     public Saveable[] getAllSaveables(String type);
     
     public long getSaveableCount(String type);
+    
+    public long getHighestUniqueId(String type);
 }

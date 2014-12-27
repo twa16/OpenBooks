@@ -69,7 +69,7 @@ public class InvoiceManager extends ServerBackedMap<Invoice>{
     }
 
     public long getHighestID() throws IOException {
-        return size();
+        return highestId();
     }
     
     public Invoice[] getInvoices() throws IOException {

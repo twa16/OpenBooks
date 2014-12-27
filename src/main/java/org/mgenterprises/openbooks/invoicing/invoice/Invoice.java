@@ -39,6 +39,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import org.hibernate.annotations.Cascade;
 import org.mgenterprises.openbooks.customer.Customer;
 import org.mgenterprises.openbooks.saving.Saveable;
 

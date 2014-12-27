@@ -229,6 +229,9 @@ class SaveServerRequestProcessor implements Runnable {
                         case "SIZE":
                             response = processSIZE(username, requestParts);
                             break;
+                        case "HIGHESTID":
+                            response = processHIGHESTID(username, requestParts);
+                            break;
                         case "LOCK":
                             response = processLOCK(username, requestParts);
                             break;
@@ -282,8 +285,10 @@ class SaveServerRequestProcessor implements Runnable {
                 //Get lock status
                 String lockHolder = saveManager.getLockHolder(type, id);
                 //If it isn't locked, lock it    
-                if (lockHolder==null) {
+                if (lockHolder.equals("")) {
                     saveManager.createLock(user, type, id);
+                    //Set lockholder to current user
+                    lockHolder=user;
                 }
                 Saveable saveable = saveManager.getSaveable(type, id);
 
@@ -292,6 +297,8 @@ class SaveServerRequestProcessor implements Runnable {
                     //If it is locked by another user indicate that
                     if (!lockHolder.equals(user)) {
                         saveable.setLocked(true);
+                    } else {
+                        saveable.setLocked(false);
                     }
                     Logger.getLogger("SaveServer").log(Level.INFO, "GET from {0} for t: {1} i: {2}", new Object[]{user, type, id});
                     return gson.toJson(saveable, Saveable.class);
@@ -355,14 +362,25 @@ class SaveServerRequestProcessor implements Runnable {
     private String processSIZE(String user, String[] requestParts) {
         String type = requestParts[1];
         if (userManager.userHasAccessRight(user, type, ACTION.GET)) {
-            Logger.getLogger("SaveServer").log(Level.INFO, "SIZE from {0} for t: {1} i: {2}", new Object[]{user, type});
+            Logger.getLogger("SaveServer").log(Level.INFO, "SIZE from {0} for t: {1}", new Object[]{user, type});
             return String.valueOf(saveManager.getSaveableCount(type));
         } else {
-            Logger.getLogger("SaveServer").log(Level.INFO, "Denied SIZE from {0} for t: {1} i: {2}", new Object[]{user, type});
+            Logger.getLogger("SaveServer").log(Level.INFO, "Denied SIZE from {0} for t: {1}", new Object[]{user, type});
             return "401";
         }
     }
 
+    public String processHIGHESTID(String user, String[] requestParts) {
+        String type = requestParts[1];
+        if (userManager.userHasAccessRight(user, type, ACTION.GET)) {
+            Logger.getLogger("SaveServer").log(Level.INFO, "HIGHESTID from {0} for t: {1}", new Object[]{user, type});
+            return String.valueOf(saveManager.getHighestUniqueId(type));
+        } else {
+            Logger.getLogger("SaveServer").log(Level.INFO, "Denied HIGHESTID from {0} for t: {1}", new Object[]{user, type});
+            return "401";
+        }
+    }
+    
     private String processPUT(String user, String[] requestParts) {
         String data = requestParts[1];
 

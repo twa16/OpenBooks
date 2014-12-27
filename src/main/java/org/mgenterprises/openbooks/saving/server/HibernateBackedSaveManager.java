@@ -28,6 +28,7 @@ import com.google.gson.Gson;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -77,6 +78,7 @@ public class HibernateBackedSaveManager implements SaveManager{
         Query query = session.createQuery("delete from ResourceLock where type=:type and id=:id");
         query.setString("type", type);
         query.setString("id", id);
+        query.executeUpdate();
         session.getTransaction().commit();
     }
 
@@ -84,10 +86,11 @@ public class HibernateBackedSaveManager implements SaveManager{
     public void removeSaveable(String type, String id) {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
-        session.beginTransaction();
-        Query query = session.createQuery("delete from "+getClassFromType(type)+" where uniqueId=:id");
+        Query query = session.createQuery("From "+getClassFromType(type)+" where saveableModuleName=:type AND uniqueId=:id");
+        query.setString("type", type);
         query.setString("id", id);
-        query.executeUpdate();
+        Saveable saveable = (Saveable) query.uniqueResult();
+        session.delete(saveable);
         session.getTransaction().commit();
     }
 
@@ -127,6 +130,7 @@ public class HibernateBackedSaveManager implements SaveManager{
         ResourceLock resourceLock = (ResourceLock) query.uniqueResult();
         session.getTransaction().commit();
         return resourceLock==null ? "" : resourceLock.getHolder();
+        //return resourceLock.getHolder();
     }
 
     @Override
@@ -201,7 +205,7 @@ public class HibernateBackedSaveManager implements SaveManager{
 
     @Override
     public boolean isLockedForUser(String user, String type, String id) {
-       Session session = sessionFactory.openSession();
+        Session session = sessionFactory.openSession();
         session.beginTransaction();
         Query query = session.createQuery("From ResourceLock where type=:type and id=:id");
         query.setString("type", type);
@@ -209,5 +213,26 @@ public class HibernateBackedSaveManager implements SaveManager{
         ResourceLock resourceLock = (ResourceLock) query.uniqueResult();
         session.getTransaction().commit();
         return resourceLock!=null && !resourceLock.getHolder().equals(user);
+    }
+
+    @Override
+    public long getHighestUniqueId(String type) {
+        try {
+            Session session = sessionFactory.openSession();
+            session.beginTransaction();
+            Criteria criteria = session
+                    .createCriteria(Class.forName(type))
+                    .setProjection(Projections.max("uniqueId"));
+            Long maxId = Long.valueOf((String)criteria.uniqueResult());
+            session.close();
+            if(maxId != null)
+                return maxId;
+            else {
+                return 0;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(HibernateBackedSaveManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return 0;
     }
 }

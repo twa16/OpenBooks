@@ -296,6 +296,21 @@ public class ServerBackedMap<V extends Saveable> {
     }
     
     /**
+     * Returns an long representing the highest id in the database
+     * 
+     * @return Highest ID
+     * @throws IOException IOException Thrown if there is a problem connecting to the server 
+     */
+    public long highestId() throws IOException {
+        String request = "HIGHESTID"+SaveServer.DELIMITER+v.getSaveableModuleName();
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        return Long.parseLong(response);
+    }
+    
+    /**
      * 
      * @param key
      * @return
@@ -307,7 +322,12 @@ public class ServerBackedMap<V extends Saveable> {
         bw.newLine();
         bw.flush();
         String response = br.readLine();
-        return Boolean.getBoolean(response);
+        if(Boolean.getBoolean(response)){
+            cache.remove(key);
+            releaseLock(v.getSaveableModuleName(), key);
+            return true;
+        } 
+        return false;
     }
     
     /**

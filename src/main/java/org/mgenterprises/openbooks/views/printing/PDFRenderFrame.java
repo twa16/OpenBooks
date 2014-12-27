@@ -33,7 +33,9 @@ import java.util.logging.Logger;
 import javax.print.PrintService;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 /**
@@ -42,12 +44,14 @@ import org.apache.pdfbox.pdmodel.PDDocument;
  */
 public class PDFRenderFrame extends javax.swing.JFrame {
     private File pdfFile;
+    private String defaultName;
     
     /**
      * Creates new form PDFRenderFrame
      */
-    public PDFRenderFrame(File pdfFile) {
+    public PDFRenderFrame(File pdfFile, String defaultName) {
         this.pdfFile = pdfFile;
+        this.defaultName = defaultName;
         initComponents();
     }
 
@@ -126,10 +130,20 @@ public class PDFRenderFrame extends javax.swing.JFrame {
 
     private void savePDFButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_savePDFButtonActionPerformed
         JFileChooser jFileChooser = new JFileChooser();
-        
+        String defaultHome = System.getProperty("user.home");
+        File defaultFileName = new File(defaultHome+File.separator+defaultName);
+        jFileChooser.setSelectedFile(defaultFileName);
+        FileNameExtensionFilter pdfFilter = new FileNameExtensionFilter("pdf files (*.pdf)", "pdf");
+        // add filters
+        jFileChooser.addChoosableFileFilter(pdfFilter);
+        jFileChooser.setFileFilter(pdfFilter);
         if(jFileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File saveDest = jFileChooser.getSelectedFile();
             try {
-                FileUtils.copyFile(pdfFile, jFileChooser.getSelectedFile());
+                if (!FilenameUtils.getExtension(saveDest.getName()).equalsIgnoreCase("pdf")) {
+                    saveDest = new File(saveDest.getParentFile(), FilenameUtils.getBaseName(saveDest.getName())+".pdf"); 
+                }
+                FileUtils.copyFile(pdfFile, saveDest);
                 this.setVisible(false);
                 this.dispose();
             } catch (IOException ex) {

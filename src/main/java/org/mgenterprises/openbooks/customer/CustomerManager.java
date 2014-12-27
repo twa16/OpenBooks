@@ -70,7 +70,7 @@ public class CustomerManager extends ServerBackedMap<Customer>{
     }
 
     public int getHighestId() throws IOException {
-        return (int) size();
+        return (int) highestId();
     }
     
 }
