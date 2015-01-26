@@ -223,10 +223,12 @@ public class HibernateBackedSaveManager implements SaveManager{
             Criteria criteria = session
                     .createCriteria(Class.forName(type))
                     .setProjection(Projections.max("uniqueId"));
-            Long maxId = Long.valueOf((String)criteria.uniqueResult());
-            session.close();
-            if(maxId != null)
+            String critResult = (String)criteria.uniqueResult();
+            if(critResult != null) {
+                Long maxId = Long.valueOf(critResult);
+                session.close();
                 return maxId;
+            }
             else {
                 return 0;
             }
