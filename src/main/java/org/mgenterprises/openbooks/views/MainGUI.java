@@ -48,6 +48,7 @@ import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.openbooks.invoicing.item.ItemManager;
 import org.mgenterprises.openbooks.saving.companyfile.CompanyFile;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
+import org.mgenterprises.openbooks.saving.server.authentication.SaveServerAuthenticationFailureException;
 import org.mgenterprises.openbooks.saving.server.setup.ServerSetup;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.configuration.ConfigurationPanel;
@@ -87,14 +88,20 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        customerManager = new CustomerManager(saveServerConnection);
-        itemManager = new ItemManager(saveServerConnection);
-        invoiceManager = new InvoiceManager(saveServerConnection);
-        estimateManager = new EstimateManager(saveServerConnection);
-        configurationManager = companyFile.getConfigurationManager();
-        configurationManager.loadDefaultConfiguration();
-        transactionManager = new TransactionManager(saveServerConnection);
-        accountManager = new AccountManager(saveServerConnection);
+        try {
+            customerManager = new CustomerManager(saveServerConnection);
+            itemManager = new ItemManager(saveServerConnection);
+            invoiceManager = new InvoiceManager(saveServerConnection);
+            estimateManager = new EstimateManager(saveServerConnection);
+            configurationManager = companyFile.getConfigurationManager();
+            configurationManager.loadDefaultConfiguration();
+            transactionManager = new TransactionManager(saveServerConnection);
+            accountManager = new AccountManager(saveServerConnection);
+        } catch (IOException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SaveServerAuthenticationFailureException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
         this.companyProfile = companyFile.getCompanyProfile();
         initComponents();
         addWindowListener(this);
@@ -104,7 +111,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     public void loadCards() {
         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
         cl.add(mainPanelArea, new HomepagePanel(), "HomepagePanel");
-        cl.add(mainPanelArea, new InvoiceCenterPanel(configurationManager, invoiceManager, customerManager), "InvoiceCenterPanel");
+        cl.add(mainPanelArea, new InvoiceCenterPanel(this), "InvoiceCenterPanel");
         cl.add(mainPanelArea, new CustomerUpdatePanel(customerManager, invoiceManager), "CustomerUpdatePanel");
         try {
             cl.add(mainPanelArea, new InvoiceUpdatePanel(this, itemManager.getItems()), "InvoiceUpdatePanel");
@@ -129,7 +136,6 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         configurationMenuItem = new javax.swing.JMenuItem();
-        jMenuItem1 = new javax.swing.JMenuItem();
         customerMenu = new javax.swing.JMenu();
         customerCenterMenuItem = new javax.swing.JMenuItem();
         invoiceMenu = new javax.swing.JMenu();
@@ -154,14 +160,6 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
             }
         });
         fileMenu.add(configurationMenuItem);
-
-        jMenuItem1.setText("jMenuItem1");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
-            }
-        });
-        fileMenu.add(jMenuItem1);
 
         mainMenuBar.add(fileMenu);
 
@@ -218,27 +216,23 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     private void invoiceCenterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_invoiceCenterButtonActionPerformed
         //changePanel(new InvoiceCenterPanel(configurationManager, invoiceManager, customerManager));
          OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
-         cl.show(mainPanelArea, "InvoiceCenterPanel");
+         cl.show(mainPanelArea, "InvoiceCenterPanel", null);
     }//GEN-LAST:event_invoiceCenterButtonActionPerformed
 
     private void createInvoiceMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createInvoiceMenuItemActionPerformed
         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
-        cl.show(mainPanelArea, "InvoiceUpdatePanel");
+        cl.show(mainPanelArea, "InvoiceUpdatePanel", null);
     }//GEN-LAST:event_createInvoiceMenuItemActionPerformed
 
     private void itemManagerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemManagerMenuItemActionPerformed
         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
-        cl.show(mainPanelArea, "ItemManagementPanel");
+        cl.show(mainPanelArea, "ItemManagementPanel", null);
     }//GEN-LAST:event_itemManagerMenuItemActionPerformed
 
     private void configurationMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurationMenuItemActionPerformed
         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
-        cl.show(mainPanelArea, "ConfigurationPanel");
+        cl.show(mainPanelArea, "ConfigurationPanel", null);
     }//GEN-LAST:event_configurationMenuItemActionPerformed
-
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        new ServerSetup().setVisible(true);
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem configurationMenuItem;
@@ -249,7 +243,6 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     private javax.swing.JMenuItem invoiceCenterButton;
     private javax.swing.JMenu invoiceMenu;
     private javax.swing.JMenuItem itemManagerMenuItem;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JPanel mainPanelArea;
     // End of variables declaration//GEN-END:variables
@@ -333,5 +326,10 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     @Override
     public EstimateManager getEstimateManager() {
         return estimateManager;
+    }
+
+    @Override
+    public JPanel getMainPanel() {
+        return mainPanelArea;
     }
 }

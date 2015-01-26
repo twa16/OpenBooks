@@ -72,6 +72,7 @@ import org.mgenterprises.openbooks.printing.RenderTemplate;
 import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.actionlistener.TableCellListener;
+import org.mgenterprises.openbooks.views.printing.PDFRenderFrame;
 
 /**
  *
@@ -113,8 +114,11 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
             JComboBox itemComboBox = new JComboBox(allPossibleItems);
             this.invoiceItemTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(itemComboBox));
             clearFields();
-            if(invoiceManager.exists(invoiceManager.getHighestID()-1)) {
-                loadInvoiceData(invoiceManager.getInvoice(invoiceManager.getHighestID()-1));
+            if(invoiceManager.exists(invoiceManager.getHighestID())) {
+                long highestId = invoiceManager.getHighestID();
+                Invoice invoice = invoiceManager.getInvoice(highestId);
+                loadInvoiceData(invoice);
+                System.out.println("dfdfdf");
             }
             else {
                newButtonActionPerformed(null);
@@ -129,6 +133,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
     private void loadInvoiceData(Invoice invoice){
         this.loadedInvoice = invoice;
         try {
+            clearFields();
             DefaultTableModel defaultTableModel = (DefaultTableModel) this.invoiceItemTable.getModel();
             //Top
             Customer customer = customerManager.getCustomer(invoice.getCustomerID());
@@ -152,7 +157,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
 
             this.invoiceItemTable.setModel(defaultTableModel);
             
-            if(!invoiceManager.exists(invoice.getCustomerID())) {
+            if(invoice.isLocked()) {
                 this.saveButton.setEnabled(false);
                 this.saveButton.setText("Save (Locked)");
             }
@@ -222,6 +227,11 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         }
 
         invoiceNumberField.setText("-1");
+        invoiceNumberField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                invoiceNumberFieldActionPerformed(evt);
+            }
+        });
 
         invoiceNumberLabel.setText("Invoice Number");
 
@@ -296,7 +306,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         if (invoiceItemTable.getColumnModel().getColumnCount() > 0) {
             invoiceItemTable.getColumnModel().getColumn(0).setMinWidth(80);
             invoiceItemTable.getColumnModel().getColumn(0).setPreferredWidth(80);
-            invoiceItemTable.getColumnModel().getColumn(0).setMaxWidth(80);
+            invoiceItemTable.getColumnModel().getColumn(0).setMaxWidth(120);
             invoiceItemTable.getColumnModel().getColumn(2).setMinWidth(80);
             invoiceItemTable.getColumnModel().getColumn(2).setPreferredWidth(80);
             invoiceItemTable.getColumnModel().getColumn(2).setMaxWidth(80);
@@ -352,18 +362,12 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(customerCombobox, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(previousButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(nextButton))
                     .addComponent(jScrollPane3)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(saveButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(newButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
                         .addComponent(amountPaidLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(totalPaid, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -376,19 +380,27 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(invoiceTotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(invoiceNumberLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(poNumberLabel)
-                            .addComponent(jLabel1)
-                            .addComponent(dateDueLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(dateCreatedField, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
-                            .addComponent(invoiceNumberField)
-                            .addComponent(poNumberField, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
-                            .addComponent(dateDueField))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(customerCombobox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 181, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(poNumberLabel)
+                                    .addComponent(jLabel1)
+                                    .addComponent(dateDueLabel)
+                                    .addComponent(invoiceNumberLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(dateCreatedField, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                                    .addComponent(invoiceNumberField)
+                                    .addComponent(poNumberField, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                                    .addComponent(dateDueField)))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(previousButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(nextButton)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -404,7 +416,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(saveButton)
@@ -466,7 +478,9 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         try {
             int next = Integer.parseInt(this.invoiceNumberField.getText())+1;
             clearFields();
-            if(next<=invoiceManager.getHighestID()) this.invoiceNumberField.setText(String.valueOf(next));
+            //Removed to allow for arbitrary IDs
+            //if(next<=invoiceManager.getHighestID()) this.invoiceNumberField.setText(String.valueOf(next));
+            this.invoiceNumberField.setText(String.valueOf(next));
             if(invoiceManager.exists(next)){
                 Invoice invoice = invoiceManager.getInvoice(next);
                 invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), String.valueOf(next));
@@ -574,6 +588,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
         clearFields();
         try {
+            customerCombobox.setModel(new javax.swing.DefaultComboBoxModel(customerManager.getCustomers()));
             this.saveButton.setText("Save");
             this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
             
@@ -600,6 +615,19 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         onModify();
     }//GEN-LAST:event_dateDueFieldActionPerformed
 
+    private void invoiceNumberFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_invoiceNumberFieldActionPerformed
+        try {
+            int next = Integer.parseInt(invoiceNumberField.getText());
+            if(invoiceManager.exists(next)){
+                Invoice invoice = invoiceManager.getInvoice(next);
+                invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), String.valueOf(next));
+                loadInvoiceData(invoice);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_invoiceNumberFieldActionPerformed
+
     private void clearFields() {
         this.customerCombobox.setSelectedIndex(-1);
         this.customerTextArea.setText("");
@@ -615,6 +643,8 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         c.add(Calendar.DATE, daysTillDue);
         Date dueDate=c.getTime();
         this.dateDueField.setText(dateFormat.format(dueDate));
+        this.saveButton.setText("Save");
+        this.saveButton.setFont(saveButton.getFont().deriveFont(Font.PLAIN));
     }
     
     private void onModify() {
@@ -656,7 +686,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
     // End of variables declaration//GEN-END:variables
    
     @Override
-    public void onSwitchTo() {
+    public void onSwitchTo(Object object) {
         SwingWorker switchFromWorker = new SwingWorker<Void, Void>() {
 
             @Override
@@ -672,7 +702,10 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
                                 URL templateURL = this.getClass().getResource("/templates/basic_invoice.html");
                                 template.load(templateURL);
                                 InvoiceRenderer invoiceRenderer = new InvoiceRenderer(openbooksCore, loadedInvoice, template);
-                                invoiceRenderer.renderAsPDF(new File("out.pdf"));
+                                File tempPDF = File.createTempFile("openbooks", "pdf-print");
+                                invoiceRenderer.renderAsPDF(tempPDF);
+                                PDFRenderFrame renderFrame = new PDFRenderFrame(tempPDF, "Invoice-"+loadedInvoice.getInvoiceNumber()+".pdf");
+                                renderFrame.setVisible(true);
                             } catch (IOException ex) {
                                 Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (DocumentException ex) {
@@ -684,6 +717,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
                     
                     //Update Item choices
                     ArrayList<Item> itemsList = itemManager.values();
+                    itemManager.releaseAllLocks();
                     Item[] items = new Item[itemsList.size()];
                     allPossibleItems = itemsList.toArray(items);                    
                     JComboBox itemComboBox = new JComboBox(allPossibleItems);
@@ -697,6 +731,9 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
             
         };
         switchFromWorker.execute();
+        if(object != null) {
+            loadInvoiceData((Invoice) object);
+        }
     }
 
     @Override

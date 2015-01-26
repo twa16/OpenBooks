@@ -32,13 +32,17 @@ public class SaveServerConnection {
     private String serverAddress; 
     private short serverPort; 
     private String username; 
-    private String passwordHash;
-
-    public SaveServerConnection(String serverAddress, short serverPort, String username, String passwordHash) {
+    private String password;
+    
+    private String pathToKeyStore;
+    private char[] keyStorePassword;
+    public SaveServerConnection(String serverAddress, short serverPort, String username, String password, String pathToKeyStore, char[] keyStorePassword) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.username = username;
-        this.passwordHash = passwordHash;
+        this.password = password;
+        this.pathToKeyStore = pathToKeyStore;
+        this.keyStorePassword = keyStorePassword;
     }
 
     public String getServerAddress() {
@@ -53,8 +57,25 @@ public class SaveServerConnection {
         return username;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
+
+    public String getPathToKeyStore() {
+        return pathToKeyStore;
+    }
+
+    public void setPathToKeyStore(String pathToKeyStore) {
+        this.pathToKeyStore = pathToKeyStore;
+    }
+
+    public char[] getKeyStorePassword() {
+        return keyStorePassword;
+    }
+
+    public void setKeyStorePassword(char[] keyStorePassword) {
+        this.keyStorePassword = keyStorePassword;
+    }
+    
     
 }

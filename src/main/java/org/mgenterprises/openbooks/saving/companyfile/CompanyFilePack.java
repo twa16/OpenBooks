@@ -47,6 +47,8 @@ public class CompanyFilePack {
     private File hibernateConfigLocation;
     private Gson gson = new Gson(); 
 
+    private String keyStoreClientPassword;
+    
     public CompanyFilePack(File packFile) {
         this.packFile = packFile;
     }
@@ -220,4 +222,14 @@ public class CompanyFilePack {
         fileOutputStream.close();
         zipOutputStream.close();
     }
+
+    public String getKeyStoreClientPassword() {
+        return keyStoreClientPassword;
+    }
+
+    public void setKeyStoreClientPassword(String keyStoreClientPassword) {
+        this.keyStoreClientPassword = keyStoreClientPassword;
+    }
+    
+    
 }

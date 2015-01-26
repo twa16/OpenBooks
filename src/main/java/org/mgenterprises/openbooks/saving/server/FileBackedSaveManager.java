@@ -194,4 +194,9 @@ public class FileBackedSaveManager implements SaveManager {
     public boolean isLockedForUser(String user, String type, String id) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public long getHighestUniqueId(String type) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

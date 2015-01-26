@@ -25,6 +25,7 @@
 package org.mgenterprises.openbooks;
 
 import javax.swing.JMenuBar;
+import javax.swing.JPanel;
 import org.mgenterprises.openbooks.accounting.account.AccountManager;
 import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
 import org.mgenterprises.openbooks.company.CompanyProfile;
@@ -57,4 +58,6 @@ public interface OpenbooksCore {
     public CompanyProfile getCompanyProfile();
     
     public JMenuBar getMainmenuBar();
+    
+    public JPanel getMainPanel();
 }

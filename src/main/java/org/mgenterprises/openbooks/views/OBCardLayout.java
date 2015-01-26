@@ -38,12 +38,12 @@ public class OBCardLayout extends CardLayout{
     private HashMap<Object, ViewChangeListener> cards = new HashMap<Object, ViewChangeListener>();
     private ViewChangeListener lastCard = null;
     
-    public void show(JComponent area, String string) {
+    public void show(JComponent area, String string, Object object) {
         if(lastCard != null) {
             lastCard.onSwitchFrom();
         }
         ViewChangeListener cntnr = cards.get(string);
-        cntnr.onSwitchTo();
+        cntnr.onSwitchTo(object);
         lastCard = cntnr;
         super.show(area, string);
     }

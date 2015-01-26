@@ -247,7 +247,7 @@ public class ConfigurationPanel extends javax.swing.JPanel implements ViewChange
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void onSwitchTo() {
+    public void onSwitchTo(Object object) {
         loadCurrentData();
     }
 

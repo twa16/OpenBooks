@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.mgenterprises.openbooks.saving.server.access.ACTION;
+import org.mgenterprises.openbooks.saving.server.authentication.UserLoginAttempt;
 import org.mgenterprises.openbooks.saving.server.packets.UserAuth;
 import org.mgenterprises.openbooks.saving.server.security.BCrypt;
 import org.mgenterprises.openbooks.saving.server.security.CryptoUtils;
@@ -137,5 +138,10 @@ public class FileBackedUserManager extends UserManager{
         } catch (IOException ex) {
             Logger.getLogger(UserManager.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    @Override
+    public boolean checkUserLoginAttempt(UserLoginAttempt userLoginAttempt) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

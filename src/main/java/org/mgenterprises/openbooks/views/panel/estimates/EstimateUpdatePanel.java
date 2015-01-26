@@ -114,8 +114,8 @@ public class EstimateUpdatePanel extends JPanel implements ViewChangeListener{
             JComboBox itemComboBox = new JComboBox(allPossibleItems);
             this.invoiceItemTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(itemComboBox));
             clearFields();
-            if(invoiceManager.exists(invoiceManager.getHighestID()-1)) {
-                loadInvoiceData(invoiceManager.getInvoice(invoiceManager.getHighestID()-1));
+            if(invoiceManager.exists(invoiceManager.getHighestID())) {
+                loadInvoiceData(invoiceManager.getInvoice(invoiceManager.getHighestID()));
             }
             else {
                newButtonActionPerformed(null);
@@ -153,7 +153,7 @@ public class EstimateUpdatePanel extends JPanel implements ViewChangeListener{
 
             this.invoiceItemTable.setModel(defaultTableModel);
             
-            if(!invoiceManager.exists(invoice.getCustomerID())) {
+            if(invoice.isLocked()) {
                 this.saveButton.setEnabled(false);
                 this.saveButton.setText("Save (Locked)");
             }
@@ -657,7 +657,7 @@ public class EstimateUpdatePanel extends JPanel implements ViewChangeListener{
     // End of variables declaration//GEN-END:variables
    
     @Override
-    public void onSwitchTo() {
+    public void onSwitchTo(Object object) {
         SwingWorker switchFromWorker = new SwingWorker<Void, Void>() {
 
             @Override

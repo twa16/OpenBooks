@@ -24,6 +24,9 @@
 
 package org.mgenterprises.openbooks.views.panel;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,16 +34,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
+import org.mgenterprises.openbooks.OpenbooksCore;
 import org.mgenterprises.openbooks.configuration.ConfigurationManager;
 import org.mgenterprises.openbooks.customer.Customer;
 import org.mgenterprises.openbooks.customer.CustomerManager;
 import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.openbooks.invoicing.item.Item;
+import org.mgenterprises.openbooks.views.OBCardLayout;
 import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 
@@ -50,21 +57,23 @@ import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionList
  */
 public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
 
+    private final OpenbooksCore openbooksCore;
     private final ConfigurationManager configurationManager;
     private final InvoiceManager invoiceManager;
     private final CustomerManager customerManager;
     private SimpleDateFormat simpleDateFormat;
     
-    public InvoiceCenterPanel(ConfigurationManager configurationManager, InvoiceManager invoiceManager, CustomerManager customerManager) {
-        this.configurationManager = configurationManager;
-        this.invoiceManager = invoiceManager;
-        this.customerManager = customerManager;
+    public InvoiceCenterPanel(OpenbooksCore openbooksCore) {
+        this.openbooksCore = openbooksCore;
+        this.configurationManager = openbooksCore.getConfigurationManager();
+        this.invoiceManager = openbooksCore.getInvoiceManager();
+        this.customerManager = openbooksCore.getCustomerManager();
         simpleDateFormat  = new SimpleDateFormat(configurationManager.getValue("dateFormatString"));
         initComponents();
         loadInvoiceList();
     }
     
-    private void loadInvoiceList() {
+    protected void loadInvoiceList() {
         try {
         Invoice[] invoices = invoiceManager.getInvoices();
         
@@ -125,6 +134,7 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
         jButton1 = new javax.swing.JButton();
         jCheckBox1 = new javax.swing.JCheckBox();
         jCheckBox2 = new javax.swing.JCheckBox();
+        newInvoiceButton = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(650, 650));
 
@@ -165,11 +175,26 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
                 return canEdit [columnIndex];
             }
         });
+        invoiceTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                invoiceTableMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(invoiceTable);
         if (invoiceTable.getColumnModel().getColumnCount() > 0) {
-            invoiceTable.getColumnModel().getColumn(0).setMinWidth(30);
-            invoiceTable.getColumnModel().getColumn(0).setPreferredWidth(30);
-            invoiceTable.getColumnModel().getColumn(0).setMaxWidth(30);
+            invoiceTable.getColumnModel().getColumn(0).setMinWidth(50);
+            invoiceTable.getColumnModel().getColumn(0).setPreferredWidth(50);
+            invoiceTable.getColumnModel().getColumn(0).setMaxWidth(100);
+            invoiceTable.getColumnModel().getColumn(1).setResizable(false);
+            invoiceTable.getColumnModel().getColumn(2).setMinWidth(150);
+            invoiceTable.getColumnModel().getColumn(2).setPreferredWidth(150);
+            invoiceTable.getColumnModel().getColumn(2).setMaxWidth(150);
+            invoiceTable.getColumnModel().getColumn(3).setMinWidth(200);
+            invoiceTable.getColumnModel().getColumn(3).setPreferredWidth(200);
+            invoiceTable.getColumnModel().getColumn(3).setMaxWidth(500);
+            invoiceTable.getColumnModel().getColumn(4).setMinWidth(200);
+            invoiceTable.getColumnModel().getColumn(4).setPreferredWidth(200);
+            invoiceTable.getColumnModel().getColumn(4).setMaxWidth(500);
             invoiceTable.getColumnModel().getColumn(5).setMinWidth(35);
             invoiceTable.getColumnModel().getColumn(5).setPreferredWidth(35);
             invoiceTable.getColumnModel().getColumn(5).setMaxWidth(35);
@@ -191,6 +216,13 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
 
         jButton1.setText("Search");
 
+        newInvoiceButton.setText("New Invoice");
+        newInvoiceButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newInvoiceButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -200,7 +232,8 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(newInvoiceButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(totalUnpaidLabel)
                             .addComponent(totalPaidLabel))
@@ -262,8 +295,11 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
                             .addComponent(pastdueCheckbox)
                             .addComponent(jButton1))
                         .addGap(18, 18, 18)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 522, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE))
+                    .addComponent(jCheckBox1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(totalPaidLabel)
                             .addComponent(totalPaid))
@@ -271,10 +307,44 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(totalUnpaid)
                             .addComponent(totalUnpaidLabel)))
-                    .addComponent(jCheckBox1))
+                    .addComponent(newInvoiceButton, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void invoiceTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_invoiceTableMouseClicked
+        try {
+            System.out.println(evt.getButton());
+            int row = invoiceTable.rowAtPoint(evt.getPoint());
+            int col = invoiceTable.columnAtPoint(evt.getPoint());
+            if (row >= 0 && col >= 0) {
+                if(evt.getClickCount()==2 && evt.getButton()==MouseEvent.BUTTON1) { 
+                        Object object = invoiceTable.getModel().getValueAt(row, 0);
+                        int id = Integer.parseInt(object.toString());
+                        Invoice invoice = invoiceManager.getInvoice(id);
+                        JPanel mainPanelArea = openbooksCore.getMainPanel();
+                        OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
+                        cl.show(mainPanelArea, "InvoiceUpdatePanel", invoice);
+
+                }
+                else if(evt.getButton() != MouseEvent.BUTTON1) {
+                    Object object = invoiceTable.getModel().getValueAt(row, 0);
+                    int id = Integer.parseInt(object.toString());
+                    Invoice invoice = invoiceManager.getInvoice(id);
+                    RightClickPopupMenu rcpm = new RightClickPopupMenu(openbooksCore, this, invoice);
+                    rcpm.show(evt.getComponent(), evt.getX(), evt.getY());
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(InvoiceCenterPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_invoiceTableMouseClicked
+
+    private void newInvoiceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newInvoiceButtonActionPerformed
+        JPanel mainPanelArea = openbooksCore.getMainPanel();
+        OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
+        cl.show(mainPanelArea, "InvoiceUpdatePanel", null);
+    }//GEN-LAST:event_newInvoiceButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -289,6 +359,7 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JButton newInvoiceButton;
     private javax.swing.JCheckBox paidCheckbox;
     private javax.swing.JCheckBox pastdueCheckbox;
     private javax.swing.JFormattedTextField startDateField;
@@ -300,7 +371,7 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void onSwitchTo() {
+    public void onSwitchTo(Object object) {
         SwingWorker switchFromWorker = new SwingWorker<Void, Void>() {
 
             @Override
@@ -316,4 +387,41 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
     @Override
     public void onSwitchFrom() {
     }
+}
+class RightClickPopupMenu extends JPopupMenu {
+    private JMenuItem deleteItem = new JMenuItem("Delete");
+    private JMenuItem editItem = new JMenuItem("Edit");
+
+    public RightClickPopupMenu(final OpenbooksCore openbooksCore, final InvoiceCenterPanel invoiceCenterPanel, final Invoice invoice) {
+        add(deleteItem);
+        add(editItem);
+        
+        deleteItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete invoice number "+invoice.getInvoiceNumber(),"Warning",JOptionPane.YES_NO_OPTION);
+                if(dialogResult == JOptionPane.YES_OPTION){
+                    try {
+                        openbooksCore.getInvoiceManager().remove(String.valueOf(invoice.getInvoiceNumber()));
+                        invoiceCenterPanel.loadInvoiceList();
+                    } catch (IOException ex) {
+                        Logger.getLogger(RightClickPopupMenu.class.getName()).log(Level.SEVERE, null, ex);
+                        JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+                    }
+                }
+            }
+
+        });
+        editItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel mainPanelArea = openbooksCore.getMainPanel();
+                OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
+                cl.show(mainPanelArea, "InvoiceUpdatePanel", invoice);
+            }
+
+        });
+    }
+    
+    
 }

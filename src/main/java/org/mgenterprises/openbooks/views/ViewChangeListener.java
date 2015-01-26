@@ -34,7 +34,7 @@ public interface ViewChangeListener{
     /**
      * This method is called by the MainGUI when a new panel is loaded
      */
-    public void onSwitchTo();
+    public void onSwitchTo(Object object);
     /**
      * This method is called by the MainGUI when a loaded panel is no
      * longer visible such as when another panel is loaded.

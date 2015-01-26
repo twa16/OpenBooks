@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import org.mgenterprises.openbooks.saving.SaveServerConnection;
 import org.mgenterprises.openbooks.saving.ServerBackedMap;
+import org.mgenterprises.openbooks.saving.server.authentication.SaveServerAuthenticationFailureException;
 
 /**
  *
@@ -35,7 +36,7 @@ import org.mgenterprises.openbooks.saving.ServerBackedMap;
  */
 public class EstimateManager extends ServerBackedMap<Estimate>{
 
-    public EstimateManager(SaveServerConnection saveServerConnection) {
+    public EstimateManager(SaveServerConnection saveServerConnection) throws IOException, SaveServerAuthenticationFailureException {
         super(new Estimate(), saveServerConnection);
     }
     
