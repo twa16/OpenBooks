@@ -25,9 +25,13 @@
 package org.mgenterprises.openbooks.accounting.account;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import org.mgenterprises.openbooks.accounting.transaction.Transaction;
 import org.mgenterprises.openbooks.saving.Saveable;
 
 /**
@@ -40,8 +44,11 @@ public class Account extends Saveable implements Serializable{
     private int accountID;
     private int parentAccount = -1;
     private AccountType accountType;
+    private String accountGroup;
     private String accountName;
     private String accountDescription;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "accountId")
+    private ArrayList<Transaction> transactions = new ArrayList<Transaction>();
     private double accountBalance;
 
     public int getAccountID() {
@@ -68,6 +75,14 @@ public class Account extends Saveable implements Serializable{
         this.accountType = accountType;
     }
 
+    public String getAccountGroup() {
+        return accountGroup;
+    }
+
+    public void setAccountGroup(String accountGroup) {
+        this.accountGroup = accountGroup;
+    }
+    
     public String getAccountName() {
         return accountName;
     }
@@ -84,6 +99,14 @@ public class Account extends Saveable implements Serializable{
         this.accountDescription = accountDescription;
     }
 
+    public ArrayList<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(ArrayList<Transaction> transactions) {
+        this.transactions = transactions;
+    }
+    
     public double getAccountBalance() {
         return accountBalance;
     }

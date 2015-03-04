@@ -26,6 +26,7 @@ package org.mgenterprises.openbooks.views.panel.accounting;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -71,7 +72,24 @@ public class AccountListPanel extends javax.swing.JPanel implements ViewChangeLi
         accountRootNode.setUserObject("Accounts");
         //Create the model for the Accounts tree
         DefaultTreeModel accountTreeModel = new DefaultTreeModel(accountRootNode);
+        
+        HashMap<String, MutableTreeNode> loadedGroups = new HashMap<String, MutableTreeNode>();
         for(Account account : accounts) {
+            //Check what kind of organization we are using
+            if(accountGroupRadioButton.isSelected()) {
+                //Create the Node
+                MutableTreeNode accountNode = new DefaultMutableTreeNode();
+                accountNode.setUserObject(account.getAccountName()+" "+account.getAccountBalance());
+                //Get the group
+                String accountGroup = account.getAccountGroup();
+                //Check to see if group loaded
+                if(loadedGroups.keySet().contains(accountGroup)) {
+                    
+                }
+            } else {
+                
+            }
+            /* OLD ACCOUNT LOADING
             //TreeNode for this account
             MutableTreeNode accountNode = new DefaultMutableTreeNode();
             //String representation of the account
@@ -80,6 +98,7 @@ public class AccountListPanel extends javax.swing.JPanel implements ViewChangeLi
             accountNode.setUserObject(accountData);
             //Add the node to our JTree
             accountTreeModel.insertNodeInto(accountNode, accountRootNode, accountTreeModel.getChildCount(accountRootNode));
+            */
         }
         //Set the model on the JTree
         this.accountsList.setModel(accountTreeModel);
@@ -94,12 +113,25 @@ public class AccountListPanel extends javax.swing.JPanel implements ViewChangeLi
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jScrollPane1 = new javax.swing.JScrollPane();
         accountsList = new javax.swing.JTree();
+        accountTypeRadioButton = new javax.swing.JRadioButton();
+        accountGroupRadioButton = new javax.swing.JRadioButton();
+        groupByLabel = new javax.swing.JLabel();
 
         setMinimumSize(new java.awt.Dimension(850, 650));
 
+        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("Accounts");
+        accountsList.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         jScrollPane1.setViewportView(accountsList);
+
+        accountTypeRadioButton.setText("Account Type");
+
+        accountGroupRadioButton.setSelected(true);
+        accountGroupRadioButton.setText("Account Group");
+
+        groupByLabel.setText("Group By:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -107,21 +139,38 @@ public class AccountListPanel extends javax.swing.JPanel implements ViewChangeLi
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 838, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 838, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(groupByLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(accountGroupRadioButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(accountTypeRadioButton)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 610, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(accountTypeRadioButton)
+                    .addComponent(accountGroupRadioButton)
+                    .addComponent(groupByLabel))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton accountGroupRadioButton;
+    private javax.swing.JRadioButton accountTypeRadioButton;
     private javax.swing.JTree accountsList;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JLabel groupByLabel;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
