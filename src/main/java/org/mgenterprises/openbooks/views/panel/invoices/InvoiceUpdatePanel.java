@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.openbooks.views.panel;
+package org.mgenterprises.openbooks.views.panel.invoices;
 
 import com.google.gson.Gson;
 import com.lowagie.text.DocumentException;
@@ -72,6 +72,7 @@ import org.mgenterprises.openbooks.printing.RenderTemplate;
 import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.actionlistener.TableCellListener;
+import org.mgenterprises.openbooks.views.panel.customers.CustomerUpdatePanel;
 import org.mgenterprises.openbooks.views.printing.PDFRenderFrame;
 
 /**

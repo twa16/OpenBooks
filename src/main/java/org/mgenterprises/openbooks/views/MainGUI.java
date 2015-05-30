@@ -52,10 +52,10 @@ import org.mgenterprises.openbooks.saving.server.authentication.SaveServerAuthen
 import org.mgenterprises.openbooks.saving.server.setup.ServerSetup;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.configuration.ConfigurationPanel;
-import org.mgenterprises.openbooks.views.panel.CustomerUpdatePanel;
+import org.mgenterprises.openbooks.views.panel.customers.CustomerUpdatePanel;
 import org.mgenterprises.openbooks.views.panel.HomepagePanel;
-import org.mgenterprises.openbooks.views.panel.InvoiceCenterPanel;
-import org.mgenterprises.openbooks.views.panel.InvoiceUpdatePanel;
+import org.mgenterprises.openbooks.views.panel.invoices.InvoiceCenterPanel;
+import org.mgenterprises.openbooks.views.panel.invoices.InvoiceUpdatePanel;
 import org.mgenterprises.openbooks.views.panel.ItemManagementPanel;
 
 /**

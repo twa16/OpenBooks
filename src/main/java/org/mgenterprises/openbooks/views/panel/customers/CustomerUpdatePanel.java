@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.mgenterprises.openbooks.views.panel;
+package org.mgenterprises.openbooks.views.panel.customers;
 
 import java.awt.Font;
 import java.awt.event.ActionEvent;
