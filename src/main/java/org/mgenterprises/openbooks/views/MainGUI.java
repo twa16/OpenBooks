@@ -57,6 +57,7 @@ import org.mgenterprises.openbooks.views.panel.HomepagePanel;
 import org.mgenterprises.openbooks.views.panel.invoices.InvoiceCenterPanel;
 import org.mgenterprises.openbooks.views.panel.invoices.InvoiceUpdatePanel;
 import org.mgenterprises.openbooks.views.panel.ItemManagementPanel;
+import org.mgenterprises.openbooks.views.panel.customers.CustomerDetailPanel;
 
 /**
  *
@@ -112,7 +113,8 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
         cl.add(mainPanelArea, new HomepagePanel(), "HomepagePanel");
         cl.add(mainPanelArea, new InvoiceCenterPanel(this), "InvoiceCenterPanel");
-        cl.add(mainPanelArea, new CustomerUpdatePanel(customerManager, invoiceManager), "CustomerUpdatePanel");
+        cl.add(mainPanelArea, new CustomerUpdatePanel(this, customerManager, invoiceManager), "CustomerUpdatePanel");
+        cl.add(mainPanelArea, new CustomerDetailPanel(this, invoiceManager), "CustomerDetailPanel");
         try {
             cl.add(mainPanelArea, new InvoiceUpdatePanel(this, itemManager.getItems()), "InvoiceUpdatePanel");
         } catch (IOException ex) {
@@ -210,7 +212,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
 
     private void customerCenterMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customerCenterMenuItemActionPerformed
         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
-        cl.show(mainPanelArea, "CustomerUpdatePanel");
+        cl.show(mainPanelArea, "CustomerUpdatePanel", null);
     }//GEN-LAST:event_customerCenterMenuItemActionPerformed
 
     private void invoiceCenterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_invoiceCenterButtonActionPerformed

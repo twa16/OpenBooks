@@ -98,7 +98,6 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         this.allPossibleItems = allPossibleInvoiceItems;
         this.dateFormat = new SimpleDateFormat(configurationManager.getValue("dateFormatString"));
         initComponents();
-        setupTableView();
     }
 
     public InvoiceUpdatePanel(OpenbooksCore openbooksCore, Item[] allPossibleInvoiceItems, Invoice loadedInvoice) {
@@ -119,7 +118,6 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
                 long highestId = invoiceManager.getHighestID();
                 Invoice invoice = invoiceManager.getInvoice(highestId);
                 loadInvoiceData(invoice);
-                System.out.println("dfdfdf");
             }
             else {
                newButtonActionPerformed(null);
@@ -734,6 +732,8 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         switchFromWorker.execute();
         if(object != null) {
             loadInvoiceData((Invoice) object);
+        } else {
+            setupTableView();
         }
     }
 
