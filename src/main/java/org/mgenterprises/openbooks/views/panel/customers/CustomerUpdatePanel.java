@@ -21,13 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.mgenterprises.openbooks.views.panel;
+package org.mgenterprises.openbooks.views.panel.customers;
 
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,12 +36,14 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
+import org.mgenterprises.openbooks.OpenbooksCore;
 import org.mgenterprises.openbooks.customer.Customer;
 import org.mgenterprises.openbooks.customer.CustomerManager;
 import org.mgenterprises.openbooks.invoicing.invoice.Invoice;
 import org.mgenterprises.openbooks.invoicing.invoice.InvoiceManager;
 import org.mgenterprises.openbooks.util.InvoiceUtils;
 import org.mgenterprises.openbooks.util.State;
+import org.mgenterprises.openbooks.views.OBCardLayout;
 import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 
@@ -52,25 +51,26 @@ import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionList
  *
  * @author Manuel Gauto
  */
-public class CustomerUpdatePanel extends JPanel implements ViewChangeListener{
+public class CustomerUpdatePanel extends JPanel implements ViewChangeListener {
 
+    private OpenbooksCore openbooksCore;
     private CustomerManager customerManager;
     private InvoiceManager invoiceManager;
 
     /**
      * Creates new form CustomerUpdatePanel
      */
-    public CustomerUpdatePanel(CustomerManager customerManager, InvoiceManager invoiceManager) {
+    public CustomerUpdatePanel(OpenbooksCore openbooksCore, CustomerManager customerManager, InvoiceManager invoiceManager) {
+        this.openbooksCore = openbooksCore;
         this.customerManager = customerManager;
         this.invoiceManager = invoiceManager;
         initComponents();
-        processData();
         stateCombo.setModel(new DefaultComboBoxModel<>(State.values()));
     }
 
     /**
-     * Get data from CustomerManager and load into table model and
-     * use model for table.
+     * Get data from CustomerManager and load into table model and use model for
+     * table.
      */
     public void processData() {
         try {
@@ -417,6 +417,24 @@ public class CustomerUpdatePanel extends JPanel implements ViewChangeListener{
         if (selected != -1) {
             setFields(selected);
         }
+        int row = customerTable.rowAtPoint(evt.getPoint());
+        int col = customerTable.columnAtPoint(evt.getPoint());
+        if (row >= 0 && col >= 0) {
+            if (evt.getClickCount() == 2 && evt.getButton() == MouseEvent.BUTTON1) {
+                try {
+                    Object object = customerTable.getModel().getValueAt(row, 0);
+                    int id = Integer.parseInt(object.toString());
+                    Customer customer = customerManager.getCustomer(id);
+                    JPanel mainPanelArea = openbooksCore.getMainPanel();
+                    OBCardLayout cl = (OBCardLayout) (mainPanelArea.getLayout());
+                    cl.show(mainPanelArea, "CustomerDetailPanel", customer);
+                } catch (IOException ex) {
+                    Logger.getLogger(CustomerUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
+                    JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+                }
+
+            } 
+        }
     }//GEN-LAST:event_customerTableMouseClicked
 
     private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
@@ -485,9 +503,9 @@ public class CustomerUpdatePanel extends JPanel implements ViewChangeListener{
     }
 
     /**
-     * Set the values of the fields using the data of a customer
-     * from the selected row.
-     * 
+     * Set the values of the fields using the data of a customer from the
+     * selected row.
+     *
      * @param row Row to get data from
      */
     public void setFields(int row) {
@@ -547,16 +565,7 @@ public class CustomerUpdatePanel extends JPanel implements ViewChangeListener{
 
     @Override
     public void onSwitchTo(Object object) {
-        SwingWorker swingWorker = new SwingWorker<Void, Void>() {
-
-            @Override
-            protected Void doInBackground() throws Exception {
-                processData();
-                return null;
-            }
-            
-        };
-        swingWorker.execute();
+        processData();
     }
 
     @Override

@@ -217,24 +217,17 @@ public class HibernateBackedSaveManager implements SaveManager{
 
     @Override
     public long getHighestUniqueId(String type) {
-        try {
-            Session session = sessionFactory.openSession();
-            session.beginTransaction();
-            Criteria criteria = session
-                    .createCriteria(Class.forName(type))
-                    .setProjection(Projections.max("uniqueId"));
-            String critResult = (String)criteria.uniqueResult();
-            if(critResult != null) {
-                Long maxId = Long.valueOf(critResult);
-                session.close();
-                return maxId;
-            }
-            else {
-                return 0;
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(HibernateBackedSaveManager.class.getName()).log(Level.SEVERE, null, ex);
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        Object critResult = session.createCriteria(type).setProjection(Projections.rowCount()).uniqueResult();
+        if(critResult != null) {
+            Long maxId = (Long) critResult;
+            session.close();
+            return maxId;
         }
-        return 0;
+        else {
+            session.close();
+            return 0;
+        }
     }
 }

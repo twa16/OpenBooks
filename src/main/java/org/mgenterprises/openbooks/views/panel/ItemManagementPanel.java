@@ -23,6 +23,7 @@
  */
 package org.mgenterprises.openbooks.views.panel;
 
+import org.mgenterprises.openbooks.views.panel.customers.CustomerUpdatePanel;
 import java.awt.Font;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;

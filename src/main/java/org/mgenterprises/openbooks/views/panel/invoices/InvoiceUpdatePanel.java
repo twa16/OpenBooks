@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.openbooks.views.panel;
+package org.mgenterprises.openbooks.views.panel.invoices;
 
 import com.google.gson.Gson;
 import com.lowagie.text.DocumentException;
@@ -72,6 +72,7 @@ import org.mgenterprises.openbooks.printing.RenderTemplate;
 import org.mgenterprises.openbooks.views.ViewChangeListener;
 import org.mgenterprises.openbooks.views.actionlistener.DeleteCustomerActionListener;
 import org.mgenterprises.openbooks.views.actionlistener.TableCellListener;
+import org.mgenterprises.openbooks.views.panel.customers.CustomerUpdatePanel;
 import org.mgenterprises.openbooks.views.printing.PDFRenderFrame;
 
 /**
@@ -97,7 +98,6 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         this.allPossibleItems = allPossibleInvoiceItems;
         this.dateFormat = new SimpleDateFormat(configurationManager.getValue("dateFormatString"));
         initComponents();
-        setupTableView();
     }
 
     public InvoiceUpdatePanel(OpenbooksCore openbooksCore, Item[] allPossibleInvoiceItems, Invoice loadedInvoice) {
@@ -118,7 +118,6 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
                 long highestId = invoiceManager.getHighestID();
                 Invoice invoice = invoiceManager.getInvoice(highestId);
                 loadInvoiceData(invoice);
-                System.out.println("dfdfdf");
             }
             else {
                newButtonActionPerformed(null);
@@ -733,6 +732,8 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         switchFromWorker.execute();
         if(object != null) {
             loadInvoiceData((Invoice) object);
+        } else {
+            setupTableView();
         }
     }
 

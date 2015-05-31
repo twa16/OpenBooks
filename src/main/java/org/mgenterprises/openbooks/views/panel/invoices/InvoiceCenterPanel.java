@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.mgenterprises.openbooks.views.panel;
+package org.mgenterprises.openbooks.views.panel.invoices;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -337,6 +337,7 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
             }
         } catch (IOException ex) {
             Logger.getLogger(InvoiceCenterPanel.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }//GEN-LAST:event_invoiceTableMouseClicked
 

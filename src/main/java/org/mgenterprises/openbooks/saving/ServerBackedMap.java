@@ -249,6 +249,10 @@ public class ServerBackedMap<V extends Saveable> {
     /**
      * Returns all the values stored of the given type.
      * 
+     * Objects retrieved with this method are in an unknown lock state
+     * and therefore should not be edited. If you wish to edit an object
+     * you must use the get() method instead.
+     * 
      * @return ArrayList of the values of the given type
      * @throws IOException Thrown if there is a problem connecting to the server 
      */
@@ -389,6 +393,7 @@ public class ServerBackedMap<V extends Saveable> {
             if(change.getType().equals(v.getSaveableModuleName())) {
                 V changed = this.get(change.getObjectId());
                 this.cache.put(changed.getUniqueId(), changed);
+                this.releaseLock(v.getSaveableModuleName(), changed.getUniqueId());
             }
             this.lastJournalId = change.getChangeId();
         }
