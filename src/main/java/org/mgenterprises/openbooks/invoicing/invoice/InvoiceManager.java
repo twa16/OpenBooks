@@ -45,8 +45,12 @@ public class InvoiceManager extends ServerBackedMap<Invoice>{
         put(item);
     }
     
-    public Invoice getInvoice(long id) throws IOException {
-        return get(String.valueOf(id));
+    public Invoice getAndLockInvoice(long id) throws IOException {
+        return getAndLock(String.valueOf(id));
+    }
+    
+    public Invoice getInvoiceLockless(long id) throws IOException {
+        return getLockless(String.valueOf(id));
     }
     
     public void updateInvoice(Invoice invoice) throws IOException {
@@ -87,6 +91,10 @@ public class InvoiceManager extends ServerBackedMap<Invoice>{
         }
         Invoice[] temp = new Invoice[customerInvoices.size()];
         return customerInvoices.toArray(temp);
+    }
+    
+    public boolean releaseLock(long id) throws IOException {
+        return super.releaseLock(new Invoice().getSaveableModuleName(), String.valueOf(id));
     }
     
 }

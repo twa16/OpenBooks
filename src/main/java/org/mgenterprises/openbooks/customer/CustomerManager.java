@@ -65,12 +65,19 @@ public class CustomerManager extends ServerBackedMap<Customer>{
         remove(String.valueOf(id));
     }
     
-    public Customer getCustomer(int id) throws IOException{
-        return get(String.valueOf(id));
+    public Customer getAndLockCustomer(int id) throws IOException{
+        return getAndLock(String.valueOf(id));
     }
 
+    public Customer getCustomerLockless(int id) throws IOException{
+        return getAndLock(String.valueOf(id));
+    }
+    
     public int getHighestId() throws IOException {
         return (int) highestId();
     }
     
+    public boolean releaseLock(int id) throws IOException {
+        return super.releaseLock(new Customer().getSaveableModuleName(), String.valueOf(id));
+    }
 }

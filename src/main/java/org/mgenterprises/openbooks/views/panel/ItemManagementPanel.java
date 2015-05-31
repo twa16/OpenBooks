@@ -254,7 +254,7 @@ public class ItemManagementPanel extends JPanel implements ViewChangeListener{
             this.itemNameField.setText(itemName);
             //Cache itemname in case it is changed
             oldItemName = itemName;
-            Item item = itemManager.getItem(itemName);
+            Item item = itemManager.getItemLockless(itemName);
             this.descriptionField.setText(item.getDescription());
             this.basePriceField.setText(String.valueOf(item.getBasePrice()));
             if (!itemManager.existsAndAllowed(item.getName())) {

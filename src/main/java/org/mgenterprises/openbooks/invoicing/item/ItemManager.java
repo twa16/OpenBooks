@@ -50,8 +50,12 @@ public class ItemManager extends ServerBackedMap<Item>{
         remove(itemName);
     }
     
-    public Item getItem(String name) throws IOException {
-        return get(name);
+    public Item getAndLockItem(String name) throws IOException {
+        return getAndLock(name);
+    }
+    
+     public Item getItemLockless(String name) throws IOException {
+        return getAndLock(name);
     }
     
     public void updateItem(Item item) throws IOException {

@@ -53,11 +53,11 @@ public class DeleteCustomerActionListener implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent ae) {
         try {
-            int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete "+customerManager.getCustomer(customerId).getCompanyName()+"?\nAll associated invoices will be deleted!", "Warning!", JOptionPane.YES_NO_OPTION);
+            int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete "+customerManager.getAndLockCustomer(customerId).getCompanyName()+"?\nAll associated invoices will be deleted!", "Warning!", JOptionPane.YES_NO_OPTION);
             if(dialogResult == JOptionPane.YES_OPTION){
-
-                    new CustomerUtils(invoiceManager, customerManager).deleteCustomer(customerManager.getCustomer(customerId));
-
+                    new CustomerUtils(invoiceManager, customerManager).deleteCustomer(customerManager.getAndLockCustomer(customerId));
+            } else {
+                customerManager.releaseLock(customerId);
             }
         } catch (IOException ex) {
             Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);

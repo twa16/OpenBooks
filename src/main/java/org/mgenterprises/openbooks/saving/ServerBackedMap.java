@@ -159,16 +159,17 @@ public class ServerBackedMap<V extends Saveable> {
     }
     
     /**
-     * Check if the specified key exists and if the user is allowed to edit it.
+     * Check if the specified key exists and if the user is allowed to edit it, this locks the object.
      * The user is allowed to edit it only if there is no lock on the item or
-     * if the user is the holder of the lock
+     * if the user is the holder of the lock.
      * 
      * @param key Key to check access to
      * @return true is the key exists and the user is able to edit
      * @throws IOException Thrown if there is a problem connecting to the server
      */
     public boolean existsAndAllowed(String key) throws IOException {
-        return get(key)!=null;
+        // TODO CHECK THE USAGES ON THIS
+        return getAndLock(key)!=null;
     }
     
     /**
@@ -189,14 +190,14 @@ public class ServerBackedMap<V extends Saveable> {
     }
     
     /**
-     * Retrieve a saveable with the given key. The key only has to be unique with the scope of the type
-     * of the saveable. Returns null if the object was not found.
+     * Retrieve a saveable with the given key and lock it. The key only has to be unique with the scope of the type
+     * of the saveable. Returns null if the object was not found. This method will lock the object that you get.
      * 
      * @param key Key to search for
      * @return Object requested or null if it does not exist
      * @throws IOException Thrown if there is a problem connecting to the server
      */
-    public synchronized V get(String key) throws IOException {
+    public synchronized V getAndLock(String key) throws IOException {
         String request = "GET"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+key;
         bw.write(request);
         bw.newLine();
@@ -208,6 +209,35 @@ public class ServerBackedMap<V extends Saveable> {
             try {
                 Saveable saveable = gson.fromJson(response, Saveable.class);
                 this.lockedIDs.add(v.getSaveableModuleName()+":#:"+key);
+                return (V) saveable;
+            }
+            catch(JsonSyntaxException ex) {
+                return null;
+            }
+        }
+    }
+    
+        /**
+     * Retrieve a saveable with the given key without locking it. This object should not be edited. The key only has to be unique with the scope of the type
+     * of the saveable. Returns null if the object was not found. This method will lock the object that you get.
+     * 
+     * @param key Key to search for
+     * @return Object requested or null if it does not exist
+     * @throws IOException Thrown if there is a problem connecting to the server
+     */
+    public synchronized V getLockless(String key) throws IOException {
+        String request = "GET"+SaveServer.DELIMITER+v.getSaveableModuleName()+SaveServer.DELIMITER+key;
+        bw.write(request);
+        bw.newLine();
+        bw.flush();
+        String response = br.readLine();
+        if(response.equals("NO")) {
+            return null;
+        } else {
+            try {
+                Saveable saveable = gson.fromJson(response, Saveable.class);
+                this.releaseLock(v.getSaveableModuleName(), key);
+                saveable.setLocked(true);
                 return (V) saveable;
             }
             catch(JsonSyntaxException ex) {
@@ -391,9 +421,8 @@ public class ServerBackedMap<V extends Saveable> {
         ChangeRecord[] changes = getChangeRecordsSince(lastJournalId);
         for(ChangeRecord change : changes) {
             if(change.getType().equals(v.getSaveableModuleName())) {
-                V changed = this.get(change.getObjectId());
+                V changed = this.getLockless(change.getObjectId());
                 this.cache.put(changed.getUniqueId(), changed);
-                this.releaseLock(v.getSaveableModuleName(), changed.getUniqueId());
             }
             this.lastJournalId = change.getChangeId();
         }

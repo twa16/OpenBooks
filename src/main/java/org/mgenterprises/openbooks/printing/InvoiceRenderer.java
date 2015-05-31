@@ -73,7 +73,7 @@ public class InvoiceRenderer {
         result = processCompanyData(result);
         
         //Add customer
-        Customer customer = openbooksCore.getCustomerManager().getCustomer(invoice.getCustomerID());
+        Customer customer = openbooksCore.getCustomerManager().getCustomerLockless(invoice.getCustomerID());
         String customerData = getCustomerDescription(customer);
         result = result.replace(RenderTemplate.CLIENT_INFO, customerData);
         result = result.replace(RenderTemplate.CLIENT_NAME, customer.getCompanyName());

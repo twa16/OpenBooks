@@ -212,12 +212,13 @@ public class CustomerDetailPanel extends JPanel implements ViewChangeListener{
                     try {
                         Object object = customerInvoiceTable.getModel().getValueAt(row, 0);
                         int id = Integer.parseInt(object.toString());
-                        Invoice invoice = invoiceManager.getInvoice(id);
+                        Invoice invoice = invoiceManager.getInvoiceLockless(id);
                         JPanel mainPanelArea = openbooksCore.getMainPanel();
                         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
                         cl.show(mainPanelArea, "InvoiceUpdatePanel", invoice);
                     } catch (IOException ex) {
                         Logger.getLogger(CustomerDetailPanel.class.getName()).log(Level.SEVERE, null, ex);
+                        JOptionPane.showConfirmDialog(null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
                     }
                 }
             }
@@ -265,5 +266,11 @@ public class CustomerDetailPanel extends JPanel implements ViewChangeListener{
 
     @Override
     public void onSwitchFrom() {
+        try {
+            openbooksCore.getCustomerManager().releaseLock(customer.getCustomerNumber());
+        } catch (IOException ex) {
+            Logger.getLogger(CustomerDetailPanel.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showConfirmDialog(null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+        }
     }
 }

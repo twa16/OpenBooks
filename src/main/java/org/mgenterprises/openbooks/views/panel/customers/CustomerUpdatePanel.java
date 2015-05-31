@@ -57,6 +57,7 @@ public class CustomerUpdatePanel extends JPanel implements ViewChangeListener {
     private CustomerManager customerManager;
     private InvoiceManager invoiceManager;
 
+    private Customer lastCustomer;
     /**
      * Creates new form CustomerUpdatePanel
      */
@@ -424,7 +425,7 @@ public class CustomerUpdatePanel extends JPanel implements ViewChangeListener {
                 try {
                     Object object = customerTable.getModel().getValueAt(row, 0);
                     int id = Integer.parseInt(object.toString());
-                    Customer customer = customerManager.getCustomer(id);
+                    Customer customer = customerManager.getAndLockCustomer(id);
                     JPanel mainPanelArea = openbooksCore.getMainPanel();
                     OBCardLayout cl = (OBCardLayout) (mainPanelArea.getLayout());
                     cl.show(mainPanelArea, "CustomerDetailPanel", customer);
@@ -510,21 +511,24 @@ public class CustomerUpdatePanel extends JPanel implements ViewChangeListener {
      */
     public void setFields(int row) {
         try {
+            if(lastCustomer != null) {
+                customerManager.releaseLock(lastCustomer.getCustomerNumber());
+            }
             //Get Customer ID from Table
             int cusId = (int) customerTable.getValueAt(row, 0);
             this.idField.setText(String.valueOf(cusId));
 
-            Customer customer = customerManager.getCustomer(cusId);
-            this.companyNameField.setText(customer.getCompanyName());
-            this.contactFirstField.setText(customer.getContactFirst());
-            this.contactLastField.setText(customer.getContactLast());
-            this.phoneNumberField.setText(customer.getPhoneNumber());
-            this.emailField.setText(customer.getEmailAddress());
-            this.streetAddressField.setText(customer.getStreetAddress());
-            this.cityField.setText(customer.getCityName());
-            this.stateCombo.setSelectedItem(customer.getState());
-
-            if (!customerManager.exists(cusId)) {
+            lastCustomer = customerManager.getAndLockCustomer(cusId);
+            this.companyNameField.setText(lastCustomer.getCompanyName());
+            this.contactFirstField.setText(lastCustomer.getContactFirst());
+            this.contactLastField.setText(lastCustomer.getContactLast());
+            this.phoneNumberField.setText(lastCustomer.getPhoneNumber());
+            this.emailField.setText(lastCustomer.getEmailAddress());
+            this.streetAddressField.setText(lastCustomer.getStreetAddress());
+            this.cityField.setText(lastCustomer.getCityName());
+            this.stateCombo.setSelectedItem(lastCustomer.getState());
+            
+            if (!customerManager.exists(cusId) && !lastCustomer.isLocked()) {
                 this.saveButton.setText("Save (Locked)");
                 this.saveButton.setEnabled(false);
             } else {

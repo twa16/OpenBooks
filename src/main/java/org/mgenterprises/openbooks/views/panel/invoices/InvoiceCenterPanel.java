@@ -84,7 +84,7 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
         for(Invoice invoice : invoices) {
             Object[] data = new Object[6];
             data[0]=invoice.getInvoiceNumber();
-            Customer customer = customerManager.getCustomer(invoice.getCustomerID());
+            Customer customer = customerManager.getCustomerLockless(invoice.getCustomerID());
             data[1]=customer.toString();
             data[2]=simpleDateFormat.format(invoice.getDateDue());
             data[3]=invoice.getTotal()-invoice.getAmountPaid();
@@ -321,16 +321,15 @@ public class InvoiceCenterPanel extends JPanel implements ViewChangeListener{
                 if(evt.getClickCount()==2 && evt.getButton()==MouseEvent.BUTTON1) { 
                         Object object = invoiceTable.getModel().getValueAt(row, 0);
                         int id = Integer.parseInt(object.toString());
-                        Invoice invoice = invoiceManager.getInvoice(id);
+                        Invoice invoice = invoiceManager.getAndLockInvoice(id);
                         JPanel mainPanelArea = openbooksCore.getMainPanel();
                         OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
                         cl.show(mainPanelArea, "InvoiceUpdatePanel", invoice);
-
                 }
                 else if(evt.getButton() != MouseEvent.BUTTON1) {
                     Object object = invoiceTable.getModel().getValueAt(row, 0);
                     int id = Integer.parseInt(object.toString());
-                    Invoice invoice = invoiceManager.getInvoice(id);
+                    Invoice invoice = invoiceManager.getInvoiceLockless(id);
                     RightClickPopupMenu rcpm = new RightClickPopupMenu(openbooksCore, this, invoice);
                     rcpm.show(evt.getComponent(), evt.getX(), evt.getY());
                 }
@@ -403,7 +402,12 @@ class RightClickPopupMenu extends JPopupMenu {
                 int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete invoice number "+invoice.getInvoiceNumber(),"Warning",JOptionPane.YES_NO_OPTION);
                 if(dialogResult == JOptionPane.YES_OPTION){
                     try {
-                        openbooksCore.getInvoiceManager().remove(String.valueOf(invoice.getInvoiceNumber()));
+                        Invoice workingInvoice = openbooksCore.getInvoiceManager().getAndLock(invoice.getUniqueId());
+                        if(!workingInvoice.isLocked()) {
+                            openbooksCore.getInvoiceManager().remove(String.valueOf(invoice.getInvoiceNumber()));
+                        } else {
+                            JOptionPane.showConfirmDialog (null, "Unable delete because the object is locked by another user", "Warning!", JOptionPane.OK_OPTION);
+                        }
                         invoiceCenterPanel.loadInvoiceList();
                     } catch (IOException ex) {
                         Logger.getLogger(RightClickPopupMenu.class.getName()).log(Level.SEVERE, null, ex);
@@ -416,9 +420,15 @@ class RightClickPopupMenu extends JPopupMenu {
         editItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel mainPanelArea = openbooksCore.getMainPanel();
-                OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
-                cl.show(mainPanelArea, "InvoiceUpdatePanel", invoice);
+                try {
+                    Invoice workingInvoice = openbooksCore.getInvoiceManager().getAndLock(invoice.getUniqueId());
+                    JPanel mainPanelArea = openbooksCore.getMainPanel();
+                    OBCardLayout cl = (OBCardLayout)(mainPanelArea.getLayout());
+                    cl.show(mainPanelArea, "InvoiceUpdatePanel", workingInvoice);
+                } catch (IOException ex) {
+                    Logger.getLogger(RightClickPopupMenu.class.getName()).log(Level.SEVERE, null, ex);
+                    JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
+                }
             }
 
         });

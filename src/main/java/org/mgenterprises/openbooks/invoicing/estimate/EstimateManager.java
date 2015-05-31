@@ -40,8 +40,8 @@ public class EstimateManager extends ServerBackedMap<Estimate>{
         super(new Estimate(), saveServerConnection);
     }
     
-    public Estimate getEstimate(long id) throws IOException {
-        return get(String.valueOf(id));
+    public Estimate getAndLockEstimate(long id) throws IOException {
+        return getAndLock(String.valueOf(id));
     }
     
     public Estimate[] getEstimates() throws IOException {

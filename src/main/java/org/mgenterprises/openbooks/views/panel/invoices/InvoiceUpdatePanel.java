@@ -116,7 +116,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
             clearFields();
             if(invoiceManager.exists(invoiceManager.getHighestID())) {
                 long highestId = invoiceManager.getHighestID();
-                Invoice invoice = invoiceManager.getInvoice(highestId);
+                Invoice invoice = invoiceManager.getAndLockInvoice(highestId);
                 loadInvoiceData(invoice);
             }
             else {
@@ -130,44 +130,51 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
     }
     
     private void loadInvoiceData(Invoice invoice){
-        this.loadedInvoice = invoice;
         try {
-            clearFields();
-            DefaultTableModel defaultTableModel = (DefaultTableModel) this.invoiceItemTable.getModel();
-            //Top
-            Customer customer = customerManager.getCustomer(invoice.getCustomerID());
-            this.customerCombobox.setSelectedIndex(customer.getCustomerNumber());
-            customerManager.releaseLock(new Customer().getSaveableModuleName(), String.valueOf(invoice.getCustomerID()));
-            this.invoiceNumberField.setText(String.valueOf(invoice.getInvoiceNumber()));
-            this.poNumberField.setText(String.valueOf(invoice.getPurchaseOrderNumber()));
-            this.dateCreatedField.setText(dateFormat.format(invoice.getDateCreated()));
-            this.dateDueField.setText(dateFormat.format(invoice.getDateDue()));
-            defaultTableModel.setRowCount(0);
-            for(InvoiceItem invoiceItem : invoice.getInvoiceItems()){
-                defaultTableModel.addRow(invoiceItem.formatForTable());
+            invoice = invoiceManager.getAndLockInvoice(invoice.getInvoiceNumber());
+            this.loadedInvoice = invoice;
+            try {
+                clearFields();
+                DefaultTableModel defaultTableModel = (DefaultTableModel) this.invoiceItemTable.getModel();
+                //Top
+                Customer customer = customerManager.getAndLockCustomer(invoice.getCustomerID());
+                this.customerCombobox.setSelectedIndex(customer.getCustomerNumber());
+                customerManager.releaseLock(new Customer().getSaveableModuleName(), String.valueOf(invoice.getCustomerID()));
+                this.invoiceNumberField.setText(String.valueOf(invoice.getInvoiceNumber()));
+                this.poNumberField.setText(String.valueOf(invoice.getPurchaseOrderNumber()));
+                this.dateCreatedField.setText(dateFormat.format(invoice.getDateCreated()));
+                this.dateDueField.setText(dateFormat.format(invoice.getDateDue()));
+                defaultTableModel.setRowCount(0);
+                for(InvoiceItem invoiceItem : invoice.getInvoiceItems()){
+                    defaultTableModel.addRow(invoiceItem.formatForTable());
+                }
+                //add an empty row so they can actually edit
+                ((DefaultTableModel)this.invoiceItemTable.getModel()).addRow(new String[]{});
+                
+                
+                //Bottom Row
+                this.totalPaid.setText(String.valueOf(invoice.getAmountPaid()));
+                if(invoice.getDatePaid().getTime()!=0) this.datePaid.setText(dateFormat.format(invoice.getDatePaid()));
+                
+                this.invoiceItemTable.setModel(defaultTableModel);
+                
+                if(invoice.isLocked()) {
+                    this.saveButton.setEnabled(false);
+                    this.saveButton.setText("Save (Locked)");
+                }
+                else {
+                    this.saveButton.setEnabled(true);
+                    this.saveButton.setText("Save");
+                }
+                
             }
-            //add an empty row so they can actually edit
-            ((DefaultTableModel)this.invoiceItemTable.getModel()).addRow(new String[]{});
-
-
-            //Bottom Row
-            this.totalPaid.setText(String.valueOf(invoice.getAmountPaid()));
-            if(invoice.getDatePaid().getTime()!=0) this.datePaid.setText(dateFormat.format(invoice.getDatePaid()));
-
-            this.invoiceItemTable.setModel(defaultTableModel);
-            
-            if(invoice.isLocked()) {
-                this.saveButton.setEnabled(false);
-                this.saveButton.setText("Save (Locked)");
+            catch(IOException ex) {
+                Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
             }
-            else {
-                this.saveButton.setEnabled(true);
-                this.saveButton.setText("Save");
-            }
-    
         }
         catch(IOException ex) {
-            Logger.getLogger(DeleteCustomerActionListener.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(InvoiceUpdatePanel.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showConfirmDialog (null, "Unable to complete requested action because of connection problems.", "Warning!", JOptionPane.OK_OPTION);
         }
     }
@@ -456,14 +463,14 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
 
     private void previousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previousButtonActionPerformed
         try {
-            int last = Integer.parseInt(this.invoiceNumberField.getText())-1;
+            long last = Long.parseLong(this.invoiceNumberField.getText())-1;
             if(last>=0){
                 this.invoiceNumberField.setText(String.valueOf(last));
                 clearFields();
                 if(invoiceManager.exists(last)){
-                    Invoice invoice = invoiceManager.getInvoice(last);
+                    invoiceManager.releaseLock(Long.parseLong(this.invoiceNumberField.getText()));
+                    Invoice invoice = invoiceManager.getInvoiceLockless(last);
                     loadInvoiceData(invoice);
-                    invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), String.valueOf(last));
                 }
             }
         }
@@ -481,7 +488,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
             //if(next<=invoiceManager.getHighestID()) this.invoiceNumberField.setText(String.valueOf(next));
             this.invoiceNumberField.setText(String.valueOf(next));
             if(invoiceManager.exists(next)){
-                Invoice invoice = invoiceManager.getInvoice(next);
+                Invoice invoice = invoiceManager.getInvoiceLockless(next);
                 invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), String.valueOf(next));
                 loadInvoiceData(invoice);
             }
@@ -618,8 +625,7 @@ public class InvoiceUpdatePanel extends JPanel implements ViewChangeListener{
         try {
             int next = Integer.parseInt(invoiceNumberField.getText());
             if(invoiceManager.exists(next)){
-                Invoice invoice = invoiceManager.getInvoice(next);
-                invoiceManager.releaseLock(new Invoice().getSaveableModuleName(), String.valueOf(next));
+                Invoice invoice = invoiceManager.getInvoiceLockless(next);
                 loadInvoiceData(invoice);
             }
         } catch (IOException ex) {
