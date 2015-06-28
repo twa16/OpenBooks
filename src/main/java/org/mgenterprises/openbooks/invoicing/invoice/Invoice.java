@@ -23,6 +23,7 @@
  */
 package org.mgenterprises.openbooks.invoicing.invoice;
 
+import org.mgenterprises.openbooks.accounting.payment.Payment;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -53,6 +54,7 @@ public class Invoice extends Saveable implements Serializable {
 
     private long invoiceNumber;
     private Date dateCreated;
+    private Payment payment;
     private double amountPaid;
     private double taxRate;
     private String currencySymbol = "$";
@@ -94,6 +96,14 @@ public class Invoice extends Saveable implements Serializable {
         this.dateCreated = dateCreated;
     }
 
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+    
     public double getAmountPaid() {
         return amountPaid;
     }

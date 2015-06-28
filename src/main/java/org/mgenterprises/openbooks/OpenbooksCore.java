@@ -27,6 +27,7 @@ package org.mgenterprises.openbooks;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import org.mgenterprises.openbooks.accounting.account.AccountManager;
+import org.mgenterprises.openbooks.accounting.payment.PaymentManager;
 import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
 import org.mgenterprises.openbooks.company.CompanyProfile;
 import org.mgenterprises.openbooks.configuration.ConfigurationManager;
@@ -41,6 +42,8 @@ import org.mgenterprises.openbooks.invoicing.item.ItemManager;
  */
 public interface OpenbooksCore {
 
+    public PaymentManager getPaymentManager();
+    
     public ConfigurationManager getConfigurationManager();
 
     public CustomerManager getCustomerManager();

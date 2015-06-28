@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package check;
+package org.mgenterprises.openbooks.accounting.payment;
 
 import java.util.Date;
 import org.mgenterprises.openbooks.customer.Customer;
@@ -31,14 +31,25 @@ import org.mgenterprises.openbooks.saving.Saveable;
  * Represent a check received
  * @author mgauto
  */
-public class Check extends Saveable{
+public class Payment extends Saveable{
     private long id;
+    private PaymentType paymentType;
     private Customer customer;
     private Date dateReceived;
     private String poNumber;
-    private String checkNmber;
     private double amount;
 
+    public Payment() {
+    }
+
+    public Payment(PaymentType paymentType, Customer customer, Date dateReceived, String poNumber, double amount) {
+        this.paymentType = paymentType;
+        this.customer = customer;
+        this.dateReceived = dateReceived;
+        this.poNumber = poNumber;
+        this.amount = amount;
+    }
+    
     public Customer getCustomer() {
         return customer;
     }
@@ -61,14 +72,6 @@ public class Check extends Saveable{
 
     public void setPoNumber(String poNumber) {
         this.poNumber = poNumber;
-    }
-
-    public String getCheckNmber() {
-        return checkNmber;
-    }
-
-    public void setCheckNmber(String checkNmber) {
-        this.checkNmber = checkNmber;
     }
 
     public double getAmount() {

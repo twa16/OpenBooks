@@ -39,6 +39,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.mgenterprises.openbooks.OpenbooksCore;
 import org.mgenterprises.openbooks.accounting.account.AccountManager;
+import org.mgenterprises.openbooks.accounting.payment.PaymentManager;
 import org.mgenterprises.openbooks.accounting.transaction.TransactionManager;
 import org.mgenterprises.openbooks.company.CompanyProfile;
 import org.mgenterprises.openbooks.configuration.ConfigurationManager;
@@ -72,6 +73,7 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     private TransactionManager transactionManager;
     private AccountManager accountManager;
     private CompanyProfile companyProfile;
+    private PaymentManager paymentManager;
     /**
      * Creates new form MainGUI
      */
@@ -98,10 +100,13 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
             configurationManager.loadDefaultConfiguration();
             transactionManager = new TransactionManager(saveServerConnection);
             accountManager = new AccountManager(saveServerConnection);
+            paymentManager = new PaymentManager(saveServerConnection);
         } catch (IOException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            //TODO Do something with this error
         } catch (SaveServerAuthenticationFailureException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            //TODO Do something with this error
         }
         this.companyProfile = companyFile.getCompanyProfile();
         initComponents();
@@ -333,5 +338,10 @@ public class MainGUI extends javax.swing.JFrame implements WindowListener, Openb
     @Override
     public JPanel getMainPanel() {
         return mainPanelArea;
+    }
+
+    @Override
+    public PaymentManager getPaymentManager() {
+        return paymentManager;
     }
 }
